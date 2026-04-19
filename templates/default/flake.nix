@@ -23,7 +23,6 @@
 
       imports = [
         (inputs.import-tree ./flake-parts)
-        inputs.clan-core.flakeModules.default
       ];
     };
 }
