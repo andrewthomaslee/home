@@ -57,6 +57,10 @@ in {
         overlays = [self.overlays.default];
         config.allowUnfree = true;
       };
+
+      imports = [
+        inputs.determinate.nixosModules.default
+      ];
     };
 
     # Overlays
