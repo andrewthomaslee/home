@@ -7,9 +7,8 @@
     else "${inputs.devenv-root}";
 in {
   perSystem = {pkgs, ...}: let
-    # --- Common Configuration --- #
+    # ------ Common Configuration ------ #
     packages = with pkgs.unstable; [
-      alejandra
       bun
     ];
     shellHook = ''
@@ -18,7 +17,7 @@ in {
       eval "$(bunx varlock load --format shell)"
     '';
   in {
-    # Pure Dev Shell
+    # ------ Pure Dev Shell ------ #
     # Activate: `nix develop .#pure`
     devShells.pure = pkgs.mkShell {
       inherit shellHook packages;
@@ -28,9 +27,9 @@ in {
       ];
     };
 
-    # Devenv Development Shell
-    # Activate: `direnv allow`
+    # ------ Devenv Dev Shell ------ #
     # https://devenv.sh/reference/options/
+    # Activate: `direnv allow` or `nix develop --no-pure-eval --override-input devenv-root "file+file://$PWD/.devenv/root"`
     devenv.shells.default = {
       inherit packages;
       enterShell = shellHook;
@@ -38,18 +37,11 @@ in {
       devcontainer = {
         enable = true;
         settings = {
-          image = "mcr.microsoft.com/devcontainers/base:ubuntu";
-          remoteUser = "vscode";
-          updateRemoteUserUID = true;
-          features = {
-            "ghcr.io/devcontainers/features/nix:1".packages = "devenv";
-          };
-          postCreateCommand = "git config --global --add safe.directory /workspaces/home";
           updateContentCommand = "";
+          postCreateCommand = "git config --global --add safe.directory /workspaces/home";
           customizations.vscode.extensions = [
             "mkhl.direnv"
             "jnoortheen.nix-ide"
-            "bbenoist.nix"
           ];
         };
       };

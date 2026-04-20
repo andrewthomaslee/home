@@ -3,20 +3,12 @@
     "vscode": {
       "extensions": [
         "mkhl.direnv",
-        "jnoortheen.nix-ide",
-        "bbenoist.nix"
+        "jnoortheen.nix-ide"
       ]
     }
   },
-  "features": {
-    "ghcr.io/devcontainers/features/nix:1": {
-      "packages": "devenv"
-    }
-  },
-  "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
+  "image": "ghcr.io/cachix/devenv/devcontainer:latest",
   "overrideCommand": false,
   "postCreateCommand": "git config --global --add safe.directory /workspaces/home",
-  "remoteUser": "vscode",
-  "updateContentCommand": "",
-  "updateRemoteUserUID": true
+  "updateContentCommand": ""
 }
