@@ -38,10 +38,18 @@ in {
       devcontainer = {
         enable = true;
         settings = {
+          image = "mcr.microsoft.com/devcontainers/base:ubuntu";
+          remoteUser = "vscode";
+          updateRemoteUserUID = true;
+          features = {
+            "ghcr.io/devcontainers/features/nix:1".packages = "devenv";
+          };
+          postCreateCommand = "git config --global --add safe.directory /workspaces/home";
           updateContentCommand = "";
           customizations.vscode.extensions = [
             "mkhl.direnv"
             "jnoortheen.nix-ide"
+            "bbenoist.nix"
           ];
         };
       };
