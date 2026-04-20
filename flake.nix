@@ -6,16 +6,28 @@
     determinate.url = "https://flakehub.com/f/DeterminateSystems/determinate/*";
 
     # Nixpkgs
-    nixpkgs.url = "github:cachix/devenv-nixpkgs/rolling";
+    nixpkgs.url = "https://flakehub.com/f/NixOS/nixpkgs/0";
+    nixpkgs-devenv.url = "github:cachix/devenv-nixpkgs/rolling";
     nixpkgs-unstable.url = "github:NixOS/nixpkgs/nixos-unstable";
 
     # Flake-Parts
     flake-parts.follows = "determinate/nix/flake-parts";
     import-tree.url = "github:vic/import-tree";
 
-    devenv.url = "github:cachix/devenv";
-    nix2container.url = "github:nlewo/nix2container";
-    nix2container.inputs = {nixpkgs.follows = "nixpkgs";};
+    # Devenv
+    devenv = {
+      url = "github:cachix/devenv";
+      inputs = {
+        nixpkgs.follows = "nixpkgs-devenv";
+        flake-parts.follows = "flake-parts";
+        crate2nix.inputs.flake-parts.follows = "flake-parts";
+        crate2nix.inputs.crate2nix_stable.inputs.flake-parts.follows = "flake-parts";
+      };
+    };
+    nix2container = {
+      url = "github:nlewo/nix2container";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
     mk-shell-bin.url = "github:rrbutani/nix-mk-shell-bin";
     devenv-root = {
       url = "file+file:///dev/null";
@@ -31,7 +43,6 @@
   outputs = inputs:
     inputs.flake-parts.lib.mkFlake {inherit inputs;} {
       systems = [
-        # "aarch64-linux"
         "x86_64-linux"
       ];
 

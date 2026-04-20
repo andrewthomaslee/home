@@ -8,7 +8,7 @@
 in {
   perSystem = {pkgs, ...}: let
     # ------ Common Configuration ------ #
-    packages = with pkgs.unstable; [
+    packages = with pkgs.unstable-devenv; [
       bun
     ];
     shellHook = ''
@@ -21,7 +21,7 @@ in {
     # Activate: `nix develop .#pure`
     devShells.pure = pkgs.mkShell {
       inherit shellHook packages;
-      buildInputs = with pkgs; [
+      buildInputs = with pkgs.unstable-devenv; [
         bashInteractive
         bash
       ];
