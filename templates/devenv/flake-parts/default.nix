@@ -53,11 +53,7 @@ in {
     templates = {
       default = {
         path = ../templates/default;
-        description = "Dendritic Flake";
-      };
-      devenv = {
-        path = ../templates/devenv;
-        description = "Dendritic Flake + devenv";
+        description = "A basic dendritic flake";
       };
     };
   };
