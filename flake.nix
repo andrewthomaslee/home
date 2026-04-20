@@ -1,5 +1,5 @@
 {
-  description = "dendritic flake";
+  description = "Dendritic Determinate Flake";
   inputs = {
     # Determinate Nix
     # https://docs.determinate.systems/guides/advanced-installation/
@@ -8,10 +8,12 @@
       inputs.nix.inputs.nixpkgs.follows = "nixpkgs";
       inputs.nix.inputs.git-hooks-nix.inputs.nixpkgs.follows = "nixpkgs";
     };
-    nixpkgs.follows = "determinate/nixpkgs";
 
     # Nixpkgs
+    nixpkgs.follows = "determinate/nixpkgs";
     nixpkgs-unstable.url = "github:NixOS/nixpkgs/nixos-unstable";
+
+    # Flake-Parts
     flake-parts.follows = "determinate/nix/flake-parts";
     import-tree.url = "github:vic/import-tree";
   };
