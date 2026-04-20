@@ -3,15 +3,16 @@
   inputs = {
     # Determinate Nix
     # https://docs.determinate.systems/guides/advanced-installation/
-    nixpkgs.url = "https://flakehub.com/f/NixOS/nixpkgs/0";
-    determinate.url = "https://flakehub.com/f/DeterminateSystems/determinate/*";
+    determinate = {
+      url = "https://flakehub.com/f/DeterminateSystems/determinate/*";
+      inputs.nix.inputs.nixpkgs.follows = "nixpkgs";
+      inputs.nix.inputs.git-hooks-nix.inputs.nixpkgs.follows = "nixpkgs";
+    };
+    nixpkgs.follows = "determinate/nixpkgs";
 
     # Nixpkgs
     nixpkgs-unstable.url = "github:NixOS/nixpkgs/nixos-unstable";
-    flake-parts = {
-      url = "github:hercules-ci/flake-parts";
-      inputs.nixpkgs-lib.follows = "nixpkgs";
-    };
+    flake-parts.follows = "determinate/nix/flake-parts";
     import-tree.url = "github:vic/import-tree";
   };
 
