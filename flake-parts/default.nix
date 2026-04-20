@@ -29,23 +29,6 @@ in {
 
     # Formatter
     formatter = pkgs.unstable.alejandra;
-
-    # Dev Shell
-    devShells.default = pkgs.mkShell {
-      buildInputs = with pkgs; [
-        bashInteractive
-        bash
-      ];
-      packages = with pkgs.unstable; [
-        alejandra
-        bun
-      ];
-      shellHook = ''
-        export REPO_ROOT
-        REPO_ROOT=$(git rev-parse --show-toplevel)
-        eval "$(bunx varlock load --format shell)"
-      '';
-    };
   };
 
   flake = {

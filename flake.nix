@@ -3,19 +3,29 @@
   inputs = {
     # Determinate Nix
     # https://docs.determinate.systems/guides/advanced-installation/
-    determinate = {
-      url = "https://flakehub.com/f/DeterminateSystems/determinate/*";
-      inputs.nix.inputs.nixpkgs.follows = "nixpkgs";
-      inputs.nix.inputs.git-hooks-nix.inputs.nixpkgs.follows = "nixpkgs";
-    };
+    determinate.url = "https://flakehub.com/f/DeterminateSystems/determinate/*";
 
     # Nixpkgs
-    nixpkgs.follows = "determinate/nixpkgs";
+    nixpkgs.url = "github:cachix/devenv-nixpkgs/rolling";
     nixpkgs-unstable.url = "github:NixOS/nixpkgs/nixos-unstable";
 
     # Flake-Parts
     flake-parts.follows = "determinate/nix/flake-parts";
     import-tree.url = "github:vic/import-tree";
+
+    devenv.url = "github:cachix/devenv";
+    nix2container.url = "github:nlewo/nix2container";
+    nix2container.inputs = {nixpkgs.follows = "nixpkgs";};
+    mk-shell-bin.url = "github:rrbutani/nix-mk-shell-bin";
+    devenv-root = {
+      url = "file+file:///dev/null";
+      flake = false;
+    };
+  };
+
+  nixConfig = {
+    extra-trusted-public-keys = "devenv.cachix.org-1:w1cLUi8dv3hnoSPGAuibQv+f9TZLr6cv/Hm9XgU50cw=";
+    extra-substituters = "https://devenv.cachix.org";
   };
 
   outputs = inputs:
@@ -27,6 +37,7 @@
 
       imports = [
         (inputs.import-tree ./flake-parts)
+        inputs.devenv.flakeModule
       ];
     };
 }
