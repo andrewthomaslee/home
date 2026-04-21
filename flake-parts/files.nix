@@ -26,7 +26,7 @@
             {uses = "actions/checkout@v4";}
             {uses = "DeterminateSystems/nix-installer-action@main";}
             {uses = "DeterminateSystems/magic-nix-cache-action@main";}
-            {run = "nix flake check --show-trace --all-systems";}
+            {run = "nix flake check --show-trace --all-systems --impure";}
           ];
         };
       };
