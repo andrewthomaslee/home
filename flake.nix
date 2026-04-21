@@ -26,7 +26,7 @@
     };
     nix2container = {
       url = "github:nlewo/nix2container";
-      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.nixpkgs.follows = "nixpkgs-devenv";
     };
     mk-shell-bin.url = "github:rrbutani/nix-mk-shell-bin";
     devenv-root = {
