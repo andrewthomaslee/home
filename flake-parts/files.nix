@@ -18,7 +18,7 @@
 
     # Pakcages that generate files to be checked into the repo
     packages = {
-      nix-flake-check = pkgs.writers.writeJSON "nix-flake-check.yml" {
+      nix-flake-check = pkgs.writers.writeYAML "nix-flake-check.yml" {
         on.push = {};
         jobs.check = {
           runs-on = "ubuntu-latest";
@@ -30,7 +30,7 @@
           ];
         };
       };
-      flakehub-publish = pkgs.writers.writeJSON "flakehub-publish.yml" {
+      flakehub-publish = pkgs.writers.writeYAML "flakehub-publish.yml" {
         name = "Publish to FlakeHub";
         on = {
           push.tags = ["v?[0-9]+.[0-9]+.[0-9]+*"];
