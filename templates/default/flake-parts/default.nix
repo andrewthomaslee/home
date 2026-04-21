@@ -15,6 +15,8 @@ in {
   perSystem = {
     pkgs,
     system,
+    config,
+    self',
     ...
   }: {
     _module.args = {
@@ -29,23 +31,8 @@ in {
 
     # Formatter
     formatter = pkgs.unstable.alejandra;
-
-    # Dev Shell
-    devShells.default = pkgs.mkShell {
-      buildInputs = with pkgs; [
-        bashInteractive
-        bash
-      ];
-      packages = with pkgs.unstable; [
-        alejandra
-        bun
-      ];
-      shellHook = ''
-        export REPO_ROOT
-        REPO_ROOT=$(git rev-parse --show-toplevel)
-        eval "$(bunx varlock load --format shell)"
-      '';
-    };
+    # Mkdocs
+    documentation.mkdocs-root = ../documentation;
   };
 
   flake = {
@@ -70,7 +57,11 @@ in {
     templates = {
       default = {
         path = ../templates/default;
-        description = "A basic dendritic flake";
+        description = "Dendritic Flake";
+      };
+      minimal = {
+        path = ../templates/minimal;
+        description = "Minimal Dendritic Flake";
       };
     };
   };

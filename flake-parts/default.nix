@@ -59,9 +59,9 @@ in {
         path = ../templates/default;
         description = "Dendritic Flake";
       };
-      devenv = {
-        path = ../templates/devenv;
-        description = "Dendritic Flake + devenv";
+      minimal = {
+        path = ../templates/minimal;
+        description = "Minimal Dendritic Flake";
       };
     };
   };

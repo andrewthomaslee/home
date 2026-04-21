@@ -10,7 +10,3 @@ config.tf.json
 .env.*
 .env
 !*.env.schema
-
-.devenv
-.devcontainer.json
-!.devcontainer/.devcontainer.json
