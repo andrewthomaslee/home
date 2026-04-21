@@ -15,6 +15,8 @@ in {
   perSystem = {
     pkgs,
     system,
+    config,
+    self',
     ...
   }: {
     _module.args = {

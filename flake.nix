@@ -6,7 +6,7 @@
     determinate.url = "https://flakehub.com/f/DeterminateSystems/determinate/*";
 
     # Nixpkgs
-    nixpkgs.url = "https://flakehub.com/f/NixOS/nixpkgs/0";
+    nixpkgs.url = "https://flakehub.com/f/NixOS/nixpkgs/*";
     nixpkgs-devenv.url = "github:cachix/devenv-nixpkgs/rolling";
     nixpkgs-unstable.url = "github:NixOS/nixpkgs/nixos-unstable";
 
@@ -35,6 +35,9 @@
       url = "file+file:///dev/null";
       flake = false;
     };
+
+    # Files
+    files.url = "github:mightyiam/files";
   };
 
   nixConfig = {
@@ -51,6 +54,7 @@
       imports = [
         (inputs.import-tree ./flake-parts)
         inputs.devenv.flakeModule
+        inputs.files.flakeModules.default
       ];
     };
 }
