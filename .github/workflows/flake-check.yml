@@ -13,6 +13,7 @@ jobs:
       - uses: DeterminateSystems/flake-checker-action@main
         with:
           nixpkgs-keys: nixpkgs-unstable
+          fail-mode: true
       - uses: DeterminateSystems/nix-installer-action@main
         with:
           extra-conf: |
