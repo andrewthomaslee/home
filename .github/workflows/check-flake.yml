@@ -9,7 +9,7 @@ jobs:
       id-token: "write"
       contents: "read"
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v6.0.2
       - uses: DeterminateSystems/flake-checker-action@main
         with:
           nixpkgs-keys: nixpkgs-unstable
