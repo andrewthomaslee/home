@@ -11,10 +11,12 @@
     nixpkgs-unstable.url = "github:NixOS/nixpkgs/nixos-unstable";
 
     # Flake-Parts
+    # https://flake.parts/index.html
     flake-parts.follows = "determinate/nix/flake-parts";
     import-tree.url = "github:vic/import-tree";
 
     # Devenv
+    # https://devenv.sh/guides/using-with-flake-parts/
     devenv = {
       url = "github:cachix/devenv";
       inputs = {
@@ -36,8 +38,8 @@
   };
 
   nixConfig = {
-    extra-trusted-public-keys = "devenv.cachix.org-1:w1cLUi8dv3hnoSPGAuibQv+f9TZLr6cv/Hm9XgU50cw=";
-    extra-substituters = "https://devenv.cachix.org";
+    extra-trusted-public-keys = ["devenv.cachix.org-1:w1cLUi8dv3hnoSPGAuibQv+f9TZLr6cv/Hm9XgU50cw=" "cache.flakehub.com-3:hJuILl5sVK4iKm86JzgdXW12Y2Hwd5G07qKtHTOcDCM="];
+    extra-substituters = ["https://devenv.cachix.org" "https://install.determinate.systems"];
   };
 
   outputs = inputs:
