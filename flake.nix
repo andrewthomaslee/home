@@ -35,6 +35,15 @@
       url = "file+file:///dev/null";
       flake = false;
     };
+
+    # Mkdocs
+    mkdocs-flake = {
+      url = "github:applicative-systems/mkdocs-flake";
+      inputs = {
+        nixpkgs.follows = "nixpkgs-unstable";
+        flake-parts.follows = "flake-parts";
+      };
+    };
   };
 
   nixConfig = {
@@ -51,6 +60,7 @@
       imports = [
         (inputs.import-tree ./flake-parts)
         inputs.devenv.flakeModule
+        inputs.mkdocs-flake.flakeModules.default
       ];
     };
 }

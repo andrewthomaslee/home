@@ -31,6 +31,8 @@ in {
 
     # Formatter
     formatter = pkgs.unstable.alejandra;
+    # Mkdocs
+    documentation.mkdocs-root = ../documentation;
   };
 
   flake = {
