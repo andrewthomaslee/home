@@ -35,9 +35,6 @@
       url = "file+file:///dev/null";
       flake = false;
     };
-
-    # Files
-    files.url = "github:mightyiam/files";
   };
 
   nixConfig = {
@@ -54,7 +51,6 @@
       imports = [
         (inputs.import-tree ./flake-parts)
         inputs.devenv.flakeModule
-        inputs.files.flakeModules.default
       ];
     };
 }
