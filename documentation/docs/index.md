@@ -3,25 +3,26 @@
 
 ## Project layout
 
-    flake.nix     # Flake that controls the project.
-    flake.lock    # Flake's lock file.
-    .envrc        # direnv configuration.
-    .env.schema   # Varlock schema.
+    flake.nix     # Flake that controls the project
+    flake.lock    # Flake's lock file
+    .envrc        # direnv configuration
+    .env.schema   # Varlock schema
 
-    lib/          # Custom functions accessible via `lib.custom`.
-    overlays/     # Overlays for Nixpkgs. Adds `pkgs.unstable` and `pkgs.devenv-unstable`.
-    templates/    # Templates for NixOS.
+    lib/          # Custom functions accessible via `lib.custom`
+    overlays/     # Overlays for Nixpkgs. Adds `pkgs.unstable` and `pkgs.devenv-unstable`
+    templates/    # Templates for NixOS
 
-    flake-parts/  # Top-level Flake Part files.
-        default.nix  # Default flake-parts configuration.
-        devShells.nix  # Development Shells.
+    flake-parts/        # Top-level Flake Part files
+        default.nix     # Default flake-parts configuration
+        devShells.nix   # Development Shells
 
-    documentation/
-        mkdocs.yml  # Mkdocs configuration.
-        docs/       # Documentation source.
+    documentation/      # MkDocs
+        mkdocs.yml      # MkDocs configuration
+        docs/           # Documentation source
 
-    .github/workflows/
-        flakehub-publish-tagged.yml  # GitHub Actions workflow to publish Flake outputs to FlakeHub.
+    .github/workflows/      # GitHub Actions workflows
+        check-flake.yml     # Flake Health Checker ( Run on push )
+        publish-flake.yml   # Publish to FlakeHub + MkDocs to GitHub Pages ( Run on tagged release )
 
 ## Flake Outputs
 
