@@ -31,7 +31,7 @@
         };
       };
       flakehub-publish = pkgs.writers.writeJSON "flakehub-publish.yml" {
-        name = "Publish tags to FlakeHub";
+        name = "Publish to FlakeHub";
         on = {
           push.tags = ["v?[0-9]+.[0-9]+.[0-9]+*"];
           workflow_dispatch.inputs.tag = {
