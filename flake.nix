@@ -30,8 +30,10 @@
         flake-compat.follows = "flake-compat";
         git-hooks.inputs.flake-compat.follows = "flake-compat";
         git-hooks.inputs.gitignore.follows = "gitignore";
+        git-hooks.inputs.nixpkgs.follows = "nixpkgs-devenv";
         crate2nix.inputs.flake-parts.follows = "flake-parts";
         crate2nix.inputs.flake-compat.follows = "flake-compat";
+        crate2nix.inputs.nixpkgs.follows = "nixpkgs-devenv";
         crate2nix.inputs.crate2nix_stable.inputs.flake-parts.follows = "flake-parts";
         crate2nix.inputs.crate2nix_stable.inputs.flake-compat.follows = "flake-compat";
       };
@@ -53,6 +55,11 @@
         nixpkgs.follows = "nixpkgs";
         flake-parts.follows = "flake-parts";
         treefmt-nix.follows = "treefmt-nix";
+        poetry2nix.inputs.nixpkgs.follows = "nixpkgs";
+        poetry2nix.inputs.systems.follows = "systems";
+        poetry2nix.inputs.treefmt-nix.follows = "treefmt-nix";
+        pyproject-nix.inputs.nixpkgs.follows = "nixpkgs";
+        uv2nix.inputs.nixpkgs.follows = "nixpkgs";
       };
     };
 
@@ -64,6 +71,8 @@
         flake-parts.follows = "flake-parts";
         systems.follows = "systems";
         treefmt-nix.follows = "treefmt-nix";
+        disko.inputs.nixpkgs.follows = "nixpkgs";
+        sops-nix.inputs.nixpkgs.follows = "nixpkgs";
       };
     };
 
