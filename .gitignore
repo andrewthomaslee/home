@@ -1,7 +1,9 @@
+.secrets
+
 result*
 result-*
 .direnv
-.secrets
+.devenv
 
 .terraform*
 terraform.tfstate*
@@ -11,6 +13,4 @@ config.tf.json
 .env
 !*.env.schema
 
-.devenv
 .devcontainer.json
-!.devcontainer/.devcontainer.json

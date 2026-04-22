@@ -6,9 +6,14 @@
     then devenvRootFileContent
     else "${inputs.devenv-root}";
 in {
-  perSystem = {pkgs, ...}: let
+  perSystem = {
+    pkgs,
+    lib,
+    ...
+  }: let
     # ------ Common Configuration ------ #
     packages = with pkgs.unstable-devenv; [
+      bash
       bun
     ];
     shellHook = ''
@@ -21,10 +26,6 @@ in {
     # Activate: `nix develop .#pure`
     devShells.pure = pkgs.mkShell {
       inherit shellHook packages;
-      buildInputs = with pkgs.unstable-devenv; [
-        bashInteractive
-        bash
-      ];
     };
 
     # ------ Devenv Dev Shell ------ #
@@ -34,17 +35,7 @@ in {
       inherit packages;
       enterShell = shellHook;
       devenv = {inherit root;};
-      devcontainer = {
-        enable = true;
-        settings = {
-          updateContentCommand = "";
-          postCreateCommand = "git config --global --add safe.directory /workspaces/home";
-          customizations.vscode.extensions = [
-            "mkhl.direnv"
-            "jnoortheen.nix-ide"
-          ];
-        };
-      };
+      languages.nix.enable = true;
 
       # Commands to run for tests
       enterTest = ''
