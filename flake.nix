@@ -40,7 +40,10 @@
     };
     nix2container = {
       url = "github:nlewo/nix2container";
-      inputs.nixpkgs.follows = "nixpkgs-devenv";
+      inputs = {
+        nixpkgs.follows = "nixpkgs-devenv";
+        flake-utils.inputs.systems.follows = "systems";
+      };
     };
     mk-shell-bin.url = "github:rrbutani/nix-mk-shell-bin";
     devenv-root = {
@@ -81,6 +84,10 @@
       url = "github:nix-community/home-manager";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    # Global follows for nested deps
+    flake-utils.url = "github:numtide/flake-utils";
+    flake-utils.inputs.systems.follows = "systems";
   };
 
   nixConfig = {
