@@ -17,7 +17,7 @@ in {
   }: {
     _module.args = {
       inherit customLib;
-      # Make pkgs.unstable available in perSystem evaluation as well
+      # Make pkgs available in perSystem evaluation as well
       pkgs = import inputs.nixpkgs {
         inherit system;
         overlays = [self.overlays.default];
@@ -26,7 +26,7 @@ in {
     };
 
     # Formatter
-    formatter = pkgs.unstable.alejandra;
+    formatter = pkgs.alejandra;
     # Mkdocs
     documentation.mkdocs-root = ../documentation;
   };

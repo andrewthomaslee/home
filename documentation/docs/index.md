@@ -9,7 +9,7 @@
     .env.schema   # Varlock schema
 
     lib/          # Custom functions accessible via `lib.custom`
-    overlays/     # Overlays for Nixpkgs. Adds `pkgs.unstable` and `pkgs.devenv-unstable`
+    overlays/     # Overlays for Nixpkgs. Adds `pkgs.devenv-unstable`
     templates/    # Templates for NixOS
 
     flake-parts/        # Top-level Flake Part files

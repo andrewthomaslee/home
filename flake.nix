@@ -6,10 +6,14 @@
     determinate.url = "https://flakehub.com/f/DeterminateSystems/determinate/*";
 
     # Nixpkgs
-    nixpkgs.url = "https://flakehub.com/f/NixOS/nixpkgs/*";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     nixpkgs-devenv.url = "github:cachix/devenv-nixpkgs/rolling";
-    nixpkgs-unstable.url = "github:NixOS/nixpkgs/nixos-unstable";
-    nixpkgs-clan.follows = "clan-core/nixpkgs";
+
+    # Utility Flakes
+    systems.url = "github:nix-systems/default";
+    flake-compat.url = "github:edolstra/flake-compat";
+    gitignore.url = "github:hercules-ci/gitignore.nix";
+    treefmt-nix.url = "github:numtide/treefmt-nix";
 
     # Flake-Parts
     # https://flake.parts/index.html
@@ -23,8 +27,13 @@
       inputs = {
         nixpkgs.follows = "nixpkgs-devenv";
         flake-parts.follows = "flake-parts";
+        flake-compat.follows = "flake-compat";
+        git-hooks.inputs.flake-compat.follows = "flake-compat";
+        git-hooks.inputs.gitignore.follows = "gitignore";
         crate2nix.inputs.flake-parts.follows = "flake-parts";
+        crate2nix.inputs.flake-compat.follows = "flake-compat";
         crate2nix.inputs.crate2nix_stable.inputs.flake-parts.follows = "flake-parts";
+        crate2nix.inputs.crate2nix_stable.inputs.flake-compat.follows = "flake-compat";
       };
     };
     nix2container = {
@@ -41,21 +50,27 @@
     mkdocs-flake = {
       url = "github:applicative-systems/mkdocs-flake";
       inputs = {
-        nixpkgs.follows = "nixpkgs-unstable";
+        nixpkgs.follows = "nixpkgs";
         flake-parts.follows = "flake-parts";
+        treefmt-nix.follows = "treefmt-nix";
       };
     };
 
     # Clan.lol
     clan-core = {
       url = "https://git.clan.lol/clan/clan-core/archive/main.tar.gz";
-      inputs.flake-parts.follows = "flake-parts";
+      inputs = {
+        nixpkgs.follows = "nixpkgs";
+        flake-parts.follows = "flake-parts";
+        systems.follows = "systems";
+        treefmt-nix.follows = "treefmt-nix";
+      };
     };
 
     # Home-manager
     home-manager = {
-      url = "github:nix-community/home-manager/release-25.11";
-      inputs.nixpkgs.follows = "nixpkgs-clan";
+      url = "github:nix-community/home-manager";
+      inputs.nixpkgs.follows = "nixpkgs";
     };
   };
 
