@@ -9,12 +9,14 @@ in {
   perSystem = {
     pkgs,
     lib,
+    inputs',
     ...
   }: let
     # ------ Common Configuration ------ #
     packages = with pkgs.unstable-devenv; [
       bash
       bun
+      inputs'.clan-core.packages.clan-cli
     ];
     shellHook = ''
       export REPO_ROOT

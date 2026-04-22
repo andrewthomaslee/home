@@ -9,6 +9,7 @@
     nixpkgs.url = "https://flakehub.com/f/NixOS/nixpkgs/*";
     nixpkgs-devenv.url = "github:cachix/devenv-nixpkgs/rolling";
     nixpkgs-unstable.url = "github:NixOS/nixpkgs/nixos-unstable";
+    nixpkgs-clan.follows = "clan-core/nixpkgs";
 
     # Flake-Parts
     # https://flake.parts/index.html
@@ -44,11 +45,37 @@
         flake-parts.follows = "flake-parts";
       };
     };
+
+    # Clan.lol
+    clan-core = {
+      url = "https://git.clan.lol/clan/clan-core/archive/main.tar.gz";
+      inputs.flake-parts.follows = "flake-parts";
+    };
+
+    # Home-manager
+    home-manager = {
+      url = "github:nix-community/home-manager/release-25.11";
+      inputs.nixpkgs.follows = "nixpkgs-clan";
+    };
   };
 
   nixConfig = {
-    extra-trusted-public-keys = ["devenv.cachix.org-1:w1cLUi8dv3hnoSPGAuibQv+f9TZLr6cv/Hm9XgU50cw=" "cache.flakehub.com-3:hJuILl5sVK4iKm86JzgdXW12Y2Hwd5G07qKtHTOcDCM="];
-    extra-substituters = ["https://devenv.cachix.org" "https://install.determinate.systems"];
+    extra-trusted-public-keys = [
+      "cache.flakehub.com-3:hJuILl5sVK4iKm86JzgdXW12Y2Hwd5G07qKtHTOcDCM="
+      "devenv.cachix.org-1:w1cLUi8dv3hnoSPGAuibQv+f9TZLr6cv/Hm9XgU50cw="
+      "cache.clan.lol-1:3KztgSAB5R1M+Dz7vzkBGzXdodizbgLXGXKXlcQLA28="
+      "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
+      "nix-cache:4FILs79Adxn/798F8qk2PC1U8HaTlaPqptwNJrXNA1g="
+      "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
+    ];
+    extra-substituters = [
+      "https://install.determinate.systems"
+      "https://devenv.cachix.org"
+      "https://cache.clan.lol"
+      "https://nix-community.cachix.org"
+      "https://cache.lounge.rocks/nix-cache"
+      "https://cache.nixos.org"
+    ];
   };
 
   outputs = inputs:
@@ -61,6 +88,8 @@
         (inputs.import-tree ./flake-parts)
         inputs.devenv.flakeModule
         inputs.mkdocs-flake.flakeModules.default
+        inputs.clan-core.flakeModules.default
+        inputs.home-manager.flakeModules.home-manager
       ];
     };
 }

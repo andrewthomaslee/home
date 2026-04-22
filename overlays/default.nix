@@ -14,4 +14,10 @@
     inherit (final.stdenv.hostPlatform) system;
     config.allowUnfree = true;
   };
+
+  # add clan branch of nixpkgs accessable as `pkgs.unstable-clan`
+  unstable-clan = import inputs.nixpkgs-clan {
+    inherit (final.stdenv.hostPlatform) system;
+    config.allowUnfree = true;
+  };
 }
