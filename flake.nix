@@ -42,7 +42,7 @@
       url = "github:nlewo/nix2container";
       inputs = {
         nixpkgs.follows = "nixpkgs-devenv";
-        flake-utils.inputs.systems.follows = "systems";
+        flake-utils.follows = "flake-utils";
       };
     };
     mk-shell-bin.url = "github:rrbutani/nix-mk-shell-bin";
@@ -61,6 +61,7 @@
         poetry2nix.inputs.nixpkgs.follows = "nixpkgs";
         poetry2nix.inputs.systems.follows = "systems";
         poetry2nix.inputs.treefmt-nix.follows = "treefmt-nix";
+        poetry2nix.inputs.flake-utils.follows = "flake-utils";
         pyproject-nix.inputs.nixpkgs.follows = "nixpkgs";
         uv2nix.inputs.nixpkgs.follows = "nixpkgs";
       };
