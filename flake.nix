@@ -25,6 +25,13 @@
         crate2nix.inputs.nixpkgs.follows = "nixpkgs-devenv";
         crate2nix.inputs.crate2nix_stable.inputs.flake-parts.follows = "flake-parts";
         crate2nix.inputs.crate2nix_stable.inputs.flake-compat.follows = "flake-compat";
+        nixd.inputs.nixpkgs.follows = "nixpkgs-devenv";
+        nixd.inputs.treefmt-nix.follows = "treefmt-nix";
+        cachix.inputs.nixpkgs.follows = "nixpkgs-devenv";
+        cachix.inputs.flake-compat.follows = "flake-compat";
+        pre-commit-hooks.inputs.nixpkgs.follows = "nixpkgs-devenv";
+        pre-commit-hooks.inputs.flake-compat.follows = "flake-compat";
+        pre-commit-hooks.inputs.gitignore.follows = "gitignore";
       };
     };
     nix2container = {
@@ -65,6 +72,7 @@
         treefmt-nix.follows = "treefmt-nix";
         disko.inputs.nixpkgs.follows = "nixpkgs";
         sops-nix.inputs.nixpkgs.follows = "nixpkgs";
+        nix-darwin.inputs.nixpkgs.follows = "nixpkgs";
       };
     };
 
