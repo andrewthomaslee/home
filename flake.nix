@@ -9,17 +9,6 @@
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     nixpkgs-devenv.url = "github:cachix/devenv-nixpkgs/rolling";
 
-    # Utility Flakes
-    systems.url = "github:nix-systems/default";
-    flake-compat.url = "github:edolstra/flake-compat";
-    gitignore.url = "github:hercules-ci/gitignore.nix";
-    treefmt-nix.url = "github:numtide/treefmt-nix";
-
-    # Flake-Parts
-    # https://flake.parts/index.html
-    flake-parts.follows = "determinate/nix/flake-parts";
-    import-tree.url = "github:vic/import-tree";
-
     # Devenv
     # https://devenv.sh/guides/using-with-flake-parts/
     devenv = {
@@ -42,7 +31,6 @@
       url = "github:nlewo/nix2container";
       inputs = {
         nixpkgs.follows = "nixpkgs-devenv";
-        flake-utils.follows = "flake-utils";
       };
     };
     mk-shell-bin.url = "github:rrbutani/nix-mk-shell-bin";
@@ -86,9 +74,23 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    # Global follows for nested deps
-    flake-utils.url = "github:numtide/flake-utils";
-    flake-utils.inputs.systems.follows = "systems";
+    # Utility Flakes
+    flake-parts.follows = "determinate/nix/flake-parts";
+    import-tree.url = "github:vic/import-tree";
+    systems.url = "github:nix-systems/default";
+    flake-compat.url = "github:edolstra/flake-compat";
+    flake-utils = {
+      url = "github:numtide/flake-utils";
+      inputs.systems.follows = "systems";
+    };
+    gitignore = {
+      url = "github:hercules-ci/gitignore.nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+    treefmt-nix = {
+      url = "github:numtide/treefmt-nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   nixConfig = {
