@@ -1,0 +1,77 @@
+name: Publish Flake
+
+on:
+  push:
+    tags:
+      - v?[0-9]+.[0-9]+.[0-9]+*
+
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: The existing tag to publish to FlakeHub
+        type: string
+        required: true
+
+jobs:
+  flakehub:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6.0.2
+        with:
+          persist-credentials: false
+          ref: ${{ (inputs.tag != null) && format('refs/tags/{0}', inputs.tag) || '' }}
+
+      - name: Install Nix  
+        uses: DeterminateSystems/determinate-nix-action@main
+
+      - name: Nix Cache
+        uses: DeterminateSystems/magic-nix-cache-action@main
+
+      - name: Publish to FlakeHub
+        uses: DeterminateSystems/flakehub-push@main
+        with:
+          visibility: public
+          name: andrewthomaslee/home
+          tag: ${{ inputs.tag }}
+          include-output-paths: true
+
+  mkdocs:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: flakehub
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6.0.2
+        with:
+          ref: ${{ (inputs.tag != null) && format('refs/tags/{0}', inputs.tag) || '' }}
+
+      - name: Install Nix  
+        uses: DeterminateSystems/determinate-nix-action@main
+
+      - name: Nix Cache
+        uses: DeterminateSystems/magic-nix-cache-action@main
+
+      - name: Build documentation
+        run: nix build .#documentation
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v6.0.0
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v5.0.0
+        with:
+          path: './result'
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v5.0.0

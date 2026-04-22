@@ -1,0 +1,25 @@
+{
+  "build": {
+    "dockerfile": "Dockerfile",
+    "context": "..",
+    "options": [
+      "--secret",
+      "id=FLAKEHUB_TOKEN,env=FLAKEHUB_TOKEN"
+    ]
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "mkhl.direnv",
+        "jnoortheen.nix-ide"
+      ]
+    }
+  },
+  "mounts": [
+    "source=nix-store,target=/nix,type=volume"
+  ],
+  "overrideCommand": true,
+  "postCreateCommand": "git config --global --add safe.directory /workspaces/home",
+  "remoteUser": "root",
+  "updateContentCommand": ""
+}

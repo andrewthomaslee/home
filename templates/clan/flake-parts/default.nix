@@ -134,10 +134,6 @@ in {
         path = ../templates/minimal;
         description = "Minimal Dendritic Flake";
       };
-      clan = {
-        path = ../templates/clan;
-        description = "Dendritic Clan Flake";
-      };
     };
 
     # --- Clan Configuration ------ #
