@@ -205,65 +205,6 @@ in {
           xdg
         ];
       };
-
-      # ------ Home Profiles ------ #
-      # For Andrew's PCs
-      developer = {
-        imports = [self.homeModules.default];
-        config = {
-          # homeSpec options
-          homeSpec = {
-            xdg.enable = true;
-            programs = {
-              tmux.enable = true;
-              direnv.enable = true;
-              docker.enable = true;
-              firefox.enable = true;
-              ghostty.enable = true;
-              git.enable = true;
-              go.enable = true;
-              k9s.enable = true;
-              ksshaskpass.enable = true;
-              media.enable = true;
-              shell.enable = true;
-              ssh.enable = true;
-              starship.enable = true;
-              uv.enable = true;
-              vscode.enable = true;
-            };
-          };
-        };
-      };
-      # For Headless Servers
-      server = {
-        imports = [self.homeModules.default];
-        config = {
-          # homeSpec options
-          homeSpec = {
-            xdg.enable = true;
-            programs = {
-              tmux.enable = true;
-              shell.enable = true;
-              ssh.enable = true;
-              starship.enable = true;
-            };
-          };
-        };
-      };
-      # For Other's PCs
-      normal = {
-        imports = [self.homeModules.default];
-        config = {
-          # homeSpec options
-          homeSpec = {
-            xdg.enable = true;
-            programs = {
-              firefox.enable = true;
-              media.enable = true;
-            };
-          };
-        };
-      };
     };
 
     # ------ Overlays ------ #

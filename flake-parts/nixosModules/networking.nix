@@ -12,7 +12,7 @@
 
     config = lib.mkIf cfg.enable {
       networking = {
-        useDHCP = true;
+        useDHCP = lib.mkDefault true;
         networkmanager.enable = true;
       };
     };
