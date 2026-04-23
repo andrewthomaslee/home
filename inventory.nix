@@ -25,19 +25,19 @@
     developer = {
       module.name = "importer";
       roles.default.tags.developer = {};
-      roles.default.extraModules = [self.nixosModules.developer];
+      roles.default.extraModules = [self.nixosModules.profile-developer];
     };
     # For Headless Servers
     server = {
       module.name = "importer";
       roles.default.tags.server = {};
-      roles.default.extraModules = [self.nixosModules.server];
+      roles.default.extraModules = [self.nixosModules.profile-server];
     };
     # For Other's PCs
     normal = {
       module.name = "importer";
       roles.default.tags.normal = {};
-      roles.default.extraModules = [self.nixosModules.normal];
+      roles.default.extraModules = [self.nixosModules.profile-normal];
     };
 
     # --- Create Users --- #

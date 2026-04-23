@@ -9,7 +9,7 @@
     nixosModules = {
       # --- Developer --- #
       # For Andrew's PCs
-      developer = {
+      profile-developer = {
         imports = [self.nixosModules.default];
         config = {
           # hostSpec options
@@ -35,8 +35,8 @@
           };
           # Home Profile
           home-manager.users = {
-            netsa = self.homeModules.developer;
-            root = self.homeModules.developer;
+            netsa = self.homeModules.profile-developer;
+            root = self.homeModules.profile-developer;
           };
           # nixos options
           security.sudo.wheelNeedsPassword = false;
@@ -45,7 +45,7 @@
       };
       # --- Server --- #
       # For Headless Servers
-      server = {
+      profile-server = {
         imports = [self.nixosModules.default];
         config = {
           # hostSpec options
@@ -63,14 +63,14 @@
           };
           # Home Profile
           home-manager.users = {
-            netsa = self.homeModules.server;
-            root = self.homeModules.server;
+            netsa = self.homeModules.profile-server;
+            root = self.homeModules.profile-server;
           };
         };
       };
       # --- Normal --- #
       # For Other's PCs
-      normal = {
+      profile-normal = {
         imports = [self.nixosModules.default];
         config = {
           # hostSpec options
@@ -92,8 +92,8 @@
           };
           # Home Profile
           home-manager.users = {
-            netsa = self.homeModules.normal;
-            root = self.homeModules.normal;
+            netsa = self.homeModules.profile-normal;
+            root = self.homeModules.profile-normal;
           };
         };
       };
@@ -103,7 +103,7 @@
     homeModules = {
       # --- Developer --- #
       # For Andrew's PCs
-      developer = {
+      profile-developer = {
         imports = [self.homeModules.default];
         config = {
           # homeSpec options
@@ -131,7 +131,7 @@
       };
       # --- Server --- #
       # For Headless Servers
-      server = {
+      profile-server = {
         imports = [self.homeModules.default];
         config = {
           # homeSpec options
@@ -148,7 +148,7 @@
       };
       # --- Normal --- #
       # For Other's PCs
-      normal = {
+      profile-normal = {
         imports = [self.homeModules.default];
         config = {
           # homeSpec options
