@@ -1,11 +1,9 @@
-{
-  disko.devices = let
-    nvme0n1 = "/dev/disk/by-id/nvme-WD_Blue_SN5100_500GB_25492N805944";
-  in {
+{lib, ...}: {
+  disko.devices = lib.mkForce {
     disk = {
       nvme0n1 = {
         name = "nvme0n1";
-        device = nvme0n1;
+        device = "/dev/disk/by-id/nvme-WD_Blue_SN5100_500GB_25492N805944";
         type = "disk";
         content = {
           type = "gpt";
