@@ -34,28 +34,101 @@ in {
   flake = {
     # ------ NixOS Modules ------ #
     nixosModules.default = {pkgs, ...}: {
+      # args passed to all modules
       _module.args = {inherit customLib;};
 
+      # pkgs
       nixpkgs = {
         overlays = [self.overlays.default];
-        config.allowUnfree = true;
+        config.allowUnfree = lib.mkDefault true;
+        hostPlatform = lib.mkDefault "x86_64-linux";
       };
 
-      imports = [
-        inputs.determinate.nixosModules.default
-        inputs.home-manager.nixosModules.home-manager
-      ];
+      # nixosModules imported
+      imports =
+        [
+          inputs.determinate.nixosModules.default
+          inputs.home-manager.nixosModules.home-manager
+        ]
+        # Import all NixOS Modules from `flake-parts/nixosModules`
+        ++ (with self.nixosModules; [
+          motd
+          bluetooth
+          clan
+          docker
+          kde
+          networking
+          nix
+          openssh
+          sound
+          storagebox
+          tailscale
+          wayland
+        ]);
 
+      # acme
+      security.acme = {
+        acceptTerms = true;
+        defaults.email = lib.mkDefault "andrewthomaslee.business@gmail.com";
+      };
+
+      # Often hangs
+      systemd.services = {
+        NetworkManager-wait-online.enable = lib.mkForce false;
+        systemd-networkd-wait-online.enable = lib.mkForce false;
+      };
+
+      # Home-manager
       home-manager = {
         useUserPackages = true;
         backupFileExtension = "hm-backup";
         extraSpecialArgs = {inherit customLib;};
       };
 
-      nixpkgs.hostPlatform = lib.mkDefault "x86_64-linux";
-      boot.loader.grub.enable = lib.mkDefault true;
-      boot.loader.grub.efiSupport = lib.mkDefault true;
-      boot.loader.grub.efiInstallAsRemovable = lib.mkDefault true;
+      # localization
+      i18n.defaultLocale = "en_US.UTF-8";
+
+      # timezone
+      time.timeZone = lib.mkDefault "America/Chicago";
+
+      # Services
+      services = {
+        # Limit log size for journal
+        journald.extraConfig = lib.mkDefault "SystemMaxUse=3G";
+        # Automatically update firmware
+        fwupd.enable = true;
+        # Enable ACPI
+        acpid.enable = true;
+      };
+
+      # Hardware
+      hardware.enableRedistributableFirmware = true;
+
+      # System Packages
+      environment = {
+        enableAllTerminfo = true;
+        localBinInPath = true;
+        systemPackages = with pkgs; [
+          git
+          neovim
+          rsync
+        ];
+      };
+
+      # Boot
+      boot = {
+        tmp = {
+          useTmpfs = false;
+          cleanOnBoot = true;
+        };
+        loader.grub = {
+          enable = lib.mkDefault true;
+          efiSupport = lib.mkDefault true;
+          efiInstallAsRemovable = lib.mkDefault true;
+        };
+      };
+
+      # disk
       disko.devices = lib.mkDefault {
         disk = {
           main = {
@@ -96,7 +169,7 @@ in {
       };
     };
 
-    # ------ Home-manager Modules ------ #
+    # ------ Home-manager Default Module ------ #
     homeModules = {
       # Default Home-manager Module for all users
       default = {
@@ -106,18 +179,90 @@ in {
             self.overlays.default
           ];
         };
-        home.stateVersion = "25.11";
+        home = {
+          stateVersion = "25.11";
+          keyboard.layout = "us";
+        };
         programs.home-manager.enable = true;
-      };
-      # Root User's Home-manager Module
-      root = {
-        imports = [
-          self.homeModules.default
-          {
-            home.username = "root";
-            home.homeDirectory = "/root";
-          }
+
+        # Import all Home-manager Modules from `flake-parts/homeModules`
+        imports = with self.homeModules; [
+          tmux
+          direnv
+          docker
+          firefox
+          ghostty
+          git
+          go
+          k9s
+          ksshaskpass
+          media
+          shell
+          ssh
+          starship
+          uv
+          vscode
+          xdg
         ];
+      };
+
+      # ------ Home Profiles ------ #
+      # For Andrew's PCs
+      developer = {
+        imports = [self.homeModules.default];
+        config = {
+          # homeSpec options
+          homeSpec = {
+            xdg.enable = true;
+            programs = {
+              tmux.enable = true;
+              direnv.enable = true;
+              docker.enable = true;
+              firefox.enable = true;
+              ghostty.enable = true;
+              git.enable = true;
+              go.enable = true;
+              k9s.enable = true;
+              ksshaskpass.enable = true;
+              media.enable = true;
+              shell.enable = true;
+              ssh.enable = true;
+              starship.enable = true;
+              uv.enable = true;
+              vscode.enable = true;
+            };
+          };
+        };
+      };
+      # For Headless Servers
+      server = {
+        imports = [self.homeModules.default];
+        config = {
+          # homeSpec options
+          homeSpec = {
+            xdg.enable = true;
+            programs = {
+              tmux.enable = true;
+              shell.enable = true;
+              ssh.enable = true;
+              starship.enable = true;
+            };
+          };
+        };
+      };
+      # For Other's PCs
+      normal = {
+        imports = [self.homeModules.default];
+        config = {
+          # homeSpec options
+          homeSpec = {
+            xdg.enable = true;
+            programs = {
+              firefox.enable = true;
+              media.enable = true;
+            };
+          };
+        };
       };
     };
 
@@ -144,6 +289,9 @@ in {
     clan = {
       inventory = import ../inventory.nix {inherit self inputs customLib;};
       specialArgs = {inherit customLib;};
+      modules = {
+        "@andrewthomaslee/machine-type" = ../clanServices/machine-type;
+      };
     };
   };
 }
