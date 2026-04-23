@@ -33,12 +33,14 @@
               wayland.enable = true;
             };
           };
-          # nixos options
-          security.sudo.wheelNeedsPassword = false;
+          # Home Profile
           home-manager.users = {
             netsa = self.homeModules.developer;
             root = self.homeModules.developer;
           };
+          # nixos options
+          security.sudo.wheelNeedsPassword = false;
+          boot.binfmt.emulatedSystems = ["aarch64-linux"];
         };
       };
       # --- Server --- #
@@ -59,7 +61,7 @@
               storagebox.enable = true;
             };
           };
-          # nixos options
+          # Home Profile
           home-manager.users = {
             netsa = self.homeModules.server;
             root = self.homeModules.server;
@@ -88,7 +90,7 @@
               wayland.enable = true;
             };
           };
-          # nixos options
+          # Home Profile
           home-manager.users = {
             netsa = self.homeModules.normal;
             root = self.homeModules.normal;

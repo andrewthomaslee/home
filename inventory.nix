@@ -10,18 +10,13 @@
   };
 
   machines = {
-    server = {
-      deploy.targetHost = "root@server.ccc";
-      tags = ["server"];
-    };
-    developer = {
-      deploy.targetHost = "root@developer.ccc";
-      tags = ["developer"];
-    };
-    normal = {
-      deploy.targetHost = "root@normal.ccc";
-      tags = ["normal"];
-    };
+    hp-notebook.tags = ["normal"];
+
+    nixos.tags = ["developer"];
+    ghost.tags = ["developer"];
+
+    kamrui-p1.tags = ["server"];
+    hel-1.tags = ["server"];
   };
 
   instances = {
