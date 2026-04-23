@@ -21,6 +21,8 @@ in {
     shellHook = ''
       export REPO_ROOT
       REPO_ROOT=$(git rev-parse --show-toplevel)
+      export CLAN_DIR
+      CLAN_DIR=$REPO_ROOT
       eval "$(bunx varlock load --format shell)"
     '';
   in {
