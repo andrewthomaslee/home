@@ -86,8 +86,5 @@
         hostKeys.rsa.enable = true;
       };
     };
-
-    # https://clan.lol/docs/unstable/services/official/pki
-    pki.roles.default.tags = ["all"];
   };
 }
