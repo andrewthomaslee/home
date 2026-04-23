@@ -36,9 +36,7 @@
     };
     nix2container = {
       url = "github:nlewo/nix2container";
-      inputs = {
-        nixpkgs.follows = "nixpkgs-devenv";
-      };
+      inputs.nixpkgs.follows = "nixpkgs-devenv";
     };
     mk-shell-bin.url = "github:rrbutani/nix-mk-shell-bin";
     devenv-root = {
@@ -53,12 +51,9 @@
         nixpkgs.follows = "nixpkgs";
         flake-parts.follows = "flake-parts";
         treefmt-nix.follows = "treefmt-nix";
-        poetry2nix.inputs.nixpkgs.follows = "nixpkgs";
         poetry2nix.inputs.systems.follows = "systems";
         poetry2nix.inputs.treefmt-nix.follows = "treefmt-nix";
         poetry2nix.inputs.flake-utils.follows = "flake-utils";
-        pyproject-nix.inputs.nixpkgs.follows = "nixpkgs";
-        uv2nix.inputs.nixpkgs.follows = "nixpkgs";
       };
     };
 
@@ -69,9 +64,6 @@
         flake-parts.follows = "flake-parts";
         systems.follows = "systems";
         treefmt-nix.follows = "treefmt-nix";
-        disko.inputs.nixpkgs.follows = "nixpkgs";
-        sops-nix.inputs.nixpkgs.follows = "nixpkgs";
-        nix-darwin.inputs.nixpkgs.follows = "nixpkgs";
       };
     };
 
