@@ -10,13 +10,31 @@
   };
 
   machines = {
-    hp-notebook.tags = ["normal"];
+    # Andrew's PCs
+    nixos = {
+      tags = ["developer"];
+      deploy.targetHost = "root@localhost";
+    };
+    ghost = {
+      tags = ["developer"];
+      deploy.targetHost = "root@localhost";
+    };
 
-    nixos.tags = ["developer"];
-    ghost.tags = ["developer"];
+    # Headless Servers
+    kamrui-p1 = {
+      tags = ["server"];
+      deploy.targetHost = "root@localhost";
+    };
+    hel-1 = {
+      tags = ["server"];
+      deploy.targetHost = "root@localhost";
+    };
 
-    kamrui-p1.tags = ["server"];
-    hel-1.tags = ["server"];
+    # Other's PCs
+    hp-notebook = {
+      tags = ["normal"];
+      deploy.targetHost = "root@localhost";
+    };
   };
 
   instances = {
