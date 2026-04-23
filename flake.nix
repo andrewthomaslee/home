@@ -6,7 +6,7 @@
     determinate.url = "https://flakehub.com/f/DeterminateSystems/determinate/*";
 
     # Nixpkgs
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+    nixpkgs.follows = "clan-core/nixpkgs";
     nixpkgs-devenv.url = "github:cachix/devenv-nixpkgs/rolling";
 
     # Devenv
@@ -66,7 +66,6 @@
     clan-core = {
       url = "https://git.clan.lol/clan/clan-core/archive/main.tar.gz";
       inputs = {
-        nixpkgs.follows = "nixpkgs";
         flake-parts.follows = "flake-parts";
         systems.follows = "systems";
         treefmt-nix.follows = "treefmt-nix";
