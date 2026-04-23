@@ -5,6 +5,10 @@
     # https://docs.determinate.systems/guides/advanced-installation/
     determinate.url = "https://flakehub.com/f/DeterminateSystems/determinate/*";
 
+    # Clan.lol
+    # https://git.clan.lol/clan/clan-core
+    clan-core.url = "https://git.clan.lol/clan/clan-core/archive/main.tar.gz";
+
     # Nixpkgs
     nixpkgs.follows = "clan-core/nixpkgs";
     nixpkgs-devenv.url = "github:cachix/devenv-nixpkgs/rolling";
@@ -13,26 +17,7 @@
     # https://devenv.sh/guides/using-with-flake-parts/
     devenv = {
       url = "github:cachix/devenv";
-      inputs = {
-        nixpkgs.follows = "nixpkgs-devenv";
-        flake-parts.follows = "flake-parts";
-        flake-compat.follows = "flake-compat";
-        git-hooks.inputs.flake-compat.follows = "flake-compat";
-        git-hooks.inputs.gitignore.follows = "gitignore";
-        git-hooks.inputs.nixpkgs.follows = "nixpkgs-devenv";
-        crate2nix.inputs.flake-parts.follows = "flake-parts";
-        crate2nix.inputs.flake-compat.follows = "flake-compat";
-        crate2nix.inputs.nixpkgs.follows = "nixpkgs-devenv";
-        crate2nix.inputs.crate2nix_stable.inputs.flake-parts.follows = "flake-parts";
-        crate2nix.inputs.crate2nix_stable.inputs.flake-compat.follows = "flake-compat";
-        nixd.inputs.nixpkgs.follows = "nixpkgs-devenv";
-        nixd.inputs.treefmt-nix.follows = "treefmt-nix";
-        cachix.inputs.nixpkgs.follows = "nixpkgs-devenv";
-        cachix.inputs.flake-compat.follows = "flake-compat";
-        pre-commit-hooks.inputs.nixpkgs.follows = "nixpkgs-devenv";
-        pre-commit-hooks.inputs.flake-compat.follows = "flake-compat";
-        pre-commit-hooks.inputs.gitignore.follows = "gitignore";
-      };
+      inputs.nixpkgs.follows = "nixpkgs-devenv";
     };
     nix2container = {
       url = "github:nlewo/nix2container";
@@ -47,24 +32,7 @@
     # Mkdocs
     mkdocs-flake = {
       url = "github:applicative-systems/mkdocs-flake";
-      inputs = {
-        nixpkgs.follows = "nixpkgs";
-        flake-parts.follows = "flake-parts";
-        treefmt-nix.follows = "treefmt-nix";
-        poetry2nix.inputs.systems.follows = "systems";
-        poetry2nix.inputs.treefmt-nix.follows = "treefmt-nix";
-        poetry2nix.inputs.flake-utils.follows = "flake-utils";
-      };
-    };
-
-    # Clan.lol
-    clan-core = {
-      url = "https://git.clan.lol/clan/clan-core/archive/main.tar.gz";
-      inputs = {
-        flake-parts.follows = "flake-parts";
-        systems.follows = "systems";
-        treefmt-nix.follows = "treefmt-nix";
-      };
+      inputs.nixpkgs.follows = "nixpkgs";
     };
 
     # Home-manager
@@ -74,22 +42,8 @@
     };
 
     # Utility Flakes
-    flake-parts.follows = "determinate/nix/flake-parts";
+    flake-parts.follows = "clan-core/flake-parts";
     import-tree.url = "github:vic/import-tree";
-    systems.url = "github:nix-systems/default";
-    flake-compat.url = "github:edolstra/flake-compat";
-    flake-utils = {
-      url = "github:numtide/flake-utils";
-      inputs.systems.follows = "systems";
-    };
-    gitignore = {
-      url = "github:hercules-ci/gitignore.nix";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-    treefmt-nix = {
-      url = "github:numtide/treefmt-nix";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
   };
 
   nixConfig = {
