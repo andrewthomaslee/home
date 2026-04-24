@@ -106,5 +106,8 @@
         hostKeys.rsa.enable = true;
       };
     };
+
+    # https://clan.lol/docs/unstable/services/official/emergency-access
+    emergency-access.roles.default.tags = ["all"];
   };
 }
