@@ -25,6 +25,7 @@
 
       services.tailscale = {
         enable = true;
+        package = pkgs.unstable.tailscale;
         openFirewall = true;
         authKeyFile = config.clan.core.vars.generators.tailscale.files.auth_key.path;
         authKeyParameters = {

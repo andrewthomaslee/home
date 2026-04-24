@@ -14,6 +14,7 @@
 
     # Nixpkgs
     nixpkgs.url = "https://flakehub.com/f/NixOS/nixpkgs/0";
+    nixpkgs-unstable.url = "github:nixos/nixpkgs/nixpkgs-unstable";
     nixpkgs-devenv.url = "github:cachix/devenv-nixpkgs/rolling";
 
     # Devenv

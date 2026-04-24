@@ -17,7 +17,10 @@
             clan.enable = true;
             networking = {
               enable = true;
-              tailscale.enable = true;
+              tailscale = {
+                enable = true;
+                systray = true;
+              };
             };
             hardware = {
               bluetooth.enable = true;
@@ -78,7 +81,10 @@
             clan.enable = true;
             networking = {
               enable = true;
-              tailscale.enable = true;
+              tailscale = {
+                enable = true;
+                systray = true;
+              };
             };
             hardware = {
               bluetooth.enable = true;
@@ -132,6 +138,7 @@
             zen-browser
             moscripts
             kubefetch
+            obsidian
           ];
         };
       };

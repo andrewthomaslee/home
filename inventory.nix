@@ -13,7 +13,7 @@
     # Andrew's PCs
     nixos = {
       tags = ["developer"];
-      deploy.targetHost = "root@localhost";
+      deploy.targetHost = "root@nixos.armadillo-frog.ts.net";
     };
     ghost = {
       tags = ["developer"];
