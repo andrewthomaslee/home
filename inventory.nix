@@ -37,6 +37,7 @@
     };
   };
 
+  # --- Clan Services --- #
   instances = {
     # --- Profiles --- #
     # For Andrew's PCs
@@ -96,7 +97,6 @@
       ];
     };
 
-    # --- SSH Keys Services --- #
     # https://clan.lol/docs/unstable/services/official/sshd
     sshd = {
       roles.server.tags = ["all"];
@@ -106,6 +106,9 @@
         hostKeys.rsa.enable = true;
       };
     };
+
+    # https://clan.lol/docs/unstable/services/official/pki
+    pki.roles.default.tags = ["all"];
 
     # https://clan.lol/docs/unstable/services/official/emergency-access
     emergency-access.roles.default.tags = ["all"];
