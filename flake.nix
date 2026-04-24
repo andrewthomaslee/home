@@ -47,6 +47,22 @@
     # Utility Flakes
     flake-parts.follows = "clan-core/flake-parts";
     import-tree.url = "github:vic/import-tree";
+
+    # Zen Browser
+    zen-browser = {
+      url = "github:youwen5/zen-browser-flake";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+    moscripts = {
+      url = "https://flakehub.com/f/andrewthomaslee/moscripts/0.1.0";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+    kubefetch = {
+      url = "https://flakehub.com/f/andrewthomaslee/kubefetch/0.9.0";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   nixConfig = {

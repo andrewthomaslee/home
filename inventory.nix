@@ -74,6 +74,26 @@
         user = "netsa";
         share = true;
       };
+      roles.default.extraModules = [
+        {
+          users.users.netsa = {
+            isNormalUser = true;
+            home = "/home/netsa";
+            description = "andrewthomaslee";
+            extraGroups = [
+              "docker"
+              "wheel"
+              "networkmanager"
+              "audio"
+              "libvirtd"
+              "tty"
+              "dialout"
+              "video"
+              "storage-users"
+            ];
+          };
+        }
+      ];
     };
 
     # --- SSH Keys Services --- #

@@ -103,7 +103,7 @@
     homeModules = {
       # --- Developer --- #
       # For Andrew's PCs
-      profile-developer = {
+      profile-developer = {pkgs, ...}: {
         imports = [self.homeModules.default];
         config = {
           # homeSpec options
@@ -127,6 +127,12 @@
               vscode.enable = true;
             };
           };
+          # Home Options
+          home.packages = with pkgs; [
+            zen-browser
+            moscripts
+            kubefetch
+          ];
         };
       };
       # --- Server --- #
