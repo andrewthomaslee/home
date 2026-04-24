@@ -7,10 +7,13 @@
 
     # Clan.lol
     # https://git.clan.lol/clan/clan-core
-    clan-core.url = "https://git.clan.lol/clan/clan-core/archive/main.tar.gz";
+    clan-core = {
+      url = "https://git.clan.lol/clan/clan-core/archive/main.tar.gz";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
 
     # Nixpkgs
-    nixpkgs.follows = "clan-core/nixpkgs";
+    nixpkgs.url = "https://flakehub.com/f/NixOS/nixpkgs/0";
     nixpkgs-devenv.url = "github:cachix/devenv-nixpkgs/rolling";
 
     # Devenv
@@ -37,7 +40,7 @@
 
     # Home-manager
     home-manager = {
-      url = "github:nix-community/home-manager";
+      url = "github:nix-community/home-manager/release-25.11";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
