@@ -51,20 +51,15 @@ in {
           inputs.home-manager.nixosModules.home-manager
         ]
         # Import all NixOS Modules from `flake-parts/nixosModules`
-        ++ (with self.nixosModules; [
-          motd
-          bluetooth
-          clan
-          docker
-          kde
-          networking
-          nix
-          openssh
-          sound
-          storagebox
-          tailscale
-          wayland
-        ]);
+        # Filter out profile modules and clan modules
+        ++ (lib.attrValues (lib.filterAttrs (
+            n: _:
+              n
+              != "default"
+              && !(lib.hasPrefix "profile-" n)
+              && !(lib.hasPrefix "clan-" n)
+          )
+          self.nixosModules));
 
       # acme
       security.acme = {
@@ -96,13 +91,13 @@ in {
         # Limit log size for journal
         journald.extraConfig = lib.mkDefault "SystemMaxUse=3G";
         # Automatically update firmware
-        fwupd.enable = true;
+        fwupd.enable = lib.mkDefault true;
         # Enable ACPI
-        acpid.enable = true;
+        acpid.enable = lib.mkDefault true;
       };
 
       # Hardware
-      hardware.enableRedistributableFirmware = true;
+      hardware.enableRedistributableFirmware = lib.mkDefault true;
 
       # System Packages
       environment = {
@@ -118,8 +113,8 @@ in {
       # Boot
       boot = {
         tmp = {
-          useTmpfs = false;
-          cleanOnBoot = true;
+          useTmpfs = lib.mkDefault false;
+          cleanOnBoot = lib.mkDefault true;
         };
         loader.grub = {
           enable = lib.mkDefault true;
@@ -186,24 +181,14 @@ in {
         programs.home-manager.enable = true;
 
         # Import all Home-manager Modules from `flake-parts/homeModules`
-        imports = with self.homeModules; [
-          tmux
-          direnv
-          docker
-          firefox
-          ghostty
-          git
-          go
-          k9s
-          ksshaskpass
-          media
-          shell
-          ssh
-          starship
-          uv
-          vscode
-          xdg
-        ];
+        # Filter out profile modules
+        imports = lib.attrValues (lib.filterAttrs (
+            n: _:
+              n
+              != "default"
+              && !(lib.hasPrefix "profile-" n)
+          )
+          self.homeModules);
       };
     };
 
@@ -231,7 +216,6 @@ in {
       inventory = import ../inventory.nix {inherit self inputs customLib;};
       specialArgs = {inherit customLib;};
       modules = {
-        "@andrewthomaslee/machine-type" = ../clanServices/machine-type;
       };
     };
   };

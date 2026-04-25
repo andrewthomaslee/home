@@ -1,11 +1,4 @@
-{inputs, ...}: let
-  # See https://github.com/cachix/devenv/issues/1764
-  devenvRootFileContent = builtins.readFile inputs.devenv-root.outPath;
-  root =
-    if devenvRootFileContent != ""
-    then devenvRootFileContent
-    else "${inputs.devenv-root}";
-in {
+{...}: {
   perSystem = {
     pkgs,
     lib,
@@ -13,9 +6,9 @@ in {
     ...
   }: let
     # ------ Common Configuration ------ #
-    packages = with pkgs.unstable-devenv; [
-      bash
-      bun
+    packages = [
+      pkgs.bash
+      pkgs.unstable.bun
       inputs'.clan-core.packages.clan-cli
     ];
     shellHook = ''
@@ -27,24 +20,9 @@ in {
     '';
   in {
     # ------ Pure Dev Shell ------ #
-    # Activate: `nix develop .#pure`
-    devShells.pure = pkgs.mkShell {
+    # Activate: `nix develop .#default`
+    devShells.default = pkgs.mkShell {
       inherit shellHook packages;
-    };
-
-    # ------ Devenv Dev Shell ------ #
-    # https://devenv.sh/reference/options/
-    # Activate: `direnv allow` or `nix develop --no-pure-eval --override-input devenv-root "file+file://$PWD/.devenv/root"`
-    devenv.shells.default = {
-      inherit packages;
-      enterShell = shellHook;
-      devenv = {inherit root;};
-      languages.nix.enable = true;
-
-      # Commands to run for tests
-      enterTest = ''
-        bun --version
-      '';
     };
   };
 }
