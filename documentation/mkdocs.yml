@@ -6,6 +6,8 @@ repo_name: andrewthomaslee/home
 
 nav:
   - Home: index.md
+  - Clan Services:
+      - Cluster Mesh: clanServices/cluster-mesh.md
   - Flake Parts:
       - Default: flake-parts/default.md
       - Dev Shells: flake-parts/devShells.md
