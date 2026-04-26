@@ -63,13 +63,13 @@
     "Cardinal-Components-API": {
       "flake": false,
       "locked": {
-        "narHash": "sha256-oUWC7QQ43LgK7qr/XjzCB2t0SYaj4Fg7iRckbdAFASE=",
+        "narHash": "sha256-Cv1odL1IwEAvaMchSSzHdj1Ybbl0eqnoDR8SuSWogGk=",
         "type": "file",
-        "url": "https://cdn.modrinth.com/data/K01OU20C/versions/tEsBSUgb/cardinal-components-api-7.3.0.jar"
+        "url": "https://cdn.modrinth.com/data/K01OU20C/versions/O2RJYZwD/cardinal-components-api-7.3.1.jar"
       },
       "original": {
         "type": "file",
-        "url": "https://cdn.modrinth.com/data/K01OU20C/versions/tEsBSUgb/cardinal-components-api-7.3.0.jar"
+        "url": "https://cdn.modrinth.com/data/K01OU20C/versions/O2RJYZwD/cardinal-components-api-7.3.1.jar"
       }
     },
     "Cloth-Config-API": {
@@ -339,13 +339,13 @@
     "Open-Parties-and-Claims": {
       "flake": false,
       "locked": {
-        "narHash": "sha256-KCbF8ReniHOv6HuMQAEv8kmu62Srgt+kE9R1VNWw5NY=",
+        "narHash": "sha256-w1we1NtDWGptFyX2BDjfxtpEH+z88suDe45cuUnb9n4=",
         "type": "file",
-        "url": "https://cdn.modrinth.com/data/gF3BGWvG/versions/xE2Whg8K/open-parties-and-claims-fabric-1.21.11-0.25.8.jar"
+        "url": "https://cdn.modrinth.com/data/gF3BGWvG/versions/JkiXvTq4/open-parties-and-claims-fabric-1.21.11-0.26.2.jar"
       },
       "original": {
         "type": "file",
-        "url": "https://cdn.modrinth.com/data/gF3BGWvG/versions/xE2Whg8K/open-parties-and-claims-fabric-1.21.11-0.25.8.jar"
+        "url": "https://cdn.modrinth.com/data/gF3BGWvG/versions/JkiXvTq4/open-parties-and-claims-fabric-1.21.11-0.26.2.jar"
       }
     },
     "Player-Roles": {

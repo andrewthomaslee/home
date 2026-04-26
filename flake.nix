@@ -89,7 +89,7 @@
     Cardinal-Components-API = {
       # Travelers-Backpack Dependency
       # https://modrinth.com/mod/cardinal-components-api
-      url = "https://cdn.modrinth.com/data/K01OU20C/versions/tEsBSUgb/cardinal-components-api-7.3.0.jar";
+      url = "https://cdn.modrinth.com/data/K01OU20C/versions/O2RJYZwD/cardinal-components-api-7.3.1.jar";
       flake = false;
     };
     Cloth-Config-API = {
@@ -107,7 +107,7 @@
     };
     Open-Parties-and-Claims = {
       # https://modrinth.com/mod/open-parties-and-claims
-      url = "https://cdn.modrinth.com/data/gF3BGWvG/versions/xE2Whg8K/open-parties-and-claims-fabric-1.21.11-0.25.8.jar";
+      url = "https://cdn.modrinth.com/data/gF3BGWvG/versions/JkiXvTq4/open-parties-and-claims-fabric-1.21.11-0.26.2.jar";
       flake = false;
     };
     Elytra-Trims = {
