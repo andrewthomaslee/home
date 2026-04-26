@@ -23,17 +23,17 @@
     # Headless Servers
     kamrui-p1 = {
       tags = ["server"];
-      deploy.targetHost = "root@localhost";
+      deploy.targetHost = "root@kamrui-p1.armadillo-frog.ts.net";
     };
     hel-1 = {
       tags = ["server"];
-      deploy.targetHost = "root@localhost";
+      deploy.targetHost = "root@hel-1.armadillo-frog.ts.net";
     };
 
     # Other's PCs
     hp-notebook = {
       tags = ["normal"];
-      deploy.targetHost = "root@localhost";
+      deploy.targetHost = "root@hp-notebook.armadillo-frog.ts.net";
     };
   };
 
