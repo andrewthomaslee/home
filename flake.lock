@@ -459,13 +459,13 @@
     "Travelers-Backpack": {
       "flake": false,
       "locked": {
-        "narHash": "sha256-SVnCrwXYQGlgb1u/Xprp9Gdi6aIAkEPva7/elkFzb7E=",
+        "narHash": "sha256-RNO2/EHEYumm/kUkNm9pNMaJPkdn4wSdhh6tErFHB00=",
         "type": "file",
-        "url": "https://cdn.modrinth.com/data/rlloIFEV/versions/jDSDEMgY/travelersbackpack-fabric-1.21.11-10.11.5.jar"
+        "url": "https://cdn.modrinth.com/data/rlloIFEV/versions/XbEGJQSG/travelersbackpack-fabric-1.21.11-10.11.9.jar"
       },
       "original": {
         "type": "file",
-        "url": "https://cdn.modrinth.com/data/rlloIFEV/versions/jDSDEMgY/travelersbackpack-fabric-1.21.11-10.11.5.jar"
+        "url": "https://cdn.modrinth.com/data/rlloIFEV/versions/XbEGJQSG/travelersbackpack-fabric-1.21.11-10.11.9.jar"
       }
     },
     "Tree-Harvester": {

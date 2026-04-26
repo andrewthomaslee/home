@@ -83,7 +83,7 @@
     };
     Travelers-Backpack = {
       # https://modrinth.com/mod/travelersbackpack
-      url = "https://cdn.modrinth.com/data/rlloIFEV/versions/jDSDEMgY/travelersbackpack-fabric-1.21.11-10.11.5.jar";
+      url = "https://cdn.modrinth.com/data/rlloIFEV/versions/XbEGJQSG/travelersbackpack-fabric-1.21.11-10.11.9.jar";
       flake = false;
     };
     Cardinal-Components-API = {
