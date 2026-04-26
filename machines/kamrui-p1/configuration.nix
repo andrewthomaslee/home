@@ -1,4 +1,7 @@
 {pkgs, ...}: {
+  hostSpec = {
+    services.motd.sshMotd = builtins.readFile ./sshMotd.sh;
+  };
   # Enable GPU acceleration
   hardware.graphics = {
     enable = true;
