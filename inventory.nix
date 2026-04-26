@@ -17,7 +17,7 @@
     };
     ghost = {
       tags = ["developer"];
-      deploy.targetHost = "root@localhost";
+      deploy.targetHost = "root@ghost.armadillo-frog.ts.net";
     };
 
     # Headless Servers
@@ -60,6 +60,7 @@
     };
 
     # --- Create Users --- #
+    # Admin
     root = {
       module.name = "users";
       roles.default.tags = ["all"];
@@ -68,6 +69,7 @@
         share = true;
       };
     };
+    # Default User
     netsa = {
       module.name = "users";
       roles.default.tags = ["all"];
