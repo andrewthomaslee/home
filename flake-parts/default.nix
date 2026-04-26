@@ -215,7 +215,9 @@ in {
     clan = {
       inventory = import ../inventory.nix {inherit self inputs customLib;};
       specialArgs = {inherit customLib inputs self;};
-      modules = {};
+      modules = {
+        "@andrewthomaslee/cluster-mesh" = ../clanServices/cluster-mesh;
+      };
     };
   };
 }

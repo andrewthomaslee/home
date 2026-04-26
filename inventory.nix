@@ -114,5 +114,25 @@
 
     # https://clan.lol/docs/unstable/services/official/emergency-access
     emergency-access.roles.default.tags = ["all"];
+
+    # Cluster Mesh
+    cm = {
+      module.name = "@andrewthomaslee/cluster-mesh";
+      module.input = "self";
+      roles.peer.machines = {
+        kamrui-p1.settings = {
+          endpoint = "kamrui-p1.andrewlee.fun";
+          port = 51823;
+          ipv4 = "10.67.67.1";
+          ipv6 = "fd67:67::1";
+        };
+        hel-1.settings = {
+          endpoint = "hel-1.andrewlee.cloud";
+          port = 51820;
+          ipv4 = "10.67.67.2";
+          ipv6 = "fd67:67::2";
+        };
+      };
+    };
   };
 }
