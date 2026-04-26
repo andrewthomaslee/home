@@ -507,13 +507,13 @@
     "Vein-Miner": {
       "flake": false,
       "locked": {
-        "narHash": "sha256-YBN4p4xdC7KjPEJMIVerkE2VQXEQzCMTb5jCx8LU5r0=",
+        "narHash": "sha256-ZN27VjnRzpVtUu1mTgdxWg5gXd4UO95gGa8CaMsGdY0=",
         "type": "file",
-        "url": "https://cdn.modrinth.com/data/OhduvhIc/versions/SMDUhqTN/veinminer-fabric-2.5.2.jar"
+        "url": "https://cdn.modrinth.com/data/OhduvhIc/versions/g7E2sCkF/veinminer-fabric-2.6.0.jar"
       },
       "original": {
         "type": "file",
-        "url": "https://cdn.modrinth.com/data/OhduvhIc/versions/SMDUhqTN/veinminer-fabric-2.5.2.jar"
+        "url": "https://cdn.modrinth.com/data/OhduvhIc/versions/g7E2sCkF/veinminer-fabric-2.6.0.jar"
       }
     },
     "Vein-Miner-Enchantment": {

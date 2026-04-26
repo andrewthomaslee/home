@@ -149,7 +149,7 @@
     };
     Vein-Miner = {
       # https://modrinth.com/datapack/veinminer
-      url = "https://cdn.modrinth.com/data/OhduvhIc/versions/SMDUhqTN/veinminer-fabric-2.5.2.jar";
+      url = "https://cdn.modrinth.com/data/OhduvhIc/versions/g7E2sCkF/veinminer-fabric-2.6.0.jar";
       flake = false;
     };
     Vein-Miner-Enchantment = {
