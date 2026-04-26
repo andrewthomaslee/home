@@ -214,7 +214,7 @@ in {
     # --- Clan Configuration ------ #
     clan = {
       inventory = import ../inventory.nix {inherit self inputs customLib;};
-      specialArgs = {inherit customLib;};
+      specialArgs = {inherit customLib inputs self;};
       modules = {};
     };
   };
