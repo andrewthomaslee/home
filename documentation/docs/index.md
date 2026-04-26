@@ -40,42 +40,19 @@ This repository is the home for all my personal NixOS machines.
 $ nix flake show
 ├───apps
 │   └───x86_64-linux
-│       └───watch-documentation: app
-├───checks
-│   └───x86_64-linux
-├───clan unknown flake output
-├───clanInternals unknown flake output
-├───darwinConfigurations
-├───darwinModules
+│       ├───update-flake-show: app: no description
+│       └───watch-documentation: app: Run mkdocs in watch mode over your documentation folder. Automatically rebuilds your docs on changes.
+├───clan: unknown
+├───clanInternals: unknown
+├───darwinConfigurations: unknown
+├───darwinModules: unknown
 ├───devShells
 │   └───x86_64-linux
-│       └───default: development environment
+│       └───default: development environment 'nix-shell'
 ├───formatter
-│   └───x86_64-linux: formatter
-├───homeConfigurations
-├───homeModules
-│   ├───default: Home Manager module
-│   ├───direnv: Home Manager module
-│   ├───docker: Home Manager module
-│   ├───firefox: Home Manager module
-│   ├───ghostty: Home Manager module
-│   ├───git: Home Manager module
-│   ├───go: Home Manager module
-│   ├───k9s: Home Manager module
-│   ├───ksshaskpass: Home Manager module
-│   ├───media: Home Manager module
-│   ├───profile-developer: Home Manager module
-│   ├───profile-normal: Home Manager module
-│   ├───profile-server: Home Manager module
-│   ├───shell: Home Manager module
-│   ├───ssh: Home Manager module
-│   ├───starship: Home Manager module
-│   ├───tmux: Home Manager module
-│   ├───uv: Home Manager module
-│   ├───vscode: Home Manager module
-│   └───xdg: Home Manager module
-├───legacyPackages
-│   └───x86_64-linux omitted (use '--legacy' to show)
+│   └───x86_64-linux: package 'alejandra-4.0.0'
+├───homeConfigurations: unknown
+├───homeModules: unknown
 ├───nixosConfigurations
 │   ├───ghost: NixOS configuration
 │   ├───hel-1: NixOS configuration
@@ -93,6 +70,7 @@ $ nix flake show
 │   ├───default: NixOS module
 │   ├───docker: NixOS module
 │   ├───kde: NixOS module
+│   ├───minecraft: NixOS module
 │   ├───motd: NixOS module
 │   ├───networking: NixOS module
 │   ├───nix: NixOS module
@@ -108,11 +86,12 @@ $ nix flake show
 │   └───default: Nixpkgs overlay
 ├───packages
 │   └───x86_64-linux
-│       └───documentation: package
+│       ├───documentation: package 'mkdocs-flake-documentation'
+│       └───playit: package 'playit-0.17.1'
 └───templates
-    ├───clan: template
-    ├───default: template
-    └───minimal: template
+    ├───clan: template: Dendritic Clan Flake
+    ├───default: template: Dendritic Flake
+    └───minimal: template: Minimal Dendritic Flake
 ```
 
 
