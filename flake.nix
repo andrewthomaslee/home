@@ -15,6 +15,12 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    # Clan.lol Community
+    clan-community = {
+      url = "https://git.clan.lol/clan/clan-community/archive/main.tar.gz";
+      inputs.clan-core.follows = "clan-core";
+    };
+
     # Mkdocs
     mkdocs-flake = {
       url = "github:applicative-systems/mkdocs-flake";

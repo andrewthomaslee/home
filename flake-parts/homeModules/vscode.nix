@@ -159,6 +159,7 @@
                 deniedCommands = [
                   "nix run"
                   "nixos-rebuild"
+                  "sudo"
                 ];
               };
             };

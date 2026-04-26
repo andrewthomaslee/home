@@ -134,11 +134,26 @@
             };
           };
           # Home Options
-          home.packages = with pkgs; [
+          home.packages = with pkgs;
+          with pkgs.unstable; [
             zen-browser
             moscripts
             kubefetch
-            pkgs.unstable.obsidian
+            obsidian
+            usbutils
+            wireguard-tools
+            asciinema
+            prismlauncher
+            tor-browser
+            kalker
+            lazyssh
+            lazyjournal
+            jq
+            yq
+            httpie
+            mediawriter
+            fastfetch
+            fh
           ];
         };
       };
