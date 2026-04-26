@@ -176,6 +176,7 @@
         alejandra
         devcontainer
         devpod
+        nil
       ];
 
       programs.bash.shellAliases = {
