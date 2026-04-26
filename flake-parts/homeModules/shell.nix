@@ -8,6 +8,7 @@
   flake.homeModules.shell = {
     config,
     osConfig,
+    pkgs,
     ...
   }: let
     cfg = config.homeSpec.programs.shell;
@@ -16,9 +17,18 @@
     config = lib.mkIf cfg.enable {
       programs = {
         # ------ Extras ------ #
-        ripgrep.enable = true;
-        eza.enable = true;
-        fzf.enable = true;
+        ripgrep = {
+          enable = true;
+          package = pkgs.unstable.ripgrep;
+        };
+        eza = {
+          enable = true;
+          package = pkgs.unstable.eza;
+        };
+        fzf = {
+          enable = true;
+          package = pkgs.unstable.fzf;
+        };
         # ------ Bash ------ #
         bash = {
           enable = true;
@@ -36,17 +46,17 @@
             nfs = "nix flake show --all-systems";
             nixos-facter = "sudo nix run nixpkgs#nixos-facter -- -o facter.json";
             # local nixos rebuild commands
-            nixos-rebuild-boot = "sudo nixos-rebuild boot --flake /home/netsa/nixos#${
+            nixos-rebuild-boot = "sudo nixos-rebuild boot --flake /home/netsa/home#${
               if osConfig != null
               then osConfig.networking.hostName
               else "default"
             }";
-            nixos-rebuild-switch = "sudo nixos-rebuild switch --flake /home/netsa/nixos#${
+            nixos-rebuild-switch = "sudo nixos-rebuild switch --flake /home/netsa/home#${
               if osConfig != null
               then osConfig.networking.hostName
               else "default"
             }";
-            nixos-rebuild-test = "sudo nixos-rebuild test --flake /home/netsa/nixos#${
+            nixos-rebuild-test = "sudo nixos-rebuild test --flake /home/netsa/home#${
               if osConfig != null
               then osConfig.networking.hostName
               else "default"

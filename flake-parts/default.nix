@@ -101,11 +101,11 @@ in {
 
       # System Packages
       environment = {
-        enableAllTerminfo = true;
-        localBinInPath = true;
+        enableAllTerminfo = lib.mkDefault true;
+        localBinInPath = lib.mkDefault true;
         systemPackages = with pkgs; [
           git
-          neovim
+          nano
           rsync
         ];
       };
@@ -128,7 +128,7 @@ in {
         disk = {
           main = {
             name = "main";
-            device = "/dev/sda";
+            device = lib.mkDefault "/dev/sda";
             type = "disk";
             content = {
               type = "gpt";
@@ -140,7 +140,7 @@ in {
                 };
                 ESP = {
                   type = "EF00";
-                  size = "1G";
+                  size = "2G";
                   content = {
                     type = "filesystem";
                     format = "vfat";
@@ -169,7 +169,7 @@ in {
       # Default Home-manager Module for all users
       default = {
         nixpkgs = {
-          config.allowUnfree = true;
+          config.allowUnfree = lib.mkDefault true;
           overlays = [
             self.overlays.default
           ];
@@ -215,8 +215,7 @@ in {
     clan = {
       inventory = import ../inventory.nix {inherit self inputs customLib;};
       specialArgs = {inherit customLib;};
-      modules = {
-      };
+      modules = {};
     };
   };
 }

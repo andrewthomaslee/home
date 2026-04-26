@@ -39,9 +39,7 @@
           ];
         };
       };
-      home.sessionVariables = {
-        COMPOSE_BAKE = "true";
-      };
+      home.sessionVariables.COMPOSE_BAKE = "true";
     };
   };
 }

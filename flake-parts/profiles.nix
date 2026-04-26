@@ -117,6 +117,7 @@
             xdg.enable = true;
             programs = {
               tmux.enable = true;
+              bun.enable = true;
               direnv.enable = true;
               docker.enable = true;
               firefox.enable = true;
@@ -126,6 +127,8 @@
               k9s.enable = true;
               ksshaskpass.enable = true;
               media.enable = true;
+              neovim.enable = true;
+              password-store.enable = true;
               shell.enable = true;
               ssh.enable = true;
               starship.enable = true;
@@ -135,26 +138,28 @@
           };
           # Home Options
           home.packages = with pkgs;
-          with pkgs.unstable; [
-            zen-browser
-            moscripts
-            kubefetch
-            obsidian
-            usbutils
-            wireguard-tools
-            asciinema
-            prismlauncher
-            tor-browser
-            kalker
-            lazyssh
-            lazyjournal
-            jq
-            yq
-            httpie
-            mediawriter
-            fastfetch
-            fh
-          ];
+            [
+              zen-browser
+              moscripts
+              kubefetch
+            ]
+            ++ (with pkgs.unstable; [
+              obsidian
+              usbutils
+              wireguard-tools
+              asciinema
+              prismlauncher
+              tor-browser
+              kalker
+              lazyssh
+              lazyjournal
+              jq
+              yq
+              httpie
+              mediawriter
+              fastfetch
+              fh
+            ]);
         };
       };
       # --- Server --- #

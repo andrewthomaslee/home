@@ -14,7 +14,7 @@
   in {
     options.homeSpec.programs.media.enable = lib.mkEnableOption "default media configuration";
     config = lib.mkIf cfg.enable {
-      home.packages = with pkgs; [
+      home.packages = with pkgs.unstable; [
         mpv
         imagemagick
       ];

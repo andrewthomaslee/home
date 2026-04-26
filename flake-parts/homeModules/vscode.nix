@@ -73,6 +73,7 @@
                 autofetch = true;
                 enableSmartCommit = true;
                 confirmSync = false;
+                replaceTagsWhenPull = true;
               };
               python = {
                 createEnvironment.trigger = "off";
