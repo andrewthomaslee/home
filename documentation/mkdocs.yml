@@ -10,6 +10,10 @@ nav:
       - Default: flake-parts/default.md
       - Dev Shells: flake-parts/devShells.md
       - Profiles: flake-parts/profiles.md
+      - Apps:
+          - Update Flake Show: flake-parts/apps/update-flake-show.md
+      - Packages:
+          - Playit: flake-parts/packages/playit.md
       - Home Modules:
           - Bun: flake-parts/homeModules/bun.md
           - Direnv: flake-parts/homeModules/direnv.md
@@ -35,6 +39,7 @@ nav:
           - Clan: flake-parts/nixosModules/clan.md
           - Docker: flake-parts/nixosModules/docker.md
           - KDE: flake-parts/nixosModules/kde.md
+          - Minecraft: flake-parts/nixosModules/minecraft.md
           - Networking: flake-parts/nixosModules/networking.md
           - Nix: flake-parts/nixosModules/nix.md
           - OpenSSH: flake-parts/nixosModules/openssh.md
