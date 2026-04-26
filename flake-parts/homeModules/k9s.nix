@@ -14,10 +14,6 @@
   in {
     options.homeSpec.programs.k9s.enable = lib.mkEnableOption "default k9s configuration";
     config = lib.mkIf cfg.enable {
-      home.packages = with pkgs; [
-        kubernetes-helm
-        kubectl
-      ];
       home.sessionVariables.K9S_SKIN = "dracula";
       programs.k9s = {
         enable = true;

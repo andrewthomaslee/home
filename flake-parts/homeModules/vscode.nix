@@ -172,6 +172,7 @@
         helm-ls
         terraform-ls
         kubectl
+        kubernetes-helm
         alejandra
         devcontainer
         devpod
