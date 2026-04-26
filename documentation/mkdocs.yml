@@ -12,6 +12,7 @@ nav:
       - Profiles: flake-parts/profiles.md
       - Apps:
           - Update Flake Show: flake-parts/apps/update-flake-show.md
+          - Update Minecraft Mods: flake-parts/apps/update-minecraft-mods.md
       - Packages:
           - Playit: flake-parts/packages/playit.md
       - Home Modules:
