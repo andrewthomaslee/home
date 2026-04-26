@@ -6,6 +6,43 @@ repo_name: andrewthomaslee/home
 
 nav:
   - Home: index.md
+  - Flake Parts:
+      - Default: flake-parts/default.md
+      - Dev Shells: flake-parts/devShells.md
+      - Profiles: flake-parts/profiles.md
+      - Home Modules:
+          - Bun: flake-parts/homeModules/bun.md
+          - Direnv: flake-parts/homeModules/direnv.md
+          - Docker: flake-parts/homeModules/docker.md
+          - Firefox: flake-parts/homeModules/firefox.md
+          - Ghostty: flake-parts/homeModules/ghostty.md
+          - Git: flake-parts/homeModules/git.md
+          - Go: flake-parts/homeModules/go.md
+          - K9s: flake-parts/homeModules/k9s.md
+          - KSSHAskPass: flake-parts/homeModules/ksshaskpass.md
+          - Media: flake-parts/homeModules/media.md
+          - Neovim: flake-parts/homeModules/neovim.md
+          - Password Store: flake-parts/homeModules/password-store.md
+          - Shell: flake-parts/homeModules/shell.md
+          - SSH: flake-parts/homeModules/ssh.md
+          - Starship: flake-parts/homeModules/starship.md
+          - UV: flake-parts/homeModules/uv.md
+          - VS Code: flake-parts/homeModules/vscode.md
+          - XDG: flake-parts/homeModules/xdg.md
+          - Tmux: flake-parts/homeModules/tmux.md
+      - NixOS Modules:
+          - Bluetooth: flake-parts/nixosModules/bluetooth.md
+          - Clan: flake-parts/nixosModules/clan.md
+          - Docker: flake-parts/nixosModules/docker.md
+          - KDE: flake-parts/nixosModules/kde.md
+          - Networking: flake-parts/nixosModules/networking.md
+          - Nix: flake-parts/nixosModules/nix.md
+          - OpenSSH: flake-parts/nixosModules/openssh.md
+          - Sound: flake-parts/nixosModules/sound.md
+          - Storage Box: flake-parts/nixosModules/storagebox.md
+          - Tailscale: flake-parts/nixosModules/tailscale.md
+          - Wayland: flake-parts/nixosModules/wayland.md
+          - MOTD: flake-parts/nixosModules/motd.md
 
 plugins:
   - glightbox
