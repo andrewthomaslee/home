@@ -61,7 +61,11 @@
             services = {
               motd.enable = true;
               openssh.enable = true;
-              storagebox.enable = true;
+              storagebox = {
+                enable = true;
+                mountOnAccess = true;
+                boxUser = "u488514-sub1";
+              };
             };
           };
           # Home Profile

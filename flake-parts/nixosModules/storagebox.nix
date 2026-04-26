@@ -34,8 +34,8 @@
       };
       concurrency = lib.mkOption {
         type = lib.types.int;
-        default = 3;
-        description = "The number of concurrent checkers";
+        default = 2;
+        description = "The number of concurrent checkers (max 10)";
         example = 10;
       };
     };
