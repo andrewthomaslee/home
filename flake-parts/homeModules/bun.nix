@@ -24,7 +24,6 @@
             globalDir = "~/.bun/install/global";
             globalBinDir = "~/.bun/bin";
             linker = "isolated";
-            security.scanner = "@acme/bun-security-scanner";
           };
         };
       };
