@@ -138,7 +138,7 @@
             zen-browser
             moscripts
             kubefetch
-            obsidian
+            pkgs.unstable.obsidian
           ];
         };
       };

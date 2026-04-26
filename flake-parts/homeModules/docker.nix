@@ -5,7 +5,11 @@
   ...
 }: {
   # ------ Home-manager Modules ------ #
-  flake.homeModules.docker = {config, ...}: let
+  flake.homeModules.docker = {
+    config,
+    pkgs,
+    ...
+  }: let
     cfg = config.homeSpec.programs.docker;
   in {
     options.homeSpec.programs.docker.enable = lib.mkEnableOption "default docker configuration";
@@ -14,6 +18,7 @@
       # lazydocker
       programs.lazydocker = {
         enable = true;
+        package = pkgs.unstable.lazydocker;
         settings = {
           commandTemplates = {
             dockerCompose = "docker compose";

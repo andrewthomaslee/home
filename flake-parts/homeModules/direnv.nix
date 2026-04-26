@@ -19,6 +19,7 @@
       ];
       programs.direnv = {
         enable = true;
+        package = pkgs.unstable.direnv;
         enableBashIntegration = true;
         nix-direnv.enable = true;
       };

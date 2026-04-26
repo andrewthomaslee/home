@@ -17,11 +17,11 @@
       # VSCode
       programs.vscode = {
         enable = true;
-        package = pkgs.vscodium;
+        package = pkgs.unstable.vscodium;
         mutableExtensionsDir = true;
         profiles = {
           default = {
-            extensions = with pkgs.vscode-extensions; [
+            extensions = with pkgs.unstable.vscode-extensions; [
               kamadorueda.alejandra
               jnoortheen.nix-ide
               supermaven.supermaven
@@ -40,86 +40,102 @@
               budparr.language-hugo-vscode
               gruntfuggly.todo-tree
               ms-azuretools.vscode-docker
+              github.vscode-github-actions
+              github.vscode-pull-request-github
+              github.codespaces
             ];
             userSettings = {
-              "security.workspace.trust.untrustedFiles" = "open";
-              "terminal.integrated.defaultProfile.linux" = "bash";
-              "workbench.sideBar.location" = "right";
-              "workbench.colorTheme" = "Red";
-              "workbench.iconTheme" = "catppuccin-macchiato";
-              "redhat.telemetry.enabled" = false;
-              "workbench.startupEditor" = "none";
-              "editor.minimap.renderCharacters" = false;
-              "editor.minimap.size" = "fill";
-              "editor.minimap.enabled" = false;
-              "explorer.confirmDragAndDrop" = false;
-              "git.autofetch" = true;
-              "explorer.confirmDelete" = false;
-              "explorer.confirmPasteNative" = false;
-              "python.createEnvironment.trigger" = "off";
-              "python.defaultInterpreterPath" = "";
-              "tailwindCSS.classAttributes" = [
-                "class"
-                "className"
-                "ngClass"
-                "class:list"
-                "_klass"
-                "klass"
-                "_style"
-                "style"
-              ];
-              "tailwindCSS.includeLanguages" = {
-                python = "html";
+              security.workspace.trust.untrustedFiles = "open";
+              terminal.integrated = {
+                defaultProfile.linux = "bash";
+                enableMultiLinePasteWarning = "never";
+                initialHint = false;
               };
-              "git.enableSmartCommit" = true;
-              "git.confirmSync" = false;
-              "python.experiments.enabled" = false;
-              "[jsonc]" = {
-                "editor.defaultFormatter" = "esbenp.prettier-vscode";
+              workbench = {
+                sideBar.location = "right";
+                colorTheme = "Red";
+                iconTheme = "catppuccin-macchiato";
+                startupEditor = "none";
+                secondarySideBar.defaultVisibility = "hidden";
               };
-              "python.languageServer" = "Default";
-              "ruff.configurationPreference" = "filesystemFirst";
-              "supermaven.enable" = {
-                "*" = true;
+              redhat.telemetry.enabled = false;
+              editor.minimap = {
+                renderCharacters = false;
+                size = "fill";
+                enabled = false;
               };
-              "sqltools.useNodeRuntime" = true;
-              "tailwind-fold.autoFold" = false;
+              explorer = {
+                confirmDragAndDrop = false;
+                confirmDelete = false;
+                confirmPasteNative = false;
+              };
+              git = {
+                autofetch = true;
+                enableSmartCommit = true;
+                confirmSync = false;
+              };
+              python = {
+                createEnvironment.trigger = "off";
+                defaultInterpreterPath = "";
+                experiments.enabled = false;
+                languageServer = "Default";
+              };
+              tailwindCSS = {
+                classAttributes = [
+                  "class"
+                  "className"
+                  "ngClass"
+                  "class:list"
+                  "_klass"
+                  "klass"
+                  "_style"
+                  "style"
+                ];
+                includeLanguages.python = "html";
+              };
+              "[jsonc]".editor.defaultFormatter = "esbenp.prettier-vscode";
+              ruff.configurationPreference = "filesystemFirst";
+              supermaven.enable."*" = true;
+              sqltools.useNodeRuntime = true;
+              tailwind-fold.autoFold = false;
               "[python]" = {
-                "editor.formatOnSave" = true;
-                "editor.defaultFormatter" = "charliermarsh.ruff";
+                editor.formatOnSave = true;
+                editor.defaultFormatter = "charliermarsh.ruff";
               };
-              "yaml.schemaStore.url" = "https://raw.githubusercontent.com/weaveworks/eksctl/main/pkg/apis/eksctl.io/v1alpha5/assets/schema.json";
-              "[dockercompose]" = {
-                "editor.insertSpaces" = true;
-                "editor.tabSize" = 2;
-                "editor.autoIndent" = "advanced";
-                "editor.defaultFormatter" = "redhat.vscode-yaml";
+              "[dockercompose]".editor = {
+                insertSpaces = true;
+                tabSize = 2;
+                autoIndent = "advanced";
+                defaultFormatter = "redhat.vscode-yaml";
               };
-              "[github-actions-workflow]" = {
-                "editor.defaultFormatter" = "redhat.vscode-yaml";
+              "[github-actions-workflow]".editor.defaultFormatter = "redhat.vscode-yaml";
+              vs-kubernetes.vs-kubernetes.crd-code-completion = "enabled";
+              "[nix]".editor = {
+                defaultFormatter = "kamadorueda.alejandra";
+                formatOnPaste = false;
+                formatOnSave = true;
+                formatOnType = false;
               };
-              "workbench.secondarySideBar.defaultVisibility" = "hidden";
-              "vs-kubernetes" = {
-                "vs-kubernetes.crd-code-completion" = "enabled";
+              alejandra.program = "alejandra";
+              yaml = {
+                schemaStore.url = "https://raw.githubusercontent.com/weaveworks/eksctl/main/pkg/apis/eksctl.io/v1alpha5/assets/schema.json";
+                schemas = {
+                  "https://squidfunk.github.io/mkdocs-material/schema.json" = "mkdocs.yml";
+                };
+                customTags = [
+                  "!ENV scalar"
+                  "!ENV sequence"
+                  "!relative scalar"
+                ];
               };
-              "terminal.integrated.enableMultiLinePasteWarning" = "never";
-              "[nix]" = {
-                "editor.defaultFormatter" = "kamadorueda.alejandra";
-                "editor.formatOnPaste" = false;
-                "editor.formatOnSave" = true;
-                "editor.formatOnType" = false;
-              };
-              "alejandra.program" = "alejandra";
-              "nix.enableLanguageServer" = true;
-              "nix.serverPath" = "nil";
-              "nix.formatterPath" = "alejandra";
-              "nix.serverSettings" = {
-                nil = {
-                  formatting = {
-                    command = ["alejandra"];
-                  };
+              nix = {
+                enableLanguageServer = true;
+                serverPath = "nil";
+                formatterPath = "alejandra";
+                serverSettings.nil = {
+                  formatting.command = ["alejandra"];
                   nix = {
-                    maxMemoryMB = 4096;
+                    maxMemoryMB = 6144;
                     flake = {
                       autoArchive = true;
                       autoEvalInputs = true;
@@ -127,24 +143,30 @@
                   };
                 };
               };
-              "roo-cline.allowedCommands" = [
-                "git log"
-                "git diff"
-                "git show"
-                "nix flake check --all-systems --show-trace"
-                "nix eval"
-                "nix flake show"
-                "nix build"
-                "nix flake check"
-              ];
-              "terminal.integrated.initialHint" = false;
-              "roo-cline.debug" = false;
-              "roo-cline.deniedCommands" = [];
+              roo-cline = {
+                debug = false;
+                allowedCommands = [
+                  "git log"
+                  "git diff"
+                  "git show"
+                  "nix flake check --all-systems --show-trace"
+                  "nix eval"
+                  "nix flake show"
+                  "nix build"
+                  "nix flake check"
+                  "clan show"
+                ];
+                deniedCommands = [
+                  "nix run"
+                  "nixos-rebuild"
+                ];
+              };
             };
           };
         };
       };
-      home.packages = with pkgs; [
+      # Home-manager Packages
+      home.packages = with pkgs.unstable; [
         pyrefly
         ruff
         helm-ls
@@ -155,12 +177,9 @@
         devpod
       ];
 
-      programs.bash = {
-        shellAliases = {
-          c = "codium .";
-          cvscode = "codium /home/netsa/nixos/home-manager/modules/vscode/settings.json";
-          cknownhosts = "codium ~/.ssh/known_hosts";
-        };
+      programs.bash.shellAliases = {
+        c = "codium .";
+        cknownhosts = "codium ~/.ssh/known_hosts";
       };
     };
   };

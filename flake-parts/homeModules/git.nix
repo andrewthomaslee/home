@@ -5,7 +5,11 @@
   ...
 }: {
   # ------ Home-manager Modules ------ #
-  flake.homeModules.git = {config, ...}: let
+  flake.homeModules.git = {
+    config,
+    pkgs,
+    ...
+  }: let
     cfg = config.homeSpec.programs.git;
   in {
     options.homeSpec.programs.git.enable = lib.mkEnableOption "default git configuration";
@@ -16,6 +20,7 @@
 
         git = {
           enable = true;
+          package = pkgs.unstable.gitFull;
           lfs.enable = true;
 
           ignores = [

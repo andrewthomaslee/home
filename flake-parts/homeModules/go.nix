@@ -5,7 +5,11 @@
   ...
 }: {
   # ------ Home-manager Modules ------ #
-  flake.homeModules.go = {config, ...}: let
+  flake.homeModules.go = {
+    config,
+    pkgs,
+    ...
+  }: let
     cfg = config.homeSpec.programs.go;
   in {
     options.homeSpec.programs.go.enable = lib.mkEnableOption "default go configuration";
@@ -13,6 +17,7 @@
       home.sessionVariables.GOPATH = "/home/${config.home.username}/.go";
       programs.go = {
         enable = true;
+        package = pkgs.unstable.go;
         env.GOPATH = "/home/${config.home.username}/.go";
       };
     };
