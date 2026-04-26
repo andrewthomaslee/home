@@ -35,6 +35,40 @@
           };
         };
       };
+      sda = {
+        type = "disk";
+        device = "/dev/disk/by-id/ata-ST1000DM003-1SB102_Z9APETJA";
+        content = {
+          type = "gpt";
+          partitions = {
+            data = {
+              size = "100%";
+              content = {
+                type = "filesystem";
+                format = "ext4";
+                mountpoint = "/mnt/sda";
+              };
+            };
+          };
+        };
+      };
+      sdb = {
+        type = "disk";
+        device = "/dev/disk/by-id/ata-ST2000DX001-1NS164_Z4Z5RFRN";
+        content = {
+          type = "gpt";
+          partitions = {
+            data = {
+              size = "100%";
+              content = {
+                type = "filesystem";
+                format = "ext4";
+                mountpoint = "/mnt/sdb";
+              };
+            };
+          };
+        };
+      };
     };
   };
 }
