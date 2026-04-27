@@ -27,7 +27,7 @@
     };
     hel-1 = {
       tags = ["server" "helsinki-server" "helsinki-agent"];
-      deploy.targetHost = "root@hel-1.armadillo-frog.ts.net";
+      deploy.targetHost = "root@hel-1.andrewlee.cloud";
     };
 
     # Other's PCs
