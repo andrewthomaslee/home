@@ -127,14 +127,14 @@
         };
 
         config = {
-          # create the join token
+          # create join token
           clan.core.vars.generators."kubernetes-${instanceName}" = {
             share = true;
             files.token = {};
             script = ''
               mkdir -p $out
-              # Generates a token in the format: abcdef.0123456789abcdef
-              echo "$(tr -dc a-z0-9 < /dev/urandom | head -c 6).$(tr -dc a-z0-9 < /dev/urandom | head -c 16)" > $out/token
+              # Generates 32-character alphanumeric password without newline
+              echo -n "$(tr -dc a-z0-9 < /dev/urandom | head -c 32)" > $out/token
             '';
           };
           # k3s
