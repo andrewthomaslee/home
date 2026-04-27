@@ -9,6 +9,7 @@ This repository is the home for all my personal NixOS machines.
 - home-manager
 - clan.lol
 - Determinate Systems
+- Modded Minecraft Server
 
 
 ## Project layout
