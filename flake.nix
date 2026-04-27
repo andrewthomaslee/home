@@ -7,7 +7,7 @@
 
     # Nixpkgs
     nixpkgs.url = "https://flakehub.com/f/NixOS/nixpkgs/0";
-    nixpkgs-unstable.url = "github:nixos/nixpkgs/nixpkgs-unstable";
+    nixpkgs-unstable.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
 
     # Clan.lol
     clan-core = {
@@ -51,13 +51,13 @@
 
     # Scripts
     moscripts = {
-      url = "https://flakehub.com/f/andrewthomaslee/moscripts/0.1.0";
+      url = "https://flakehub.com/f/andrewthomaslee/moscripts/*";
       inputs.nixpkgs.follows = "nixpkgs-unstable";
     };
 
     # neofetch for kube
     kubefetch = {
-      url = "https://flakehub.com/f/andrewthomaslee/kubefetch/0.9.0";
+      url = "https://flakehub.com/f/andrewthomaslee/kubefetch/*";
       inputs.nixpkgs.follows = "nixpkgs-unstable";
     };
 
