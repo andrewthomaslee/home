@@ -9,6 +9,8 @@
     packages = [
       pkgs.bash
       pkgs.unstable.bun
+      pkgs.unstable.fluxcd
+      pkgs.unstable.flux9s
       inputs'.clan-core.packages.clan-cli
     ];
     shellHook = ''

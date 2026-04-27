@@ -112,7 +112,7 @@
 
         environment = {
           variables.KUBECONFIG = "/etc/rancher/k3s/k3s.yaml";
-          etc."kubenix.yaml".source = self.packages.${pkgs.stdenv.hostPlatform.system}."kubenix-${instanceName}";
+          etc."kubenix.yaml".source = self.packages.${pkgs.stdenv.hostPlatform.system}.kubenix;
         };
         system.activationScripts.kubenix.text = ''
           ln -sf /etc/kubenix.yaml /var/lib/rancher/k3s/server/manifests/kubenix.yaml
