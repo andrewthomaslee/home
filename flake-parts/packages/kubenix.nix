@@ -22,7 +22,7 @@
               helm.releases = {};
             };
           };
-        }).config.kubernetes.resultYAML;
+        }).config.kubernetes.result;
 
       kubenix-helsinki =
         (inputs.kubenix.evalModules.${system} {
@@ -38,7 +38,7 @@
               helm.releases = {};
             };
           };
-        }).config.kubernetes.resultYAML;
+        }).config.kubernetes.result;
     };
   };
 }
