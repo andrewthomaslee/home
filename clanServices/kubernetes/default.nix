@@ -132,6 +132,10 @@
                 ipam.mode = "kubernetes";
               }
               // lib.optionalAttrs (cfg.clusters != {}) {
+                cluster = {
+                  name = instanceName;
+                  id = cfg.id;
+                };
                 clustermesh = {
                   useAPIServer = true;
                   cacheTTL = "5m";
