@@ -92,7 +92,7 @@
             name = "cilium";
             version = "1.19.3";
             repo = "https://helm.cilium.io/";
-            hash = "sha256-rt3TlLpIMTLyN+DZFRpHItt7tadQ3k+BghkfwhI8Yaw=";
+            hash = "sha256-yOBd+eq/kBnmL1ED4fNYFLTxtDkW+IUZ5a5ONsaapCs=";
             targetNamespace = "kube-system";
             extraFieldDefinitions.spec.bootstrap = true;
             values = {
