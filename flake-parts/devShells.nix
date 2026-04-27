@@ -17,6 +17,7 @@
         bun
         fluxcd
         flux9s
+        cilium-cli
       ]);
     shellHook = ''
       eval "$(bunx varlock load --format shell)"
