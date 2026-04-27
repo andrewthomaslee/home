@@ -16,9 +16,8 @@ in {
     version = kubeVersion;
     namespace = "default";
     # helm.releases = {};
-    resources = {
-    };
     objects = [
+      # --- whoami --- #
       {
         apiVersion = "v1";
         kind = "Namespace";

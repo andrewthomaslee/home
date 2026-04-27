@@ -17,6 +17,14 @@
   roles.init = {
     description = "The first node of the cluster";
     interface.options = {
+      id = lib.mkOption {
+        type = lib.types.int;
+        default = 1;
+        example = 2;
+        description = ''
+          The ID of the Cluster
+        '';
+      };
       masterAddr = lib.mkOption {
         type = lib.types.nullOr lib.types.str;
         default = null;
@@ -57,6 +65,20 @@
           Interface to use for the cluster
         '';
       };
+      clusters = lib.mkOption {
+        type = lib.types.attrs;
+        default = {};
+        example = {
+          home = {
+            id = 1;
+            address = "10.67.67.1";
+            port = 32379;
+          };
+        };
+        description = ''
+          Cilium Clusters
+        '';
+      };
     };
 
     perInstance.nixosModule.services.k3s = {
@@ -87,6 +109,7 @@
             "--flannel-backend=none"
             "--disable-network-policy"
             "--disable-kube-proxy"
+            "--disable=traefik,servicelb"
           ];
           autoDeployCharts.cilium = {
             name = "cilium";
@@ -95,18 +118,33 @@
             hash = "sha256-yOBd+eq/kBnmL1ED4fNYFLTxtDkW+IUZ5a5ONsaapCs=";
             targetNamespace = "kube-system";
             extraFieldDefinitions.spec.bootstrap = true;
-            values = {
-              rollOutCiliumPods = true;
-              devices = cfg.interface;
-              MTU = 1370;
-              operator.replicas = 1;
-              kubeProxyReplacement = true;
-              k8sServiceHost = cfg.masterAddr;
-              k8sServicePort = cfg.masterPort;
-              ipv4.enabled = true;
-              ipv6.enabled = true;
-              ipam.mode = "kubernetes";
-            };
+            values =
+              {
+                rollOutCiliumPods = true;
+                devices = cfg.interface;
+                MTU = 1370;
+                operator.replicas = 1;
+                kubeProxyReplacement = true;
+                k8sServiceHost = cfg.masterAddr;
+                k8sServicePort = cfg.masterPort;
+                ipv4.enabled = true;
+                ipv6.enabled = true;
+                ipam.mode = "kubernetes";
+              }
+              // lib.optionalAttrs (cfg.clusters != {}) {
+                clustermesh = {
+                  useAPIServer = true;
+                  cacheTTL = "5m";
+                  apiserver.service = {
+                    type = "NodePort";
+                    nodePort = 32379;
+                  };
+                  config = {
+                    enabled = true;
+                    clusters = cfg.clusters;
+                  };
+                };
+              };
           };
         };
 
@@ -114,9 +152,32 @@
           variables.KUBECONFIG = "/etc/rancher/k3s/k3s.yaml";
           etc."kubenix.yaml".source = self.packages.${pkgs.stdenv.hostPlatform.system}.kubenix;
         };
-        system.activationScripts.kubenix.text = ''
-          ln -sf /etc/kubenix.yaml /var/lib/rancher/k3s/server/manifests/kubenix.yaml
-        '';
+        system.activationScripts = {
+          kubenix.text = ''
+            ln -sf /etc/kubenix.yaml /var/lib/rancher/k3s/server/manifests/kubenix.yaml
+          '';
+          cilium-certs.text = ''
+            mkdir -p /var/lib/rancher/k3s/server/manifests
+            cat <<EOF > /var/lib/rancher/k3s/server/manifests/cilium-certs.yaml
+            apiVersion: v1
+            kind: Secret
+            type: kubernetes.io/tls
+            metadata:
+              name: cilium-ca
+              namespace: kube-system
+              labels:
+                app.kubernetes.io/managed-by: Helm
+              annotations:
+                meta.helm.sh/release-name: cilium
+                meta.helm.sh/release-namespace: kube-system
+            data:
+              tls.crt: $(cat ${config.clan.core.vars.generators.pki-root-ca.files."ca.crt".path} | base64 -w0)
+              tls.key: $(cat ${config.clan.core.vars.generators.pki-root-ca.files."ca.key".path} | base64 -w0)
+              ca.crt: $(cat ${config.clan.core.vars.generators.pki-root-ca.files."ca.crt".path} | base64 -w0)
+              ca.key: $(cat ${config.clan.core.vars.generators.pki-root-ca.files."ca.key".path} | base64 -w0)
+            EOF
+          '';
+        };
       };
     };
   };
@@ -142,6 +203,10 @@
         cfg = config.clanSpec.services.kubernetes;
       in {
         options.clanSpec.services.kubernetes = {
+          id = lib.mkOption {
+            type = lib.types.int;
+            default = clusterSettings.id;
+          };
           masterAddr = lib.mkOption {
             type = lib.types.str;
             default =
@@ -167,6 +232,10 @@
           interface = lib.mkOption {
             type = lib.types.str;
             default = clusterSettings.interface;
+          };
+          clusters = lib.mkOption {
+            type = lib.types.attrs;
+            default = clusterSettings.clusters;
           };
         };
 
@@ -202,6 +271,16 @@
             firewall = {
               checkReversePath = "loose";
               trustedInterfaces = interfaces;
+              allowedTCPPorts = [
+                80
+                443
+                53
+              ];
+              allowedUDPPorts = [
+                80
+                443
+                53
+              ];
               allowedTCPPortRanges = [
                 {
                   from = 30000;

@@ -26,7 +26,7 @@ in {
     };
 
     # Formatter
-    formatter = pkgs.alejandra;
+    formatter = pkgs.unstable.alejandra;
     # Mkdocs
     documentation.mkdocs-root = ../documentation;
   };
@@ -103,10 +103,11 @@ in {
       environment = {
         enableAllTerminfo = lib.mkDefault true;
         localBinInPath = lib.mkDefault true;
-        systemPackages = with pkgs; [
+        systemPackages = with pkgs.unstable; [
           git
           nano
           rsync
+          fh
         ];
       };
 

@@ -6,13 +6,16 @@
     ...
   }: let
     # ------ Common Configuration ------ #
-    packages = [
-      pkgs.bash
-      pkgs.unstable.bun
-      pkgs.unstable.fluxcd
-      pkgs.unstable.flux9s
-      inputs'.clan-core.packages.clan-cli
-    ];
+    packages =
+      [
+        inputs'.clan-core.packages.clan-cli
+      ]
+      ++ (with pkgs.unstable; [
+        bash
+        bun
+        fluxcd
+        flux9s
+      ]);
     shellHook = ''
       export REPO_ROOT
       REPO_ROOT=$(git rev-parse --show-toplevel)
