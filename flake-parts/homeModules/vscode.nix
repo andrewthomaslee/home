@@ -156,6 +156,18 @@
                   "nix build"
                   "nix flake check"
                   "clan show"
+                  "yq"
+                  "jq"
+                  "kubectl get"
+                  "kubectl describe"
+                  "kubectl logs"
+                  "cat"
+                  "find"
+                  "ls"
+                  "grep"
+                  "sed"
+                  "rg"
+                  "lt"
                 ];
                 deniedCommands = [
                   "nix run"

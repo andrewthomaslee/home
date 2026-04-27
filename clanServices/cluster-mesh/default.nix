@@ -83,7 +83,7 @@
 
         hostsContent = builtins.concatStringsSep "\n" (extraHostsIPv4 ++ extraHostsIPv6);
       in {
-        options.clanSpecs.services.${instanceName} = {
+        options.clanSpec.services.${instanceName} = {
           endpoint = lib.mkOption {
             type = lib.types.str;
             default = settings.endpoint;

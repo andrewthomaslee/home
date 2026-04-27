@@ -22,11 +22,11 @@
 
     # Headless Servers
     kamrui-p1 = {
-      tags = ["server"];
+      tags = ["server" "home-server" "home-agent"];
       deploy.targetHost = "root@kamrui-p1.armadillo-frog.ts.net";
     };
     hel-1 = {
-      tags = ["server"];
+      tags = ["server" "helsinki-server" "helsinki-agent"];
       deploy.targetHost = "root@hel-1.armadillo-frog.ts.net";
     };
 
@@ -43,67 +43,77 @@
     # For Andrew's PCs
     developer = {
       module.name = "importer";
-      roles.default.tags = ["developer"];
-      roles.default.extraModules = [self.nixosModules.profile-developer];
+      roles.default = {
+        tags = ["developer"];
+        extraModules = [self.nixosModules.profile-developer];
+      };
     };
     # For Headless Servers
     server = {
       module.name = "importer";
-      roles.default.tags = ["server"];
-      roles.default.extraModules = [self.nixosModules.profile-server];
+      roles.default = {
+        tags = ["server"];
+        extraModules = [self.nixosModules.profile-server];
+      };
     };
     # For Other's PCs
     normal = {
       module.name = "importer";
-      roles.default.tags = ["normal"];
-      roles.default.extraModules = [self.nixosModules.profile-normal];
+      roles.default = {
+        tags = ["normal"];
+        extraModules = [self.nixosModules.profile-normal];
+      };
     };
 
     # --- Create Users --- #
     # Admin
     root = {
       module.name = "users";
-      roles.default.tags = ["all"];
-      roles.default.settings = {
-        user = "root";
-        share = true;
+      roles.default = {
+        tags = ["all"];
+        settings = {
+          user = "root";
+          share = true;
+        };
       };
     };
     # Default User
     netsa = {
       module.name = "users";
-      roles.default.tags = ["all"];
-      roles.default.settings = {
-        user = "netsa";
-        share = true;
+      roles.default = {
+        tags = ["all"];
+        settings = {
+          user = "netsa";
+          share = true;
+        };
+        extraModules = [
+          {
+            users.users.netsa = {
+              isNormalUser = true;
+              home = "/home/netsa";
+              description = "andrewthomaslee";
+              extraGroups = [
+                "docker"
+                "wheel"
+                "networkmanager"
+                "audio"
+                "libvirtd"
+                "tty"
+                "dialout"
+                "video"
+                "storage-users"
+              ];
+            };
+          }
+        ];
       };
-      roles.default.extraModules = [
-        {
-          users.users.netsa = {
-            isNormalUser = true;
-            home = "/home/netsa";
-            description = "andrewthomaslee";
-            extraGroups = [
-              "docker"
-              "wheel"
-              "networkmanager"
-              "audio"
-              "libvirtd"
-              "tty"
-              "dialout"
-              "video"
-              "storage-users"
-            ];
-          };
-        }
-      ];
     };
 
     # https://clan.lol/docs/unstable/services/official/sshd
-    sshd = {
-      roles.server.tags = ["all"];
-      roles.client.tags = ["all"];
-      roles.server.settings = {
+    sshd.roles = {
+      server.tags = ["all"];
+      client.tags = ["all"];
+      server.settings = {
         authorizedKeys.clan = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOb4q9LWJR54SzRkfmsA5KWA5/SDEG853oFC8TVilCW/";
         hostKeys.rsa.enable = true;
       };
@@ -117,8 +127,10 @@
 
     # Cluster Mesh
     cm = {
-      module.name = "@andrewthomaslee/cluster-mesh";
-      module.input = "self";
+      module = {
+        name = "@andrewthomaslee/cluster-mesh";
+        input = "self";
+      };
       roles.peer.machines = {
         kamrui-p1.settings = {
           endpoint = "home.andrewlee.fun";
@@ -132,6 +144,38 @@
           ipv4 = "10.67.67.2";
           ipv6 = "fd67:67::2";
         };
+      };
+    };
+
+    # Kubernetes Cluster for Home
+    home = {
+      module = {
+        name = "@andrewthomaslee/kubernetes";
+        input = "self";
+      };
+      roles = {
+        init.machines.kamrui-p1.settings = {
+          clusterCidr = "10.42.0.0/16,fd42::/56";
+          serviceCidr = "10.43.0.0/16,fd43::/112";
+        };
+        server.tags = ["home-server"];
+        default.tags = ["home-agent"];
+      };
+    };
+
+    # Kubernetes Cluster for Helsinki
+    helsinki = {
+      module = {
+        name = "@andrewthomaslee/kubernetes";
+        input = "self";
+      };
+      roles = {
+        init.machines.hel-1.settings = {
+          clusterCidr = "10.52.0.0/16,fd52::/56";
+          serviceCidr = "10.53.0.0/16,fd53::/112";
+        };
+        server.tags = ["helsinki-server"];
+        default.tags = ["helsinki-agent"];
       };
     };
   };

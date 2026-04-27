@@ -217,6 +217,7 @@ in {
       specialArgs = {inherit customLib inputs self;};
       modules = {
         "@andrewthomaslee/cluster-mesh" = ../clanServices/cluster-mesh;
+        "@andrewthomaslee/kubernetes" = ../clanServices/kubernetes;
       };
     };
   };

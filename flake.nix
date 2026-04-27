@@ -12,7 +12,7 @@
     # Clan.lol
     clan-core = {
       url = "https://git.clan.lol/clan/clan-core/archive/main.tar.gz";
-      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.nixpkgs.follows = "nixpkgs-unstable";
     };
 
     # Clan.lol Community
@@ -21,16 +21,21 @@
       inputs.clan-core.follows = "clan-core";
     };
 
+    kubenix = {
+      url = "github:hall/kubenix";
+      inputs.nixpkgs.follows = "nixpkgs-unstable";
+    };
+
     # Mkdocs
     mkdocs-flake = {
       url = "github:applicative-systems/mkdocs-flake";
-      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.nixpkgs.follows = "nixpkgs-unstable";
     };
 
     # Home-manager
     home-manager = {
       url = "github:nix-community/home-manager/release-25.11";
-      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.nixpkgs.follows = "nixpkgs-unstable";
     };
 
     # Utility Flakes
@@ -41,25 +46,25 @@
     # Zen Browser
     zen-browser = {
       url = "github:youwen5/zen-browser-flake";
-      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.nixpkgs.follows = "nixpkgs-unstable";
     };
 
     # Scripts
     moscripts = {
       url = "https://flakehub.com/f/andrewthomaslee/moscripts/0.1.0";
-      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.nixpkgs.follows = "nixpkgs-unstable";
     };
 
     # neofetch for kube
     kubefetch = {
       url = "https://flakehub.com/f/andrewthomaslee/kubefetch/0.9.0";
-      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.nixpkgs.follows = "nixpkgs-unstable";
     };
 
     # --- Minecraft --- #
     nix-minecraft = {
       url = "github:Infinidoge/nix-minecraft";
-      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.nixpkgs.follows = "nixpkgs-unstable";
     };
 
     # ----------------------------------- Fabric Mods ----------------------------------- #
