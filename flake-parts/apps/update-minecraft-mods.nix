@@ -23,7 +23,7 @@
           pattern = re.compile(r"([A-Za-z0-9-]+)\s*=\s*\{[^}]*?url\s*=\s*\"([^\"]+)\";", re.DOTALL)
           urls = dict(pattern.findall(content))
 
-          filepath = "documentation/docs/flake-parts/nixosModules/minecraft.md"
+          filepath = "documentation/docs/minecraft/fabric.md"
 
           with open(filepath, "r") as f:
               md_content = f.read()

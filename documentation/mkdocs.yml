@@ -1,11 +1,13 @@
 site_name: Dendritic Determinate Nix Flake
 site_author: Andrew Thomas Lee
 site_url: https://home.andrewlee.cloud
-repo_url: https://home.andrewlee.cloud
+repo_url: https://github.com/andrewthomaslee/home
 repo_name: andrewthomaslee/home
 
 nav:
   - Home: index.md
+  - Minecraft:
+      - Fabric: minecraft/fabric.md
   - Clan Services:
       - Cluster Mesh: clanServices/cluster-mesh.md
   - Flake Parts:

@@ -1,37 +1,33 @@
-# flake-parts/nixosModules/minecraft.nix
-### Easy Modding Launcher
+# Minecraft Module
 
+Welcome to the **Minecraft** module documentation! Embark on blocky adventures with a powerhouse, fully-declarative Minecraft server environment managed entirely through NixOS and Clan.
 
-<iframe width="560" height="315" src="https://www.youtube.com/embed/rVynxFjbHW4" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+## Overview
 
+Powered by `nix-minecraft`, this module provides a highly advanced, secure, and extensible foundation for hosting a Fabric-based Minecraft server. From dynamically generated world seeds to secure proxy networking via Playit.gg, it handles the heavy lifting so you can focus on building and exploring.
 
-## **mc.andrewlee.fun**
+## Key Features
 
-`mc.andrewlee.fun` is a Minecraft server running on the machine `kamrui-p1` and accessible via the [playit.gg](https://playit.gg) proxy with the raw url: `wide-sell.gl.joinmc.link`.
+- **Fabric Server Integration:** Spens up a dedicated Fabric server, allowing you to easily specify loader versions and inject custom mod symlinks directly into your Nix configuration.
+- **Dynamic Secrets & Seeds:** Leverages Clan variables to securely generate and persist unique world seeds across deployments.
+- **Extensive Customization:** Offers robust Nix options for configuring every aspect of the server:
+  - **JVM Options:** Pre-configured with highly optimized G1GC arguments for smooth, lag-free gameplay.
+  - **Server Properties:** Easily manage gamemode, difficulty, simulation distance, and your server's MOTD.
+  - **Whitelists & Operators:** Declaratively manage player access and admin privileges.
+- **Playit.gg Proxy integration:** Automatically deploys the Playit.gg proxy in a highly-secured, hardened systemd service, allowing you to expose your server to the internet without complicated port-forwarding.
 
+## Usage
 
-Some mods are required to join the server.
+Enable and configure the module in your host specification:
 
-#### Requirements
-
-- Minecraft Java Version `1.21.11`
-- Fabric Loader Version `0.18.4`
-
-#### Required Mods
-
-- [Fabric-API](https://modrinth.com/mod/fabric-api) ([Download](https://cdn.modrinth.com/data/P7dR8mSH/versions/i5tSkVBH/fabric-api-0.141.3%2B1.21.11.jar))
-- [Storage-Drawers](https://modrinth.com/mod/storagedrawers) ([Download](https://cdn.modrinth.com/data/guitPqEi/versions/Q9r8LMQL/StorageDrawers-fabric-1.21.11-20.0.0.jar))
-- [Forge-Config-API-Port](https://modrinth.com/mod/forge-config-api-port) (Storage-Drawers Dependency) ([Download](https://cdn.modrinth.com/data/ohNO6lps/versions/uXrWPsCu/ForgeConfigAPIPort-v21.11.1-mc1.21.11-Fabric.jar))
-- [Travelers-Backpack](https://modrinth.com/mod/travelersbackpack) ([Download](https://cdn.modrinth.com/data/rlloIFEV/versions/XbEGJQSG/travelersbackpack-fabric-1.21.11-10.11.9.jar))
-- [Cardinal-Components-API](https://modrinth.com/mod/cardinal-components-api) (Travelers-Backpack Dependency) ([Download](https://cdn.modrinth.com/data/K01OU20C/versions/O2RJYZwD/cardinal-components-api-7.3.1.jar))
-- [Cloth-Config-API](https://modrinth.com/mod/cloth-config) (Travelers-Backpack Dependency) ([Download](https://cdn.modrinth.com/data/9s6osm5g/versions/xuX40TN5/cloth-config-21.11.153-fabric.jar))
-
-
-#### Recommended Client-side Mods
-
-- [JEI](https://modrinth.com/mod/jei) ([Download](https://cdn.modrinth.com/data/u6dRKJwZ/versions/N7YozqFm/jei-1.21.11-fabric-27.4.0.15.jar))
-- [Open-Parties-and-Claims](https://modrinth.com/mod/open-parties-and-claims) ([Download](https://cdn.modrinth.com/data/gF3BGWvG/versions/JkiXvTq4/open-parties-and-claims-fabric-1.21.11-0.26.2.jar))
-- [Elytra-Trims](https://modrinth.com/mod/elytra-trims) ([Download](https://cdn.modrinth.com/data/XpzGz7KD/versions/Nzd1iQCn/elytratrims-fabric-4.6.2%2B1.21.11.jar))
-- [Armored-Elytra](https://modrinth.com/datapack/elytra-armor) ([Download](https://cdn.modrinth.com/data/AuFCCYMx/versions/mKCSekSL/armored-elytra-1.12.0.jar))
-- [Lithium](https://modrinth.com/mod/lithium) ([Download](https://cdn.modrinth.com/data/gvQqBUqZ/versions/gl30uZvp/lithium-fabric-0.21.2%2Bmc1.21.11.jar))
-- [Inventory-Sorting](https://modrinth.com/mod/inventory-sorting) ([Download](https://cdn.modrinth.com/data/5ibSyLAz/versions/Dq4h9aTH/inventorysorter-fabric-2.1.4%2Bmc1.21.11.jar))
+```nix
+hostSpec.services.minecraft = {
+  enable = true;
+  serverProperties = {
+    gamemode = "survival";
+    difficulty = "hard";
+    motd = "❄️ Welcome to the NixOS Server ⛏️";
+  };
+  # Add mods, whitelists, and operators...
+};
+```
