@@ -131,14 +131,7 @@ in {
     };
 
     # https://clan.lol/docs/unstable/services/official/pki
-    pki.roles.default = {
-      tags = ["all"];
-      extraModules = [
-        {
-          config.clan.core.vars.generators.pki-root-ca.files."ca.key".deploy = customLib.mkForce true;
-        }
-      ];
-    };
+    pki.roles.default.tags = ["all"];
 
     # https://clan.lol/docs/unstable/services/official/emergency-access
     emergency-access.roles.default.tags = ["all"];

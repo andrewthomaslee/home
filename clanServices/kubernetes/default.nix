@@ -155,32 +155,9 @@
           variables.KUBECONFIG = "/etc/rancher/k3s/k3s.yaml";
           etc."kubenix.yaml".source = self.packages.${pkgs.stdenv.hostPlatform.system}.kubenix;
         };
-        system.activationScripts = {
-          kubenix.text = ''
-            ln -sf /etc/kubenix.yaml /var/lib/rancher/k3s/server/manifests/kubenix.yaml
-          '';
-          cilium-certs.text = ''
-            mkdir -p /var/lib/rancher/k3s/server/manifests
-            cat <<EOF > /var/lib/rancher/k3s/server/manifests/cilium-certs.yaml
-            apiVersion: v1
-            kind: Secret
-            type: kubernetes.io/tls
-            metadata:
-              name: cilium-ca
-              namespace: kube-system
-              labels:
-                app.kubernetes.io/managed-by: Helm
-              annotations:
-                meta.helm.sh/release-name: cilium
-                meta.helm.sh/release-namespace: kube-system
-            data:
-              tls.crt: $(cat ${config.clan.core.vars.generators.pki-root-ca.files."ca.crt".path} | base64 -w0)
-              tls.key: $(cat ${config.clan.core.vars.generators.pki-root-ca.files."ca.key".path} | base64 -w0)
-              ca.crt: $(cat ${config.clan.core.vars.generators.pki-root-ca.files."ca.crt".path} | base64 -w0)
-              ca.key: $(cat ${config.clan.core.vars.generators.pki-root-ca.files."ca.key".path} | base64 -w0)
-            EOF
-          '';
-        };
+        system.activationScripts.kubenix.text = ''
+          ln -sf /etc/kubenix.yaml /var/lib/rancher/k3s/server/manifests/kubenix.yaml
+        '';
       };
     };
   };
@@ -247,9 +224,9 @@
           clan.core.vars.generators."kubernetes-${instanceName}" = {
             share = true;
             files.token = {};
+            # Generates 32-character alphanumeric password without newline
             script = ''
               mkdir -p $out
-              # Generates 32-character alphanumeric password without newline
               echo -n "$(tr -dc a-z0-9 < /dev/urandom | head -c 32)" > $out/token
             '';
           };
