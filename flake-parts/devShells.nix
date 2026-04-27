@@ -9,6 +9,7 @@
     packages =
       [
         inputs'.clan-core.packages.clan-cli
+        inputs'.kubefetch.packages.default
       ]
       ++ (with pkgs.unstable; [
         bash

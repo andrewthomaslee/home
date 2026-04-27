@@ -2,7 +2,18 @@
   self,
   inputs,
   customLib,
-}: {
+}: let
+  clusters = {
+    home = {
+      address = "10.67.67.1";
+      port = 32379;
+    };
+    helsinki = {
+      address = "10.67.67.2";
+      port = 32379;
+    };
+  };
+in {
   meta = {
     name = "ccc";
     description = "ccc";
@@ -155,19 +166,10 @@
       };
       roles = {
         init.machines.kamrui-p1.settings = {
+          id = 1;
+          inherit clusters;
           clusterCidr = "10.42.0.0/16,fd42::/56";
           serviceCidr = "10.43.0.0/16,fd43::/112";
-          id = 1;
-          clusters = {
-            home = {
-              address = "10.67.67.1";
-              port = 32379;
-            };
-            helsinki = {
-              address = "10.67.67.2";
-              port = 32379;
-            };
-          };
         };
         server.tags = ["home-server"];
         default.tags = ["home-agent"];
@@ -182,19 +184,10 @@
       };
       roles = {
         init.machines.hel-1.settings = {
+          id = 2;
+          inherit clusters;
           clusterCidr = "10.52.0.0/16,fd52::/56";
           serviceCidr = "10.53.0.0/16,fd53::/112";
-          id = 2;
-          clusters = {
-            home = {
-              address = "10.67.67.1";
-              port = 32379;
-            };
-            helsinki = {
-              address = "10.67.67.2";
-              port = 32379;
-            };
-          };
         };
         server.tags = ["helsinki-server"];
         default.tags = ["helsinki-agent"];

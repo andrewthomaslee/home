@@ -70,7 +70,6 @@
         default = {};
         example = {
           home = {
-            id = 1;
             address = "10.67.67.1";
             port = 32379;
           };
@@ -120,6 +119,10 @@
             extraFieldDefinitions.spec.bootstrap = true;
             values =
               {
+                cluster = {
+                  name = instanceName;
+                  id = cfg.id;
+                };
                 rollOutCiliumPods = true;
                 devices = cfg.interface;
                 MTU = 1370;
@@ -132,10 +135,6 @@
                 ipam.mode = "kubernetes";
               }
               // lib.optionalAttrs (cfg.clusters != {}) {
-                cluster = {
-                  name = instanceName;
-                  id = cfg.id;
-                };
                 clustermesh = {
                   useAPIServer = true;
                   cacheTTL = "5m";
@@ -145,7 +144,7 @@
                   };
                   config = {
                     enabled = true;
-                    clusters = cfg.clusters;
+                    inherit (cfg) clusters;
                   };
                 };
               };
