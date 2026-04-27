@@ -42,6 +42,7 @@ $ nix flake show
 ├───apps
 │   └───x86_64-linux
 │       ├───update-flake-show: app: no description
+│       ├───update-minecraft-mods: app: no description
 │       └───watch-documentation: app: Run mkdocs in watch mode over your documentation folder. Automatically rebuilds your docs on changes.
 ├───clan: unknown
 ├───clanInternals: unknown
@@ -88,6 +89,8 @@ $ nix flake show
 ├───packages
 │   └───x86_64-linux
 │       ├───documentation: package 'mkdocs-flake-documentation'
+│       ├───kubenix-helsinki omitted due to use of import from derivation
+│       ├───kubenix-home omitted due to use of import from derivation
 │       └───playit: package 'playit-0.17.1'
 └───templates
     ├───clan: template: Dendritic Clan Flake

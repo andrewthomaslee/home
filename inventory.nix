@@ -154,9 +154,16 @@
         input = "self";
       };
       roles = {
-        init.machines.kamrui-p1.settings = {
-          clusterCidr = "10.42.0.0/16,fd42::/56";
-          serviceCidr = "10.43.0.0/16,fd43::/112";
+        init = {
+          machines.kamrui-p1.settings = {
+            clusterCidr = "10.42.0.0/16,fd42::/56";
+            serviceCidr = "10.43.0.0/16,fd43::/112";
+          };
+          extraModules = [
+            {
+              services.k3s.manifests.cilium.source = self.packages.x86_64-linux.kubenix-home; # TODO: make system agnostic
+            }
+          ];
         };
         server.tags = ["home-server"];
         default.tags = ["home-agent"];
@@ -170,9 +177,16 @@
         input = "self";
       };
       roles = {
-        init.machines.hel-1.settings = {
-          clusterCidr = "10.52.0.0/16,fd52::/56";
-          serviceCidr = "10.53.0.0/16,fd53::/112";
+        init = {
+          machines.hel-1.settings = {
+            clusterCidr = "10.52.0.0/16,fd52::/56";
+            serviceCidr = "10.53.0.0/16,fd53::/112";
+          };
+          extraModules = [
+            {
+              services.k3s.manifests.cilium.source = self.packages.x86_64-linux.kubenix-helsinki; # TODO: make system agnostic
+            }
+          ];
         };
         server.tags = ["helsinki-server"];
         default.tags = ["helsinki-agent"];
