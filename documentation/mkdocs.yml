@@ -1,7 +1,7 @@
 site_name: Dendritic Determinate Nix Flake
 site_author: Andrew Thomas Lee
-site_url: https://andrewthomaslee.github.io/home
-repo_url: https://github.com/andrewthomaslee/home
+site_url: https://home.andrewlee.cloud
+repo_url: https://home.andrewlee.cloud
 repo_name: andrewthomaslee/home
 
 nav:

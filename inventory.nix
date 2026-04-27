@@ -121,7 +121,7 @@
       module.input = "self";
       roles.peer.machines = {
         kamrui-p1.settings = {
-          endpoint = "kamrui-p1.andrewlee.fun";
+          endpoint = "home.andrewlee.fun";
           port = 51823;
           ipv4 = "10.67.67.1";
           ipv6 = "fd67:67::1";
