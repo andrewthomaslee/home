@@ -49,6 +49,14 @@
           Service CIDR
         '';
       };
+      interface = lib.mkOption {
+        type = lib.types.str;
+        default = "cm";
+        example = "en+";
+        description = ''
+          Interface to use for the cluster
+        '';
+      };
     };
 
     perInstance.nixosModule.services.k3s = {
@@ -60,8 +68,13 @@
   # server role
   roles.server = {
     description = "Manager nodes of the cluster";
-    perInstance = {...}: {
-      nixosModule = {config, ...}: let
+    perInstance = {instanceName, ...}: {
+      nixosModule = {
+        config,
+        pkgs,
+        self,
+        ...
+      }: let
         cfg = config.clanSpec.services.kubernetes;
       in {
         # k3s
@@ -75,9 +88,35 @@
             "--disable-network-policy"
             "--disable-kube-proxy"
           ];
+          autoDeployCharts.cilium = {
+            name = "cilium";
+            version = "1.19.3";
+            repo = "https://helm.cilium.io/";
+            hash = "sha256-rt3TlLpIMTLyN+DZFRpHItt7tadQ3k+BghkfwhI8Yaw=";
+            targetNamespace = "kube-system";
+            extraFieldDefinitions.spec.bootstrap = true;
+            values = {
+              rollOutCiliumPods = true;
+              devices = cfg.interface;
+              MTU = 1370;
+              operator.replicas = 1;
+              kubeProxyReplacement = true;
+              k8sServiceHost = cfg.masterAddr;
+              k8sServicePort = cfg.masterPort;
+              ipv4.enabled = true;
+              ipv6.enabled = true;
+              ipam.mode = "kubernetes";
+            };
+          };
         };
 
-        environment.variables.KUBECONFIG = "/etc/rancher/k3s/k3s.yaml";
+        environment = {
+          variables.KUBECONFIG = "/etc/rancher/k3s/k3s.yaml";
+          etc."kubenix.yaml".source = self.packages.${pkgs.stdenv.hostPlatform.system}."kubenix-${instanceName}";
+        };
+        system.activationScripts.kubenix.text = ''
+          ln -sf /etc/kubenix.yaml /var/lib/rancher/k3s/server/manifests/kubenix.yaml
+        '';
       };
     };
   };
@@ -92,7 +131,8 @@
       roles,
       ...
     }: let
-      clusterSettings = roles.init.machines.${builtins.head (lib.attrNames roles.init.machines)}.settings;
+      init = builtins.head (lib.attrNames roles.init.machines);
+      clusterSettings = roles.init.machines.${init}.settings;
     in {
       nixosModule = {
         config,
@@ -106,7 +146,7 @@
             type = lib.types.str;
             default =
               if (clusterSettings.masterAddr == null)
-              then "${machine.name}.cm"
+              then "${init}.cm"
               else settings.masterAddr;
           };
           masterPort = lib.mkOption {
@@ -124,6 +164,10 @@
             type = lib.types.str;
             default = clusterSettings.serviceCidr;
           };
+          interface = lib.mkOption {
+            type = lib.types.str;
+            default = clusterSettings.interface;
+          };
         };
 
         config = {
@@ -140,7 +184,7 @@
           # k3s
           services.k3s = {
             enable = true;
-            nodeIP = "${config.clanSpec.services.cm.ipv4},${config.clanSpec.services.cm.ipv6}";
+            nodeIP = "${config.clanSpec.services.${cfg.interface}.ipv4},${config.clanSpec.services.${cfg.interface}.ipv6}";
             role = lib.mkDefault "agent";
             nodeLabel = [
               "instanceName=${instanceName}"
