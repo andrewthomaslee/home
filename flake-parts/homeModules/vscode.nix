@@ -161,6 +161,7 @@
                   "kubectl get"
                   "kubectl describe"
                   "kubectl logs"
+                  "kubectl config use-context"
                   "cat"
                   "find"
                   "ls"
@@ -168,9 +169,12 @@
                   "sed"
                   "rg"
                   "lt"
+                  "helm show values"
+                  "tail"
+                  "head"
                 ];
                 deniedCommands = [
-                  "nix run"
+                  "nix shell"
                   "nixos-rebuild"
                   "sudo"
                 ];

@@ -138,9 +138,15 @@
                 clustermesh = {
                   useAPIServer = true;
                   cacheTTL = "5m";
-                  apiserver.service = {
-                    type = "NodePort";
-                    nodePort = 32379;
+                  apiserver = {
+                    service = {
+                      type = "NodePort";
+                      nodePort = 32379;
+                    };
+                    tls.server = {
+                      extraIpAddresses = lib.mapAttrsToList (name: details: details.address) cfg.clusters;
+                      extraDnsNames = [cfg.masterAddr];
+                    };
                   };
                   config = {
                     enabled = true;
