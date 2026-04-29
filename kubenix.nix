@@ -31,6 +31,7 @@ in {
           namespace = "whoami";
         };
         spec = {
+          replicas = 2;
           selector.matchLabels.app = "whoami";
           template = {
             metadata.labels.app = "whoami";
@@ -67,8 +68,10 @@ in {
         metadata = {
           name = "whoami";
           namespace = "whoami";
+          annotations."service.cilium.io/global" = "true";
         };
         spec = {
+          type = "ClusterIP";
           selector.app = "whoami";
           ports = [
             {
