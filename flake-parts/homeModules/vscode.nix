@@ -139,7 +139,7 @@
                     maxMemoryMB = 6144;
                     flake = {
                       autoArchive = true;
-                      autoEvalInputs = true;
+                      autoEvalInputs = false;
                     };
                   };
                 };
