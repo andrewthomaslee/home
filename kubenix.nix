@@ -72,6 +72,8 @@ in {
         };
         spec = {
           type = "ClusterIP";
+          ipFamilies = ["IPv4" "IPv6"];
+          ipFamilyPolicy = "DualStack";
           selector.app = "whoami";
           ports = [
             {
