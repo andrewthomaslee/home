@@ -6,17 +6,30 @@
 }: let
   kubeVersion = builtins.substring 0 4 "${pkgs.k3s.version}";
 in {
-  imports = [
-    kubenix.modules.k8s
-    kubenix.modules.helm
-  ];
+  imports = [kubenix.modules.k8s];
 
   kubenix.project = "shared";
   kubernetes = {
     version = kubeVersion;
     namespace = "default";
-    helm.releases = {};
     objects = [
+      {
+        apiVersion = "v1";
+        kind = "Namespace";
+        metadata.name = "cloudflare";
+      }
+      {
+        apiVersion = "source.toolkit.fluxcd.io/v1";
+        kind = "HelmRepository";
+        metadata = {
+          name = "cloudflared";
+          namespace = "flux-system";
+        };
+        spec = {
+          interval = "24h";
+          url = "https://community-charts.github.io/helm-charts";
+        };
+      }
       # --- whoami --- #
       {
         apiVersion = "v1";
