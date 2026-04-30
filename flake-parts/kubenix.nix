@@ -22,27 +22,39 @@
         }).config.kubernetes.result
     );
 
-    # Dynamically generate apps for each kubernetes file to update the manifests
-    apps = lib.genAttrs kubeNames (name: {
+    # Dynamically generate app to update all kubernetes manifests
+    apps.kubenix = {
       type = "app";
       program = lib.getExe (pkgs.writeShellApplication {
-        name = name;
+        name = "kubenix";
         runtimeInputs = with pkgs.unstable; [
           jq
           coreutils
         ];
-        text =
-          if name != "shared"
-          then ''
-            mkdir -p "$REPO_ROOT"/kubernetes/clusters/${name}
-            cat ${self'.packages.${name}} | jq > "$REPO_ROOT"/kubernetes/clusters/${name}/${name}.json
-          ''
-          else
+        text = let
+          clusters = builtins.filter (x: x != "shared") kubeNames;
+          hasShared = builtins.elem "shared" kubeNames;
+
+          clusterCmds =
             lib.concatMapStringsSep "\n" (cluster: ''
+              echo "Generating manifests for ${cluster}..."
               mkdir -p "$REPO_ROOT"/kubernetes/clusters/${cluster}
-              cat ${self'.packages.shared} | jq > "$REPO_ROOT"/kubernetes/clusters/${cluster}/shared.json
-            '') (builtins.filter (x: x != "shared") kubeNames);
+              cat ${self'.packages.${cluster}} | jq > "$REPO_ROOT"/kubernetes/clusters/${cluster}/${cluster}.yaml
+            '')
+            clusters;
+
+          sharedCmds = lib.optionalString hasShared (lib.concatMapStringsSep "\n" (cluster: ''
+              echo "Copying shared manifests to ${cluster}..."
+              mkdir -p "$REPO_ROOT"/kubernetes/clusters/${cluster}
+              cat ${self'.packages.shared} | jq > "$REPO_ROOT"/kubernetes/clusters/${cluster}/shared.yaml
+            '')
+            clusters);
+        in ''
+          ${clusterCmds}
+          ${sharedCmds}
+          echo "All manifests updated successfully!"
+        '';
       });
-    });
+    };
   };
 }
