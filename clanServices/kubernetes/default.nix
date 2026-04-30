@@ -149,6 +149,9 @@
                   ipv4.enabled = true;
                   ipv6.enabled = true;
                   ipam.mode = "kubernetes";
+                  hubble.enabled = true;
+                  relay.enabled = true;
+                  ui.enabled = true;
                 }
                 // lib.optionalAttrs (cfg.clusters != {}) {
                   clustermesh = {
