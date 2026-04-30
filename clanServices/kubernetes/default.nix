@@ -133,7 +133,7 @@
                 name = "cilium";
                 namespace = "kube-system";
               };
-              spec.valuesContent =
+              spec.valuesContent = builtins.toJSON (
                 {
                   cluster = {
                     name = instanceName;
@@ -172,7 +172,8 @@
                       inherit (cfg) clusters;
                     };
                   };
-                };
+                }
+              );
             };
             sealed-secrets.content = {
               apiVersion = "helm.cattle.io/v1";
@@ -186,7 +187,7 @@
                 chart = "sealed-secrets";
                 repo = "https://bitnami-labs.github.io/sealed-secrets";
                 version = "2.18.5";
-                valuesContent = {
+                valuesContent = builtins.toJSON {
                   namespace = "kube-system";
                   kubeVersion = builtins.substring 0 4 "${pkgs.k3s.version}";
                 };
