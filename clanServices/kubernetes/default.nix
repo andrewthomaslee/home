@@ -160,6 +160,8 @@
                     useAPIServer = true;
                     cacheTTL = "5m";
                     apiserver = {
+                      replicas = 1;
+                      nodeSelector."node-role.kubernetes.io/control-plane" = "true";
                       service = {
                         type = "NodePort";
                         nodePort = 32379;
@@ -277,8 +279,9 @@
             nodeIP = "${config.clanSpec.services.${cfg.interface}.ipv4},${config.clanSpec.services.${cfg.interface}.ipv6}";
             role = lib.mkDefault "agent";
             nodeLabel = [
-              "instanceName=${instanceName}"
+              "cluster=${instanceName}"
               "machine=${machine.name}"
+              "role=${config.services.k3s.role}"
             ];
             tokenFile = config.clan.core.vars.generators."${instanceName}-join-token".files.token.path;
             serverAddr = lib.mkDefault "https://${cfg.masterAddr}:${toString cfg.masterPort}";
