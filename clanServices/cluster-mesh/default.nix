@@ -121,43 +121,70 @@
 
         config = {
           # --- clan vars --- #
-          clan.core.vars.generators = {
-            ${instanceName} = {
-              files.publickey.secret = false;
-              files.privatekey = {};
-              runtimeInputs = with pkgs; [wireguard-tools];
-              script = ''
-                wg genkey > $out/privatekey
-                wg pubkey < $out/privatekey > $out/publickey
-              '';
-            };
-            "${instanceName}-certs" = {
-              share = true;
-              files = {
-                "tls.crt" = {secret = false;};
-                "tls.key" = {secret = true;};
-              };
-              runtimeInputs = with pkgs; [openssl];
-              script = ''
-                mkdir -p $out
-                openssl genrsa -out $out/tls.key 4096
-                openssl req -new -x509 -days 3650 -key $out/tls.key -out $out/tls.crt -subj "/CN=Cilium CA"
-              '';
-            };
-          };
+          clan.core.vars.generators =
+            lib.mkMerge [
+              {
+                ${instanceName} = {
+                  files = {
+                    publickey.secret = false;
+                    privatekey = {};
+                  };
+                  runtimeInputs = with pkgs; [wireguard-tools];
+                  script = ''
+                    wg genkey > $out/privatekey
+                    wg pubkey < $out/privatekey > $out/publickey
+                  '';
+                };
+              }
+            ]
+            ++ lib.optional (config.services.k3s.role == "server")
+            [
+              {
+                "${instanceName}-cilium-certs" = {
+                  share = true;
+                  files = {
+                    "tls.crt".secret = false;
+                    "tls.key".secret = true;
+                  };
+                  runtimeInputs = with pkgs; [openssl];
+                  script = ''
+                    mkdir -p $out
+                    openssl genrsa -out $out/tls.key 4096
+                    openssl req -new -x509 -days 3650 -key $out/tls.key -out $out/tls.crt -subj "/CN=Cilium CA"
+                  '';
+                };
+              }
+              {
+                "${instanceName}-sealed-secrets-certs" = {
+                  share = true;
+                  files = {
+                    "tls.crt".secret = false;
+                    "tls.key".secret = true;
+                  };
+                  runtimeInputs = with pkgs; [openssl];
+                  script = ''
+                    mkdir -p $out
+                    openssl genrsa -out $out/tls.key 4096
+                    openssl req -new -x509 -days 3650 -key $out/tls.key -out $out/tls.crt -subj "/CN=sealed-secret/O=sealed-secret"
+                  '';
+                };
+              }
+            ];
 
-          systemd = {
-            paths."${instanceName}-certs" = lib.mkIf (config.services.k3s.role == "server") {
+          systemd = lib.mkIf (config.services.k3s.role == "server") {
+            paths."${instanceName}-sync-certs" = {
               description = "Watch Cilium CA secrets for changes";
               wantedBy = ["multi-user.target"];
               pathConfig.PathChanged = [
-                config.clan.core.vars.generators."${instanceName}-certs".files."tls.crt".path
-                config.clan.core.vars.generators."${instanceName}-certs".files."tls.key".path
+                config.clan.core.vars.generators."${instanceName}-cilium-certs".files."tls.crt".path
+                config.clan.core.vars.generators."${instanceName}-cilium-certs".files."tls.key".path
+                config.clan.core.vars.generators."${instanceName}-sealed-secrets-certs".files."tls.crt".path
+                config.clan.core.vars.generators."${instanceName}-sealed-secrets-certs".files."tls.key".path
               ];
             };
             services = {
-              "${instanceName}-certs" = lib.mkIf (config.services.k3s.role == "server") {
-                description = "Generate Cilium CA Secret Manifest";
+              "${instanceName}-sync-certs" = {
+                description = "Sync Certs Manifests";
                 wantedBy = ["multi-user.target"];
                 before = ["k3s.service"];
                 serviceConfig = {
@@ -165,6 +192,7 @@
                   User = "root";
                   ExecStart = pkgs.writeShellScript "${instanceName}-certs" ''
                     mkdir -p /var/lib/rancher/k3s/server/manifests
+
                     cat <<EOF > /var/lib/rancher/k3s/server/manifests/cilium-ca.yaml
                     apiVersion: v1
                     kind: Secret
@@ -178,17 +206,31 @@
                         meta.helm.sh/release-name: cilium
                         meta.helm.sh/release-namespace: kube-system
                     data:
-                      tls.crt: $(cat ${config.clan.core.vars.generators."${instanceName}-certs".files."tls.crt".path} | base64 -w0)
-                      tls.key: $(cat ${config.clan.core.vars.generators."${instanceName}-certs".files."tls.key".path} | base64 -w0)
-                      ca.crt: $(cat ${config.clan.core.vars.generators."${instanceName}-certs".files."tls.crt".path} | base64 -w0)
-                      ca.key: $(cat ${config.clan.core.vars.generators."${instanceName}-certs".files."tls.key".path} | base64 -w0)
+                      tls.crt: $(cat ${config.clan.core.vars.generators."${instanceName}-cilium-certs".files."tls.crt".path} | base64 -w0)
+                      tls.key: $(cat ${config.clan.core.vars.generators."${instanceName}-cilium-certs".files."tls.key".path} | base64 -w0)
+                      ca.crt: $(cat ${config.clan.core.vars.generators."${instanceName}-cilium-certs".files."tls.crt".path} | base64 -w0)
+                      ca.key: $(cat ${config.clan.core.vars.generators."${instanceName}-cilium-certs".files."tls.key".path} | base64 -w0)
+                    EOF
+
+                    cat <<EOF > /var/lib/rancher/k3s/server/manifests/sealed-secrets-key.yaml
+                    apiVersion: v1
+                    kind: Secret
+                    type: kubernetes.io/tls
+                    metadata:
+                      name: sealed-secrets-key
+                      namespace: kube-system
+                      labels:
+                        sealedsecrets.bitnami.com/sealed-secrets-key: "active"
+                    data:
+                      tls.crt: $(cat ${config.clan.core.vars.generators."${instanceName}-sealed-secrets-certs".files."tls.crt".path} | base64 -w0)
+                      tls.key: $(cat ${config.clan.core.vars.generators."${instanceName}-sealed-secrets-certs".files."tls.key".path} | base64 -w0)
                     EOF
                   '';
                 };
               };
-              k3s = lib.mkIf (config.services.k3s.role == "server") {
-                wants = ["${instanceName}-certs.service"];
-                after = ["${instanceName}-certs.service"];
+              k3s = {
+                wants = ["${instanceName}-sync-certs.service"];
+                after = ["${instanceName}-sync-certs.service"];
               };
             };
           };
