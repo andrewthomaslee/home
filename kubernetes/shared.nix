@@ -8,14 +8,14 @@
 in {
   imports = [
     kubenix.modules.k8s
-    # kubenix.modules.helm
+    kubenix.modules.helm
   ];
 
-  kubenix.project = "home";
+  kubenix.project = "shared";
   kubernetes = {
     version = kubeVersion;
     namespace = "default";
-    # helm.releases = {};
+    helm.releases = {};
     objects = [
       # --- whoami --- #
       {
@@ -31,7 +31,6 @@ in {
           namespace = "whoami";
         };
         spec = {
-          replicas = 2;
           selector.matchLabels.app = "whoami";
           template = {
             metadata.labels.app = "whoami";
@@ -73,7 +72,7 @@ in {
         spec = {
           type = "ClusterIP";
           ipFamilies = ["IPv4" "IPv6"];
-          ipFamilyPolicy = "DualStack";
+          ipFamilyPolicy = "PreferDualStack";
           selector.app = "whoami";
           ports = [
             {

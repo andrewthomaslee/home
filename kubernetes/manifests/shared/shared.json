@@ -1,0 +1,111 @@
+{
+  "apiVersion": "v1",
+  "items": [
+    {
+      "apiVersion": "v1",
+      "kind": "Namespace",
+      "metadata": {
+        "labels": {
+          "kubenix/hash": "387652ab0b90861482966ac36d50a78bce0bdd17"
+        },
+        "name": "whoami"
+      }
+    },
+    {
+      "apiVersion": "apps/v1",
+      "kind": "DaemonSet",
+      "metadata": {
+        "labels": {
+          "kubenix/hash": "387652ab0b90861482966ac36d50a78bce0bdd17"
+        },
+        "name": "whoami",
+        "namespace": "whoami"
+      },
+      "spec": {
+        "selector": {
+          "matchLabels": {
+            "app": "whoami"
+          }
+        },
+        "template": {
+          "metadata": {
+            "labels": {
+              "app": "whoami"
+            }
+          },
+          "spec": {
+            "containers": [
+              {
+                "args": [
+                  "--port",
+                  "8080"
+                ],
+                "image": "traefik/whoami",
+                "name": "whoami",
+                "ports": [
+                  {
+                    "containerPort": 8080
+                  }
+                ],
+                "securityContext": {
+                  "allowPrivilegeEscalation": false,
+                  "capabilities": {
+                    "drop": [
+                      "ALL"
+                    ]
+                  }
+                }
+              }
+            ],
+            "securityContext": {
+              "fsGroup": 1000,
+              "runAsGroup": 1000,
+              "runAsNonRoot": true,
+              "runAsUser": 1000,
+              "seccompProfile": {
+                "type": "RuntimeDefault"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "apiVersion": "v1",
+      "kind": "Service",
+      "metadata": {
+        "annotations": {
+          "service.cilium.io/global": "true"
+        },
+        "labels": {
+          "kubenix/hash": "387652ab0b90861482966ac36d50a78bce0bdd17"
+        },
+        "name": "whoami",
+        "namespace": "whoami"
+      },
+      "spec": {
+        "ipFamilies": [
+          "IPv4",
+          "IPv6"
+        ],
+        "ipFamilyPolicy": "PreferDualStack",
+        "ports": [
+          {
+            "port": 80,
+            "targetPort": 8080
+          }
+        ],
+        "selector": {
+          "app": "whoami"
+        },
+        "type": "ClusterIP"
+      }
+    }
+  ],
+  "kind": "List",
+  "labels": {
+    "kubenix/hash": "387652ab0b90861482966ac36d50a78bce0bdd17",
+    "kubenix/k8s-version": "1.35",
+    "kubenix/project-name": "shared"
+  }
+}

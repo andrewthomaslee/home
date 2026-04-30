@@ -110,58 +110,71 @@
             "--disable-kube-proxy"
             "--disable=traefik,servicelb"
           ];
-          autoDeployCharts.cilium = {
-            name = "cilium";
-            version = "1.19.3";
-            repo = "https://helm.cilium.io/";
-            hash = "sha256-yOBd+eq/kBnmL1ED4fNYFLTxtDkW+IUZ5a5ONsaapCs=";
-            targetNamespace = "kube-system";
-            extraFieldDefinitions.spec.bootstrap = true;
-            values =
-              {
-                cluster = {
-                  name = instanceName;
-                  id = cfg.id;
-                };
-                rollOutCiliumPods = true;
-                devices = cfg.interface;
-                MTU = 1370;
-                operator.replicas = 1;
-                kubeProxyReplacement = true;
-                k8sServiceHost = cfg.masterAddr;
-                k8sServicePort = cfg.masterPort;
-                ipv4.enabled = true;
-                ipv6.enabled = true;
-                ipam.mode = "kubernetes";
-              }
-              // lib.optionalAttrs (cfg.clusters != {}) {
-                clustermesh = {
-                  useAPIServer = true;
-                  cacheTTL = "5m";
-                  apiserver = {
-                    service = {
-                      type = "NodePort";
-                      nodePort = 32379;
-                    };
-                    tls.server = {
-                      extraIpAddresses = lib.mapAttrsToList (name: details: details.address) cfg.clusters;
-                      extraDnsNames = [cfg.masterAddr];
-                    };
-                  };
-                  config = {
-                    enabled = true;
-                    inherit (cfg) clusters;
-                  };
-                };
+          manifests = {
+            cilium-helmchart.content = {
+              apiVersion = "helm.cattle.io/v1";
+              kind = "HelmChart";
+              metadata = {
+                name = "cilium";
+                namespace = "kube-system";
               };
+              spec = {
+                chart = "cilium";
+                repo = "https://helm.cilium.io/";
+                targetNamespace = "kube-system";
+                version = "1.19.3";
+                bootstrap = true;
+              };
+            };
+            cilium-helmchart-config.content = {
+              apiVersion = "helm.cattle.io/v1";
+              kind = "HelmChartConfig";
+              metadata = {
+                name = "cilium";
+                namespace = "kube-system";
+              };
+              spec.valuesContent =
+                builtins.toJSON {
+                  cluster = {
+                    name = instanceName;
+                    id = cfg.id;
+                  };
+                  rollOutCiliumPods = true;
+                  devices = cfg.interface;
+                  MTU = 1370;
+                  operator.replicas = 1;
+                  kubeProxyReplacement = true;
+                  k8sServiceHost = cfg.masterAddr;
+                  k8sServicePort = cfg.masterPort;
+                  ipv4.enabled = true;
+                  ipv6.enabled = true;
+                  ipam.mode = "kubernetes";
+                }
+                // lib.optionalAttrs (cfg.clusters != {}) {
+                  clustermesh = {
+                    useAPIServer = true;
+                    cacheTTL = "5m";
+                    apiserver = {
+                      service = {
+                        type = "NodePort";
+                        nodePort = 32379;
+                      };
+                      tls.server = {
+                        extraIpAddresses = lib.mapAttrsToList (name: details: details.address) cfg.clusters;
+                        extraDnsNames = [cfg.masterAddr];
+                      };
+                    };
+                    config = {
+                      enabled = true;
+                      inherit (cfg) clusters;
+                    };
+                  };
+                };
+            };
           };
         };
 
         environment.variables.KUBECONFIG = "/etc/rancher/k3s/k3s.yaml";
-        system.activationScripts.kubenix.text = ''
-          mkdir -p /var/lib/rancher/k3s/server/manifests
-          cp ${self.packages.${pkgs.stdenv.hostPlatform.system}.kubenix} /var/lib/rancher/k3s/server/manifests/kubenix.yaml
-        '';
       };
     };
   };

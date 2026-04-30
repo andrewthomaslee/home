@@ -251,41 +251,12 @@
 
           # tools and scripts to test connectivity
           environment.systemPackages = with pkgs; [
-            iperf3
-            fping
-            gping
-            mtr
-            trippy
-            (writeShellApplication {
-              name = "mtr-${instanceName}";
-              runtimeInputs = [mtr gnugrep coreutils];
-              text = ''
-                # shellcheck disable=SC2046
-                mtr "$@" -br $(grep -oP '\S+\.${instanceName}' /etc/hosts | sort -u)
-              '';
-            })
             (writeShellApplication {
               name = "fping-${instanceName}";
               runtimeInputs = [fping gnugrep coreutils];
               text = ''
                 # shellcheck disable=SC2046
                 fping "$@" -a -q -e -c 20 $(grep -oP '\S+\.${instanceName}' /etc/hosts | sort -u)
-              '';
-            })
-            (writeShellApplication {
-              name = "gping-${instanceName}";
-              runtimeInputs = [gping gnugrep coreutils];
-              text = ''
-                # shellcheck disable=SC2046
-                gping "$@" $(grep -oP '\S+\.${instanceName}' /etc/hosts | sort -u)
-              '';
-            })
-            (writeShellApplication {
-              name = "trippy-${instanceName}";
-              runtimeInputs = [trippy gnugrep coreutils];
-              text = ''
-                # shellcheck disable=SC2046
-                trip "$@" $(grep -oP '\S+\.${instanceName}' /etc/hosts | sort -u)
               '';
             })
           ];
