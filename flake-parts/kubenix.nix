@@ -37,10 +37,11 @@
             mkdir -p "$REPO_ROOT"/kubernetes/clusters/${name}
             cat ${self'.packages.${name}} | jq > "$REPO_ROOT"/kubernetes/clusters/${name}/${name}.json
           ''
-          else ''
-            mkdir -p "$REPO_ROOT"/kubernetes/shared
-            cat ${self'.packages.${name}} | jq > "$REPO_ROOT"/kubernetes/shared/${name}.json
-          '';
+          else
+            lib.concatMapStringsSep "\n" (cluster: ''
+              mkdir -p "$REPO_ROOT"/kubernetes/clusters/${cluster}
+              cat ${self'.packages.shared} | jq > "$REPO_ROOT"/kubernetes/clusters/${cluster}/shared.json
+            '') (builtins.filter (x: x != "shared") kubeNames);
       });
     });
   };
