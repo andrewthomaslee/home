@@ -185,7 +185,7 @@
                 version = "2.18.5";
                 valuesContent = builtins.toJSON {
                   namespace = "kube-system";
-                  kubeVersion = pkgs.k3s.version;
+                  kubeVersion = builtins.substring 0 4 "${pkgs.k3s.version}";
                 };
               };
             };
