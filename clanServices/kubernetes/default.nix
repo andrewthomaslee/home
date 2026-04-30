@@ -160,7 +160,6 @@
                     useAPIServer = true;
                     cacheTTL = "5m";
                     apiserver = {
-                      replicas = 1;
                       nodeSelector."node-role.kubernetes.io/control-plane" = "true";
                       service = {
                         type = "NodePort";
