@@ -18,6 +18,7 @@
         fluxcd
         flux9s
         cilium-cli
+        kubernetes-helm
       ]);
     shellHook = ''
       eval "$(bunx varlock load --format shell)"

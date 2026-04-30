@@ -119,11 +119,11 @@
                 namespace = "kube-system";
               };
               spec = {
+                bootstrap = true;
+                targetNamespace = "kube-system";
                 chart = "cilium";
                 repo = "https://helm.cilium.io/";
-                targetNamespace = "kube-system";
                 version = "1.19.3";
-                bootstrap = true;
               };
             };
             cilium-helmchart-config.content = {
@@ -171,10 +171,84 @@
                   };
                 };
             };
+            sealed-secrets.content = {
+              apiVersion = "helm.cattle.io/v1";
+              kind = "HelmChart";
+              metadata = {
+                name = "sealed-secrets";
+                namespace = "kube-system";
+              };
+              spec = {
+                targetNamespace = "kube-system";
+                chart = "sealed-secrets";
+                repo = "https://bitnami-labs.github.io/sealed-secrets";
+                version = "2.18.5";
+                valuesContent = builtins.toJSON {
+                  namespace = "kube-system";
+                  kubeVersion = pkgs.k3s.version;
+                };
+              };
+            };
           };
         };
 
         environment.variables.KUBECONFIG = "/etc/rancher/k3s/k3s.yaml";
+
+        clan.core.vars.generators."${instanceName}-sealed-secrets-key" = {
+          share = true;
+          files = {
+            "tls.crt" = {secret = false;};
+            "tls.key" = {secret = true;};
+          };
+          runtimeInputs = with pkgs; [openssl];
+          script = ''
+            mkdir -p $out
+            openssl genrsa -out $out/tls.key 4096
+            openssl req -new -x509 -days 3650 -key $out/tls.key -out $out/tls.crt -subj "/CN=sealed-secret/O=sealed-secret"
+          '';
+        };
+
+        systemd = {
+          paths."${instanceName}-sealed-secrets-key" = {
+            description = "Watch Sealed Secrets Key for changes";
+            wantedBy = ["multi-user.target"];
+            pathConfig.PathChanged = [
+              config.clan.core.vars.generators."${instanceName}-sealed-secrets-key".files."tls.crt".path
+              config.clan.core.vars.generators."${instanceName}-sealed-secrets-key".files."tls.key".path
+            ];
+          };
+          services = {
+            "${instanceName}-sealed-secrets-key" = {
+              description = "Generate Sealed Secrets Key Manifest";
+              wantedBy = ["multi-user.target"];
+              before = ["k3s.service"];
+              serviceConfig = {
+                Type = "oneshot";
+                User = "root";
+                ExecStart = pkgs.writeShellScript "${instanceName}-sealed-secrets-key" ''
+                  mkdir -p /var/lib/rancher/k3s/server/manifests
+                  cat <<EOF > /var/lib/rancher/k3s/server/manifests/sealed-secrets-key.yaml
+                  apiVersion: v1
+                  kind: Secret
+                  type: kubernetes.io/tls
+                  metadata:
+                    name: sealed-secrets-key
+                    namespace: kube-system
+                    labels:
+                      sealedsecrets.bitnami.com/sealed-secrets-key: "active"
+                  data:
+                    tls.crt: $(cat ${config.clan.core.vars.generators."${instanceName}-sealed-secrets-key".files."tls.crt".path} | base64 -w0)
+                    tls.key: $(cat ${config.clan.core.vars.generators."${instanceName}-sealed-secrets-key".files."tls.key".path} | base64 -w0)
+                  EOF
+                '';
+              };
+            };
+            k3s = {
+              wants = ["${instanceName}-sealed-secrets-key.service"];
+              after = ["${instanceName}-sealed-secrets-key.service"];
+            };
+          };
+        };
       };
     };
   };
