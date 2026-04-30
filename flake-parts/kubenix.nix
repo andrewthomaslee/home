@@ -27,14 +27,20 @@
       type = "app";
       program = lib.getExe (pkgs.writeShellApplication {
         name = name;
-        runtimeInputs = with pkgs; [
+        runtimeInputs = with pkgs.unstable; [
           jq
           coreutils
         ];
-        text = ''
-          mkdir -p "$REPO_ROOT"/kubernetes/manifests/${name}
-          cat ${self'.packages.${name}} | jq > "$REPO_ROOT"/kubernetes/manifests/${name}/${name}.json
-        '';
+        text =
+          if name != "shared"
+          then ''
+            mkdir -p "$REPO_ROOT"/kubernetes/clusters/${name}
+            cat ${self'.packages.${name}} | jq > "$REPO_ROOT"/kubernetes/clusters/${name}/${name}.json
+          ''
+          else ''
+            mkdir -p "$REPO_ROOT"/kubernetes/shared
+            cat ${self'.packages.${name}} | jq > "$REPO_ROOT"/kubernetes/shared/${name}.json
+          '';
       });
     });
   };

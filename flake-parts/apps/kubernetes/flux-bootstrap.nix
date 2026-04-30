@@ -17,13 +17,15 @@
           text = ''
             CLUSTER=$1
             kubectl config use-context "$CLUSTER"
+
+            mkdir -p "$REPO_ROOT"/kubernetes/manifests/"$CLUSTER"
+
             flux bootstrap github \
               --token-auth \
               --owner=andrewthomaslee \
               --repository=home \
               --branch=main \
-              --path=kubernetes/manifests/"$CLUSTER" \
-              --path=kubernetes/manifests/shared \
+              --path=kubernetes/clusters/"$CLUSTER" \
               --personal
           '';
         });
