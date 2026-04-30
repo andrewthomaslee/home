@@ -18,7 +18,7 @@
             CLUSTER=$1
             kubectl config use-context "$CLUSTER"
 
-            mkdir -p "$REPO_ROOT"/kubernetes/manifests/"$CLUSTER"
+            mkdir -p "$REPO_ROOT"/kubernetes/clusters/"$CLUSTER"
 
             flux bootstrap github \
               --token-auth \
