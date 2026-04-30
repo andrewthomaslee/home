@@ -157,12 +157,10 @@
           };
         };
 
-        environment = {
-          variables.KUBECONFIG = "/etc/rancher/k3s/k3s.yaml";
-          etc."kubenix.yaml".source = self.packages.${pkgs.stdenv.hostPlatform.system}.kubenix;
-        };
+        environment.variables.KUBECONFIG = "/etc/rancher/k3s/k3s.yaml";
         system.activationScripts.kubenix.text = ''
-          ln -sf /etc/kubenix.yaml /var/lib/rancher/k3s/server/manifests/kubenix.yaml
+          mkdir -p /var/lib/rancher/k3s/server/manifests
+          cp ${self.packages.${pkgs.stdenv.hostPlatform.system}.kubenix} /var/lib/rancher/k3s/server/manifests/kubenix.yaml
         '';
       };
     };
@@ -197,7 +195,7 @@
             type = lib.types.str;
             default =
               if (clusterSettings.masterAddr == null)
-              then "${init}.cm"
+              then "${init}.${cfg.interface}"
               else settings.masterAddr;
           };
           masterPort = lib.mkOption {
