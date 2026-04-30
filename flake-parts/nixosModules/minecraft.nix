@@ -170,7 +170,7 @@
       };
 
       # playit.gg proxy
-      environment.systemPackages = [self.packages.${pkgs.system}.playit];
+      environment.systemPackages = [self.packages.${pkgs.stdenv.hostPlatform.system}.playit];
       systemd.services.playit = {
         description = "playit proxy";
         after = ["network.target"];
@@ -179,7 +179,7 @@
           User = "playit";
           Group = "playit";
           Type = "simple";
-          ExecStart = "${self.packages.${pkgs.system}.playit}/bin/playit -s";
+          ExecStart = "${self.packages.${pkgs.stdenv.hostPlatform.system}.playit}/bin/playit -s";
           Restart = "always";
           RuntimeDirectory = "playit";
           StateDirectory = "playit";

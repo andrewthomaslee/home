@@ -122,56 +122,49 @@
         config = {
           # --- clan vars --- #
           clan.core.vars.generators =
-            lib.mkMerge [
-              {
-                ${instanceName} = {
-                  files = {
-                    publickey.secret = false;
-                    privatekey = {};
-                  };
-                  runtimeInputs = with pkgs; [wireguard-tools];
-                  script = ''
-                    wg genkey > $out/privatekey
-                    wg pubkey < $out/privatekey > $out/publickey
-                  '';
+            {
+              ${instanceName} = {
+                files = {
+                  publickey.secret = false;
+                  privatekey = {};
                 };
-              }
-            ]
-            ++ lib.optional (config.services.k3s.role == "server")
-            [
-              {
-                "${instanceName}-cilium-certs" = {
-                  share = true;
-                  files = {
-                    "tls.crt".secret = false;
-                    "tls.key".secret = true;
-                  };
-                  runtimeInputs = with pkgs; [openssl];
-                  script = ''
-                    mkdir -p $out
-                    openssl genrsa -out $out/tls.key 4096
-                    openssl req -new -x509 -days 3650 -key $out/tls.key -out $out/tls.crt -subj "/CN=Cilium CA"
-                  '';
+                runtimeInputs = with pkgs; [wireguard-tools];
+                script = ''
+                  wg genkey > $out/privatekey
+                  wg pubkey < $out/privatekey > $out/publickey
+                '';
+              };
+            }
+            // lib.optionalAttrs (config.services.k3s.role == "server") {
+              "${instanceName}-cilium-certs" = {
+                share = true;
+                files = {
+                  "tls.crt".secret = false;
+                  "tls.key".secret = true;
                 };
-              }
-              {
-                "${instanceName}-sealed-secrets-certs" = {
-                  share = true;
-                  files = {
-                    "tls.crt".secret = false;
-                    "tls.key".secret = true;
-                  };
-                  runtimeInputs = with pkgs; [openssl];
-                  script = ''
-                    mkdir -p $out
-                    openssl genrsa -out $out/tls.key 4096
-                    openssl req -new -x509 -days 3650 -key $out/tls.key -out $out/tls.crt -subj "/CN=sealed-secret/O=sealed-secret"
-                  '';
+                runtimeInputs = with pkgs; [openssl];
+                script = ''
+                  mkdir -p $out
+                  openssl genrsa -out $out/tls.key 4096
+                  openssl req -new -x509 -days 3650 -key $out/tls.key -out $out/tls.crt -subj "/CN=Cilium CA"
+                '';
+              };
+              "${instanceName}-sealed-secrets-certs" = {
+                share = true;
+                files = {
+                  "tls.crt".secret = false;
+                  "tls.key".secret = true;
                 };
-              }
-            ];
+                runtimeInputs = with pkgs; [openssl];
+                script = ''
+                  mkdir -p $out
+                  openssl genrsa -out $out/tls.key 4096
+                  openssl req -new -x509 -days 3650 -key $out/tls.key -out $out/tls.crt -subj "/CN=sealed-secret/O=sealed-secret"
+                '';
+              };
+            };
 
-          systemd = lib.mkIf (config.services.k3s.role == "server") {
+          systemd = lib.optionalAttrs (config.services.k3s.role == "server") {
             paths."${instanceName}-sync-certs" = {
               description = "Watch Cilium CA secrets for changes";
               wantedBy = ["multi-user.target"];

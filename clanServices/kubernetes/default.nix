@@ -134,7 +134,7 @@
                 namespace = "kube-system";
               };
               spec.valuesContent =
-                builtins.toJSON {
+                {
                   cluster = {
                     name = instanceName;
                     id = cfg.id;
@@ -183,7 +183,7 @@
                 chart = "sealed-secrets";
                 repo = "https://bitnami-labs.github.io/sealed-secrets";
                 version = "2.18.5";
-                valuesContent = builtins.toJSON {
+                valuesContent = {
                   namespace = "kube-system";
                   kubeVersion = builtins.substring 0 4 "${pkgs.k3s.version}";
                 };
