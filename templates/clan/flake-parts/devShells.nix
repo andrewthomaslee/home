@@ -1,47 +1,38 @@
-{inputs, ...}: let
-  # See https://github.com/cachix/devenv/issues/1764
-  devenvRootFileContent = builtins.readFile inputs.devenv-root.outPath;
-  root =
-    if devenvRootFileContent != ""
-    then devenvRootFileContent
-    else "${inputs.devenv-root}";
-in {
+{...}: {
   perSystem = {
     pkgs,
     lib,
     inputs',
     ...
-  }: let
-    # ------ Common Configuration ------ #
-    packages = with pkgs.unstable-devenv; [
-      bash
-      bun
-      inputs'.clan-core.packages.clan-cli
-    ];
-    shellHook = ''
-      export REPO_ROOT
-      REPO_ROOT=$(git rev-parse --show-toplevel)
-      eval "$(bunx varlock load --format shell)"
-    '';
-  in {
-    # ------ Pure Dev Shell ------ #
-    # Activate: `nix develop .#pure`
-    devShells.pure = pkgs.mkShell {
-      inherit shellHook packages;
-    };
+  }: {
+    # ------ Default Dev Shell ------ #
+    # Activate: `nix develop`
+    devShells.default = pkgs.mkShell {
+      packages =
+        [
+          inputs'.clan-core.packages.clan-cli
+          pkgs.k3s
+        ]
+        ++ (with pkgs.unstable; [
+          bash
+          bun
+          fluxcd
+          flux9s
+          cilium-cli
+          kubernetes-helm
+          kubeseal
+        ]);
+      shellHook = ''
+        mkdir -p "$REPO_ROOT/.secrets/kubeconfig"
+        eval "$(bunx varlock load --format shell)"
+        export REPO_ROOT
+        REPO_ROOT=$(git rev-parse --show-toplevel)
+        export CLAN_DIR
+        CLAN_DIR=$REPO_ROOT
+        export KUBECONFIG
+        KUBECONFIG=$(find "$REPO_ROOT/.secrets/kubeconfig" -type f 2>/dev/null | paste -sd ":" -)
 
-    # ------ Devenv Dev Shell ------ #
-    # https://devenv.sh/reference/options/
-    # Activate: `direnv allow` or `nix develop --no-pure-eval --override-input devenv-root "file+file://$PWD/.devenv/root"`
-    devenv.shells.default = {
-      inherit packages;
-      enterShell = shellHook;
-      devenv = {inherit root;};
-      languages.nix.enable = true;
-
-      # Commands to run for tests
-      enterTest = ''
-        bun --version
+        kubectl config get-contexts
       '';
     };
   };

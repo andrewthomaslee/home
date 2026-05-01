@@ -1,0 +1,84 @@
+{
+  pkgs,
+  # config,
+  kubenix,
+  name,
+  ...
+}: let
+  kubeVersion = builtins.substring 0 4 "${pkgs.k3s.version}";
+in {
+  imports = [kubenix.modules.k8s];
+
+  kubenix.project = name;
+  kubernetes = {
+    version = kubeVersion;
+    namespace = "default";
+    objects = [
+      # --- whoami --- #
+      {
+        apiVersion = "v1";
+        kind = "Namespace";
+        metadata.name = "whoami";
+      }
+      {
+        apiVersion = "apps/v1";
+        kind = "DaemonSet";
+        metadata = {
+          name = "whoami";
+          namespace = "whoami";
+        };
+        spec = {
+          selector.matchLabels.app = "whoami";
+          template = {
+            metadata.labels.app = "whoami";
+            spec = {
+              securityContext = {
+                runAsNonRoot = true;
+                runAsUser = 1000;
+                runAsGroup = 1000;
+                fsGroup = 1000;
+                seccompProfile.type = "RuntimeDefault";
+              };
+              containers = [
+                {
+                  name = "whoami";
+                  image = "traefik/whoami";
+                  args = [
+                    "--port"
+                    "8080"
+                  ];
+                  ports = [{containerPort = 8080;}];
+                  securityContext = {
+                    allowPrivilegeEscalation = false;
+                    capabilities.drop = ["ALL"];
+                  };
+                }
+              ];
+            };
+          };
+        };
+      }
+      {
+        apiVersion = "v1";
+        kind = "Service";
+        metadata = {
+          name = "whoami";
+          namespace = "whoami";
+          annotations."service.cilium.io/global" = "true";
+        };
+        spec = {
+          type = "ClusterIP";
+          ipFamilies = ["IPv4" "IPv6"];
+          ipFamilyPolicy = "PreferDualStack";
+          selector.app = "whoami";
+          ports = [
+            {
+              port = 80;
+              targetPort = 8080;
+            }
+          ];
+        };
+      }
+    ];
+  };
+}

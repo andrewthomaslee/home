@@ -4,6 +4,10 @@
   <strong><u>Clan Template</u></strong>
 </h3>
 
+<h3 align="center">
+  <strong><u>PLEASE UPDATE YOUR INFO WHERE `TODO` IN REPO</u></strong>
+</h3>
+
 
 ## Project layout
 

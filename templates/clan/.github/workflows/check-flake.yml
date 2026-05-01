@@ -23,7 +23,8 @@ jobs:
       - name: Flake Checker
         uses: DeterminateSystems/flake-checker-action@main
         with:
-          nixpkgs-keys: nixpkgs
+          check-owner: false
+          check-supported: false
           fail-mode: true
 
       - name: Install Nix

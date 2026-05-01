@@ -26,7 +26,7 @@ in {
     };
 
     # Formatter
-    formatter = pkgs.alejandra;
+    formatter = pkgs.unstable.alejandra; # TODO: change to your formatter
     # Mkdocs
     documentation.mkdocs-root = ../documentation;
   };
@@ -34,33 +34,102 @@ in {
   flake = {
     # ------ NixOS Modules ------ #
     nixosModules.default = {pkgs, ...}: {
+      # args passed to all modules
       _module.args = {inherit customLib;};
 
+      # pkgs
       nixpkgs = {
         overlays = [self.overlays.default];
-        config.allowUnfree = true;
+        config.allowUnfree = lib.mkDefault true;
+        hostPlatform = lib.mkDefault "x86_64-linux";
       };
 
-      imports = [
-        inputs.determinate.nixosModules.default
-        inputs.home-manager.nixosModules.home-manager
-      ];
+      # nixosModules imported
+      imports =
+        [
+          inputs.determinate.nixosModules.default
+          inputs.home-manager.nixosModules.home-manager
+        ]
+        # Import all NixOS Modules from `flake-parts/nixosModules`
+        # Filter out profile modules and clan modules
+        ++ (lib.attrValues (lib.filterAttrs (
+            n: _:
+              n
+              != "default"
+              && !(lib.hasPrefix "profile-" n)
+              && !(lib.hasPrefix "clan-" n)
+          )
+          self.nixosModules));
 
+      # acme
+      security.acme = {
+        acceptTerms = true;
+        defaults.email = lib.mkDefault "andrewthomaslee.business@gmail.com"; # TODO: change to your email
+      };
+
+      # Often hangs
+      systemd.services = {
+        NetworkManager-wait-online.enable = lib.mkForce false;
+        systemd-networkd-wait-online.enable = lib.mkForce false;
+      };
+
+      # Home-manager
       home-manager = {
         useUserPackages = true;
         backupFileExtension = "hm-backup";
         extraSpecialArgs = {inherit customLib;};
       };
 
-      nixpkgs.hostPlatform = lib.mkDefault "x86_64-linux";
-      boot.loader.grub.enable = lib.mkDefault true;
-      boot.loader.grub.efiSupport = lib.mkDefault true;
-      boot.loader.grub.efiInstallAsRemovable = lib.mkDefault true;
+      # localization
+      i18n.defaultLocale = "en_US.UTF-8"; # TODO: change to your locale
+
+      # timezone
+      time.timeZone = lib.mkDefault "America/Chicago"; # TODO: change to your timezone
+
+      # Services
+      services = {
+        # Limit log size for journal
+        journald.extraConfig = lib.mkDefault "SystemMaxUse=3G";
+        # Automatically update firmware
+        fwupd.enable = lib.mkDefault true;
+        # Enable ACPI
+        acpid.enable = lib.mkDefault true;
+      };
+
+      # Hardware
+      hardware.enableRedistributableFirmware = lib.mkDefault true;
+
+      # System Packages
+      environment = {
+        enableAllTerminfo = lib.mkDefault true;
+        localBinInPath = lib.mkDefault true;
+        systemPackages = with pkgs.unstable; [
+          git
+          neovim
+          rsync
+          fh
+        ];
+      };
+
+      # Boot
+      boot = {
+        tmp = {
+          useTmpfs = lib.mkDefault false;
+          cleanOnBoot = lib.mkDefault true;
+        };
+        loader.grub = {
+          enable = lib.mkDefault true;
+          efiSupport = lib.mkDefault true;
+          efiInstallAsRemovable = lib.mkDefault true;
+        };
+      };
+
+      # disk
       disko.devices = lib.mkDefault {
         disk = {
           main = {
             name = "main";
-            device = "/dev/sda";
+            device = lib.mkDefault "/dev/sda";
             type = "disk";
             content = {
               type = "gpt";
@@ -72,7 +141,7 @@ in {
                 };
                 ESP = {
                   type = "EF00";
-                  size = "1G";
+                  size = "3G";
                   content = {
                     type = "filesystem";
                     format = "vfat";
@@ -96,50 +165,42 @@ in {
       };
     };
 
-    # ------ Home-manager Modules ------ #
+    # ------ Home-manager Default Module ------ #
     homeModules = {
       # Default Home-manager Module for all users
       default = {
         nixpkgs = {
-          config.allowUnfree = true;
-          overlays = [
-            self.overlays.default
-          ];
+          config.allowUnfree = lib.mkDefault true;
+          overlays = [self.overlays.default];
         };
-        home.stateVersion = "25.11";
+        home = {
+          stateVersion = "25.11"; # TODO: update when nessasary
+          keyboard.layout = "us";
+        };
         programs.home-manager.enable = true;
-      };
-      # Root User's Home-manager Module
-      root = {
-        imports = [
-          self.homeModules.default
-          {
-            home.username = "root";
-            home.homeDirectory = "/root";
-          }
-        ];
+
+        # Import all Home-manager Modules from `flake-parts/homeModules`
+        # Filter out profile modules
+        imports = lib.attrValues (lib.filterAttrs (
+            n: _:
+              n
+              != "default"
+              && !(lib.hasPrefix "profile-" n)
+          )
+          self.homeModules);
       };
     };
 
     # ------ Overlays ------ #
     overlays.default = import ../overlays {inherit inputs self;};
 
-    # ------ Templates ------ #
-    templates = {
-      default = {
-        path = ../templates/default;
-        description = "Dendritic Flake";
-      };
-      minimal = {
-        path = ../templates/minimal;
-        description = "Minimal Dendritic Flake";
-      };
-    };
-
     # --- Clan Configuration ------ #
     clan = {
       inventory = import ../inventory.nix {inherit self inputs customLib;};
-      specialArgs = {inherit customLib;};
+      specialArgs = {inherit customLib inputs self;};
+      modules = {
+        "blank" = ../clanServices/blank;
+      };
     };
   };
 }

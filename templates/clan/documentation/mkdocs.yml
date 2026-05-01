@@ -1,11 +1,44 @@
-site_name: Dendritic Determinate Nix Flake
-site_author: Andrew Thomas Lee
-site_url: https://andrewthomaslee.github.io/home
-repo_url: https://github.com/andrewthomaslee/home
-repo_name: andrewthomaslee/home
+site_name: Dendritic Determinate Nix Flake # TODO: change to your project name
+site_author: Andrew Thomas Lee # TODO: change to your name
+site_url: https://home.andrewlee.cloud # TODO: change to your domain
+repo_url: https://github.com/andrewthomaslee/home # TODO: change to your repo
+repo_name: andrewthomaslee/home # TODO: change to your repo
 
 nav:
   - Home: index.md
+  - Clan Services:
+      - Overview: clanServices/index.md
+  - Flake Parts:
+      - Overview: flake-parts/index.md
+      - Default: flake-parts/default.md
+      - Dev Shells: flake-parts/devShells.md
+      - Profiles: flake-parts/profiles.md
+      - Kubenix: flake-parts/kubenix.md
+      - Apps:
+          - Overview: flake-parts/apps/index.md
+          - Update Flake Show: flake-parts/apps/update-flake-show.md
+          - Flux Bootstrap: flake-parts/apps/flux-bootstrap.md
+          - Fetch Kubeconfig: flake-parts/apps/fetch-kubeconfig.md
+          - TMP Pod: flake-parts/apps/tmp-pod.md
+      - Packages:
+          - Overview: flake-parts/packages/index.md
+      - Home Modules:
+          - Overview: flake-parts/homeModules/index.md
+          - Docker: flake-parts/homeModules/docker.md
+          - K9s: flake-parts/homeModules/k9s.md
+          - Shell: flake-parts/homeModules/shell.md
+          - SSH: flake-parts/homeModules/ssh.md
+          - Starship: flake-parts/homeModules/starship.md
+          - XDG: flake-parts/homeModules/xdg.md
+      - NixOS Modules:
+          - Overview: flake-parts/nixosModules/index.md
+          - Clan: flake-parts/nixosModules/clan.md
+          - Docker: flake-parts/nixosModules/docker.md
+          - Networking: flake-parts/nixosModules/networking.md
+          - Nix: flake-parts/nixosModules/nix.md
+          - OpenSSH: flake-parts/nixosModules/openssh.md
+          - Tailscale: flake-parts/nixosModules/tailscale.md
+          - MOTD: flake-parts/nixosModules/motd.md
 
 plugins:
   - glightbox

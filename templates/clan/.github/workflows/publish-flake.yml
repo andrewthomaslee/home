@@ -35,7 +35,7 @@ jobs:
         uses: DeterminateSystems/flakehub-push@main
         with:
           visibility: public
-          name: andrewthomaslee/home
+          name: andrewthomaslee/home # TODO: change to your flakehub name
           tag: ${{ inputs.tag }}
           include-output-paths: true
 
@@ -74,4 +74,4 @@ jobs:
 
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v5.0.0
+        uses: actions/deploy-pages@v5.0.0 # TODO: make sure pages is set to deploy from GitHub Actions
