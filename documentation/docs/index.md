@@ -40,6 +40,10 @@ This repository is the home for all my personal NixOS machines.
 $ nix flake show
 ├───apps
 │   └───x86_64-linux
+│       ├───fetch-kubeconfig: app: no description
+│       ├───flux-bootstrap: app: no description
+│       ├───kubenix: app: no description
+│       ├───tmp-pod: app: no description
 │       ├───update-flake-show: app: no description
 │       ├───update-minecraft-mods: app: no description
 │       └───watch-documentation: app: Run mkdocs in watch mode over your documentation folder. Automatically rebuilds your docs on changes.
@@ -88,9 +92,10 @@ $ nix flake show
 ├───packages
 │   └───x86_64-linux
 │       ├───documentation: package 'mkdocs-flake-documentation'
-│       ├───kubenix-helsinki omitted due to use of import from derivation
-│       ├───kubenix-home omitted due to use of import from derivation
-│       └───playit: package 'playit-0.17.1'
+│       ├───helsinki: package 'helsinki-generated.json'
+│       ├───home: package 'home-generated.json'
+│       ├───playit: package 'playit-0.17.1'
+│       └───shared: package 'shared-generated.json'
 └───templates
     ├───clan: template: Dendritic Clan Flake
     ├───default: template: Dendritic Flake
