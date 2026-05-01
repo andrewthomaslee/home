@@ -1,5 +1,7 @@
 # Welcome to Andrew's Home Flake
 
+<img src="documentation/assets/icons/kubenix.svg" width="400">
+
 This repository is the home for all my personal NixOS machines.
 
 ## Features
