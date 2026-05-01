@@ -1,7 +1,7 @@
 # Welcome to Andrew's Home Flake
 
 <div align="center">
-  <img src="https://blog.andrewlee.fun/favicon.ico" width="400">
+  <img src="assets/brand/andrewthomaslee-transparent-logo.png" alt="Andrew's Logo" width="400">
 </div>
 
 <p align="center">
