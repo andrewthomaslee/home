@@ -1,33 +1,69 @@
 # Welcome to Andrew's Home Flake
 
-<img src="documentation/assets/icons/kubenix.svg" width="400">
+<div align="center">
+  <img src="https://blog.andrewlee.fun/favicon.ico" width="400">
+</div>
 
-This repository is the home for all my personal NixOS machines.
+<p align="center">
+  <a href="https://github.com/andrewthomaslee/home/releases"><img src="https://img.shields.io/github/v/release/andrewthomaslee/home?include_prereleases&style=for-the-badge" alt="Latest Release"></a>
+  <a href="https://github.com/andrewthomaslee/home/actions/workflows/check-flake.yml"><img src="https://img.shields.io/github/actions/workflow/status/andrewthomaslee/home/check-flake.yml?style=for-the-badge&label=Tests" alt="Tests Status"></a>
+  <a href="https://github.com/andrewthomaslee/home/actions/workflows/publish-flake.yml"><img src="https://img.shields.io/github/actions/workflow/status/andrewthomaslee/home/publish-flake.yml?style=for-the-badge" alt="Build Status"></a>
+  <a href="https://github.com/andrewthomaslee/home/blob/main/LICENSE"><img src="https://img.shields.io/github/license/andrewthomaslee/home?style=for-the-badge&color=blue" alt="License"></a>
+</p>
+
+<p align="center">
+  <a href="https://github.com/andrewthomaslee/home"><img src="https://img.shields.io/badge/github-repo-24292e?logo=github&style=for-the-badge" alt="GitHub Repo"></a>
+  <a href="https://flakehub.com/flake/andrewthomaslee/home?view=usage"><img src="https://img.shields.io/badge/flakehub-repo-purple?style=for-the-badge" alt="FlakeHub Repo"></a>
+</p>
+
+
+<h3 align="center">
+  <strong>🏠 Home Repository for my <u>NixOS Machines</u>❄️ and <u>Kubernetes Clusters</u>☸️</strong>
+</h3>
+
+
+<div align="center">
 
 ## Features
 
-- flake-parts
-- dendritic
-- home-manager
-- clan.lol
-- Determinate Systems
-- Modded Minecraft Server
+### ☸️ **Kubernetes**
+`K3s` • `Cilium & Cluster Mesh` • `Sealed Secrets` • `FluxCD` • `Kubenix` • `Cloudflare Tunnels`
+
+### ❄️ **NixOS**
+`Determinate Systems` • `Clan.lol` • `flake-parts` • `dendritic` • `home-manager` • `Tailscale` • `Modded Minecraft Server` • `KDE` • `Wayland`
+
+</div>
+
 
 
 ## Project layout
 
-    flake.nix     # Flake that controls the project
-    flake.lock    # Flake's lock file
-    .envrc        # direnv configuration
-    .env.schema   # Varlock schema
+    flake.nix       # Flake that controls the project
+    flake.lock      # Flake's lock file
+    inventory.nix   # Clan.lol Inventory of all NixOS machines and Services
+    .envrc          # direnv configuration
+    .env.schema     # Varlock schema
 
-    lib/          # Custom functions accessible via `lib.custom`
-    overlays/     # Overlays for Nixpkgs. Adds `pkgs.devenv-unstable`
-    templates/    # Templates for NixOS
+    machines/       # NixOS Machines
+    clanServices/   # Clan.lol Services    
+    lib/            # Custom functions accessible via `lib.custom`
+    overlays/       # Overlays for Nixpkgs. Adds `pkgs.unstable`
+    templates/      # Templates for Projects
 
     flake-parts/        # Top-level Flake Part files
         default.nix     # Default flake-parts configuration
+        profiles.nix    # Profiles for NixOS and Home-manager
         devShells.nix   # Development Shells
+        kubenix.nix     # Manifests built with `nix run .#kubenix`
+        apps/           # Applications `nix run .#<app>`
+        packages/       # Packages `nix build .#<package>`
+        homeModules/    # Home-manager Modules
+        nixosModules/   # NixOS Modules
+
+    kubernetes/         # Kubernetes Manifests and Kubenix Packages
+        shared.nix      # Shared Kubernetes Manifests
+        <cluster>.nix   # Cluster Manifests    
+        clusters/       # FluxCD Bootstrap Folders
 
     documentation/      # MkDocs
         mkdocs.yml      # MkDocs configuration
@@ -36,6 +72,11 @@ This repository is the home for all my personal NixOS machines.
     .github/workflows/      # GitHub Actions workflows
         check-flake.yml     # Flake Health Checker ( Run on push )
         publish-flake.yml   # Publish to FlakeHub + MkDocs to GitHub Pages ( Run on tagged release )
+
+    .devcontainer/          # Devcontainer
+
+    sops/                   # Encrypted Secrets
+    vars/                   # Clan.lol implementaion of SOPS
 
 ## Flake Outputs
 
