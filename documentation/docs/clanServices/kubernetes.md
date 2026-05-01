@@ -3,7 +3,7 @@
 Kubernetes is a service that allows you to create a kubernetes cluster. 
 
 ## Requirements
-- [cluster-mesh service](https://home.andrewlee.cloud/clanServices/cluster-mesh.html)
+- [cluster-mesh service](https://home.andrewlee.cloud/clanServices/cluster-mesh.html){:target="_blank"}
 
 ## Usage
 `flake.nix` should contain the following:

@@ -1,4 +1,4 @@
-site_name: Dendritic Determinate Nix Flake
+site_name: Andrew's Home Monorepo
 site_author: Andrew Thomas Lee
 site_url: https://home.andrewlee.cloud
 repo_url: https://github.com/andrewthomaslee/home
@@ -7,8 +7,10 @@ repo_name: andrewthomaslee/home
 nav:
   - Home: index.md
   - Minecraft:
-      - Fabric: minecraft/fabric.md
+      - Overview: minecraft/index.md
+      - mc.andrewlee.fun: minecraft/mc-andrewlee-fun.md
   - Clan Services:
+      - Overview: clanServices/index.md
       - Cluster Mesh: clanServices/cluster-mesh.md
       - Kubernetes: clanServices/kubernetes.md
   - Flake Parts:
@@ -18,11 +20,19 @@ nav:
       - Profiles: flake-parts/profiles.md
       - Kubenix: flake-parts/kubenix.md
       - Apps:
+          - Overview: flake-parts/apps/index.md
           - Update Flake Show: flake-parts/apps/update-flake-show.md
           - Update Minecraft Mods: flake-parts/apps/update-minecraft-mods.md
+          - Kubernetes:
+              - Overview: flake-parts/apps/kubernetes/index.md
+              - Fetch Kubeconfig: flake-parts/apps/kubernetes/fetch-kubeconfig.md
+              - Flux Bootstrap: flake-parts/apps/kubernetes/flux-bootstrap.md
+              - Tmp Pod: flake-parts/apps/kubernetes/tmp-pod.md
       - Packages:
+          - Overview: flake-parts/packages/index.md
           - Playit: flake-parts/packages/playit.md
       - Home Modules:
+          - Overview: flake-parts/homeModules/index.md
           - Bun: flake-parts/homeModules/bun.md
           - Direnv: flake-parts/homeModules/direnv.md
           - Docker: flake-parts/homeModules/docker.md
@@ -43,6 +53,7 @@ nav:
           - XDG: flake-parts/homeModules/xdg.md
           - Tmux: flake-parts/homeModules/tmux.md
       - NixOS Modules:
+          - Overview: flake-parts/nixosModules/index.md
           - Bluetooth: flake-parts/nixosModules/bluetooth.md
           - Clan: flake-parts/nixosModules/clan.md
           - Docker: flake-parts/nixosModules/docker.md
@@ -64,12 +75,16 @@ plugins:
   - search
   - tags
 
+markdown_extensions:
+  - attr_list
+
 theme:
   font: false
 
   language: en
 
   name: material
+  favicon: assets/brand/andrewthomaslee-transparent-logo.png
 
   icon:
     repo: fontawesome/brands/github

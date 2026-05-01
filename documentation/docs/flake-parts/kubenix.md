@@ -6,7 +6,7 @@ Kubernetes management with Nix
   <img src="../assets/icons/kubenix.svg" width="400">
 </div>
 
-> **WARN**: this is a work in progress, expect breaking [changes](https://github.com/hall/kubenix/blob/main/CHANGELOG.md)
+> **WARN**: this is a work in progress, expect breaking [changes](https://github.com/hall/kubenix/blob/main/CHANGELOG.md){:target="_blank"}
 
 ## Usage
 
@@ -45,7 +45,7 @@ Or, if you're not using flakes, a `default.nix` file (build with `nix-build`):
 
 Either way the JSON manifests will be written to `./result`.
 
-See the [examples](https://kubenix.org/examples/pod) for more.
+See the [examples](https://kubenix.org/examples/pod){:target="_blank"} for more.
 
 ## CLI
 
@@ -53,9 +53,9 @@ While kubenix is compatible with just about any deployment system, there's a sim
 
 - show a diff, prompt for confirmation, then apply
 - prune removed resources
-- pipe manifests through [vals](https://github.com/helmfile/vals) for the ability to inject secrets without writing them to the nix store
+- pipe manifests through [vals](https://github.com/helmfile/vals){:target="_blank"} for the ability to inject secrets without writing them to the nix store
 
-To configure this, override the default package, passing the arguments of [evalModules](https://nixos.org/manual/nixpkgs/stable/#module-system-lib-evalModules).
+To configure this, override the default package, passing the arguments of [evalModules](https://nixos.org/manual/nixpkgs/stable/#module-system-lib-evalModules){:target="_blank"}.
 
 ```nix
 {
@@ -97,6 +97,6 @@ Optionally, write the resources to `./result/manifests.json`:
 
 ## Attribution
 
-This project was forked from [GTrunSec](https://github.com/GTrunSec/kubenix), which was forked from [xtruder](https://github.com/xtruder/kubenix), with commits incorporated from [blaggacao](https://github.com/blaggacao/kubenix).
+This project was forked from [GTrunSec](https://github.com/GTrunSec/kubenix){:target="_blank"}, which was forked from [xtruder](https://github.com/xtruder/kubenix){:target="_blank"}, with commits incorporated from [blaggacao](https://github.com/blaggacao/kubenix){:target="_blank"}.
 
-Logo is a mishmash of the [Kubernetes wheel](https://github.com/kubernetes/kubernetes/blob/master/logo/logo.svg) and the [NixOS snowflake](https://github.com/NixOS/nixos-artwork/blob/master/logo/white.svg).
+Logo is a mishmash of the [Kubernetes wheel](https://github.com/kubernetes/kubernetes/blob/master/logo/logo.svg){:target="_blank"} and the [NixOS snowflake](https://github.com/NixOS/nixos-artwork/blob/master/logo/white.svg){:target="_blank"}.
