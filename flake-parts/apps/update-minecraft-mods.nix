@@ -23,7 +23,7 @@
           pattern = re.compile(r"([A-Za-z0-9-]+)\s*=\s*\{[^}]*?url\s*=\s*\"([^\"]+)\";", re.DOTALL)
           urls = dict(pattern.findall(content))
 
-          filepath = "documentation/docs/minecraft/fabric.md"
+          filepath = "documentation/docs/minecraft/mc-andrewlee-fun.md"
 
           with open(filepath, "r") as f:
               md_content = f.read()
@@ -31,7 +31,7 @@
           lines = md_content.split("\n")
           updated = False
           for i, line in enumerate(lines):
-              match = re.match(r"^\s*-\s*\[([^\]]+)\].*?\[Download\]\([^)]+\)\)", line)
+              match = re.match(r"^\s*\|\s*\[([^\]]+)\].*?\[Download\]\([^)]+\)", line)
               if match:
                   mod_name = match.group(1)
                   if mod_name in urls:
