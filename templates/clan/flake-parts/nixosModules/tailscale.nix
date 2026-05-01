@@ -35,7 +35,7 @@
         useRoutingFeatures = "server";
         extraUpFlags = [
           "--advertise-exit-node"
-          "--advertise-tags=tag:home"
+          "--advertise-tags=tag:home" # TODO: change to your tag
         ];
       };
       networking = {
