@@ -2,12 +2,12 @@
 apiVersion: bitnami.com/v1alpha1
 kind: SealedSecret
 metadata:
-  name: cert-pem-file-secret
+  name: cloudflared-cert-pem-file-secret
   namespace: cloudflare
 spec:
   encryptedData:
     cert.pem: AgDEo8RnP+xONPGD6ThJdDheP6JmogMnxXUIqcWSXKZnOk4zGjU90mteShXrfGGAcjP2gs0SXtpLl8FSOHr/rhnK47kBB/a6HG20pFe3pEw4Vo4urPAVkcphAnzE6jDGXl6GkvIZjJnelITbRloKuwqJQK+jzNFAoMx6KiAo16CZ+5ZVAWNRtx6dabSv1WiWib4hGn3YiijK0qGJWvr9FSn4AsP8b8TiRWWnlgwn0IDyongcgJRfzhawIXwML/UYX7pnTTJIl+CLwKajX4wDNXNsBP2yNoLNCqP/FzcnkIndTnY+LUqTxYgl2fSoe6Tsa5BtXKfFCq14vLFIOCHlVPhABRduZdBPHNMyw+OzbkWCoKfPgz8h80cbAxWk1Xg6rhbgkZG0mCTslo7pP/8FWWhn7nsKmhhlH2Si40RJUEFR4PLLFaiqBv11SLloUsVdwNPtz1uwZ9cBtF0jsH86Oa6EOONu0jpPRoBgJAWaUQeFqJRZv/XICmS39fSTxw2fKyK0bqNre6PM69ZXg7EKA6YQ2kswzaJF+7r3vBkIGXsZYyndIo+E34I7Be+Kk39Iv/RBJsrPsc/RpFhiQjkEQ5J1ED6wYXzQfYh1Hzhx3EC/rs0BOGDqKM20utOaJhVQQ97LcrJRnvWRj87EOEa35ZVny2X5Bl5n6MNbPsrlwm5wHUJ0fM8mN1llsEmxWk34FrbYla4+Kh2n1GAzNRCRIJll6+IqQwO90sURjcZz2BcfwCQUWpkcaPSabjOgq0Mv6gbp4BzaOOu/nry2AsLTX5FBEGyDQva8MW8B1nYuODih4wkDPuUAp5Hqn3dW827wp93tL1hTqg8yIhbVNGRnnwOJsCNP7DBQJ6FIx0JPrJs+xY4yVmrUq8Nc/7uQxGCs5E4lBzqLpTbMndz18SenQoeXcC9o5xf/+Ll7K1lpcuoqDB/LCqQTqJWJURiBlbqcYkWgr+zGnCiiVAZVmHD4S6Ofg3aCS/DA7xD3gQyTx06JsbnRpAYx5B13YGX5EaSRPbeQcXMscNePSkXCFgqnr07EOq+0eQ6bKgUWqhtvP9cfWxC+BLUpmSotL78=
   template:
     metadata:
-      name: cert-pem-file-secret
+      name: cloudflared-cert-pem-file-secret
       namespace: cloudflare
