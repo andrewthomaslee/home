@@ -1,9 +1,72 @@
 {
   "apiVersion": "v1",
-  "items": [],
+  "items": [
+    {
+      "apiVersion": "helm.toolkit.fluxcd.io/v2",
+      "kind": "HelmRelease",
+      "metadata": {
+        "labels": {
+          "kubenix/hash": "895b798cbf410dd82b3ddaecb9d0d4cff7e4dde8"
+        },
+        "name": "cloudflared",
+        "namespace": "cloudflare"
+      },
+      "spec": {
+        "chart": {
+          "spec": {
+            "chart": "cloudflared",
+            "interval": "24h",
+            "sourceRef": {
+              "kind": "HelmRepository",
+              "name": "cloudflared",
+              "namespace": "flux-system"
+            },
+            "version": "2.2.7"
+          }
+        },
+        "interval": "24h",
+        "values": {
+          "ingress": [
+            {
+              "hostname": "whoami.andrewlee.cloud",
+              "service": "http://whoami.whoami.svc.cluster.local:80"
+            },
+            {
+              "hostname": "hubble.andrewlee.cloud",
+              "service": "http://hubble-ui.kube-system.svc.cluster.local:80"
+            },
+            {
+              "service": "http_status:404"
+            }
+          ],
+          "resources": {
+            "limits": {
+              "cpu": "200m",
+              "memory": "128Mi"
+            },
+            "requests": {
+              "cpu": "100m",
+              "memory": "64Mi"
+            }
+          },
+          "tunnelConfig": {
+            "name": "cloud"
+          },
+          "tunnelSecrets": {
+            "existingConfigJsonFileSecret": {
+              "name": "cloudflared-config-json-file-secret"
+            },
+            "existingPemFileSecret": {
+              "name": "cloudflared-cert-pem-file-secret"
+            }
+          }
+        }
+      }
+    }
+  ],
   "kind": "List",
   "labels": {
-    "kubenix/hash": "97d170e1550eee4afc0af065b78cda302a97674c",
+    "kubenix/hash": "895b798cbf410dd82b3ddaecb9d0d4cff7e4dde8",
     "kubenix/k8s-version": "1.35",
     "kubenix/project-name": "helsinki"
   }

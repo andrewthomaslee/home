@@ -1,0 +1,13 @@
+---
+apiVersion: bitnami.com/v1alpha1
+kind: SealedSecret
+metadata:
+  name: config-json-file-secret
+  namespace: cloudflare
+spec:
+  encryptedData:
+    config.json: AgA9ER6j4aA4IfL/9EGCcirENBISsvY2qf70rHtLdRe1KEUCtOElf1qrXhSUBTAOZ3388hqgdC76KVZCJMkp2ttUpssYSgRiifLUzHsgRdu9zRXJz/PRikHbn7G+Sql++TNVaKvvDKhpWvks3PZEX9UQWErNVq3wPd4jySTmUCTVnQUzTeK6BBWz02EmA8Q2YZMtXp+f7gdbEqjeCuujHf9b5VP5NhowDokNJid78WPgtcEVzbXgxvBq2Tyol5ztgBmY35DVAaE5+7kHp/kkSWqghl0tSXqbe6KhivzYGsD9QJhhFX0rkNP4ug4kvshTfV6/Z5T5Suex38S6kEKr4p2KzczNKWEBScfPFd8c7vRwmCyZHHbJ5S476BujZyyheBVO7NRe6mSbQSAd5rgLUY00YMcaizOB+WT5Y9b+YKM3Rpcy3a5ALfESQb7HgNqkk3px1VMN+lWOf55IZXI2jePOhWpcTA/tkUAV5LCnl2WUgfjo5SNiS8FNE7VHjvgcFT3Nwn/AGuREUqM1Xv9DP/BvjK/aljYrohgIgysxIu1R71aXYxJMoFj2LHCK+cUMl01yoBThuP5oVUxwXmZU8dI8qs520OaidmFtjf/IZ6oyad3d+7UbN308wn33l1iyommsKZQZGnI+O/XskRugT5Z2qYLkxDTrvkkzH5nqXsaRShUOt/3hjtoeeLW34qtD4/rWzSFdTRkKHDKqE34ZvZsCjkapwqZUhuqo4irNNL0Cgzj5z4FUHZGF2/FP7jekkTeEKJzI9BhNhM2FQ5LBuJzsqDHdzJLmslcvsVhmJMu41ANuGOWlgZOIp4XbGyP0UP/mTp0wn/pVj4OaBl4demLFRRLsRxIF7YFkcJJ1vAQ+n9oYJgMw6uxuSrAvOEuUyc/sbtCrr408ZKThuuHgfsy2Px2NnGRThn5DKX/3UAga
+  template:
+    metadata:
+      name: config-json-file-secret
+      namespace: cloudflare
