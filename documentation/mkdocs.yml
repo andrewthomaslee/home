@@ -12,9 +12,11 @@ nav:
       - Cluster Mesh: clanServices/cluster-mesh.md
       - Kubernetes: clanServices/kubernetes.md
   - Flake Parts:
+      - Overview: flake-parts/index.md
       - Default: flake-parts/default.md
       - Dev Shells: flake-parts/devShells.md
       - Profiles: flake-parts/profiles.md
+      - Kubenix: flake-parts/kubenix.md
       - Apps:
           - Update Flake Show: flake-parts/apps/update-flake-show.md
           - Update Minecraft Mods: flake-parts/apps/update-minecraft-mods.md
