@@ -6,7 +6,7 @@
       "kind": "HelmRelease",
       "metadata": {
         "labels": {
-          "kubenix/hash": "f275d6725caac5dedf6d4d4e508f0c8ba240621c"
+          "kubenix/hash": "daf4d4f8d39bbb577fa700677dcbd9e08ac10633"
         },
         "name": "cloudflared",
         "namespace": "cloudflare"
@@ -28,15 +28,15 @@
         "values": {
           "ingress": [
             {
-              "service": "http_status:404"
-            },
-            {
               "hostname": "whoami.andrewlee.fun",
               "service": "http://whoami.whoami.svc.cluster.local:80"
             },
             {
               "hostname": "hubble.andrewlee.fun",
               "service": "http://hubble-ui.kube-system.svc.cluster.local:80"
+            },
+            {
+              "service": "http_status:404"
             }
           ],
           "resources": {
@@ -66,7 +66,7 @@
   ],
   "kind": "List",
   "labels": {
-    "kubenix/hash": "f275d6725caac5dedf6d4d4e508f0c8ba240621c",
+    "kubenix/hash": "daf4d4f8d39bbb577fa700677dcbd9e08ac10633",
     "kubenix/k8s-version": "1.35",
     "kubenix/project-name": "home"
   }
