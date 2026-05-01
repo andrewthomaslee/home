@@ -11,7 +11,7 @@
 
     # Nixpkgs
     nixpkgs.url = "https://flakehub.com/f/NixOS/nixpkgs/0";
-    nixpkgs-unstable.url = "clan-core/nixpkgs";
+    nixpkgs-unstable.follows = "clan-core/nixpkgs";
 
     # Clan.lol Community
     clan-community = {
