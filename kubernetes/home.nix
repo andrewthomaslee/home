@@ -57,15 +57,15 @@ in {
             # cloudflared tunnel route dns home <domain>.andrewlee.fun
             ingress = [
               {
-                service = "http_status:404";
-              }
-              {
                 hostname = "whoami.andrewlee.fun";
                 service = "http://whoami.whoami.svc.cluster.local:80";
               }
               {
                 hostname = "hubble.andrewlee.fun";
                 service = "http://hubble-ui.kube-system.svc.cluster.local:80";
+              }
+              {
+                service = "http_status:404"; # MUST GO LAST
               }
             ];
           };
