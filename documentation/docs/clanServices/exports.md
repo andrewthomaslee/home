@@ -112,4 +112,53 @@ When you evaluate this, the returned data structure will map the fully qualified
 }
 ```
 
-By leveraging custom export interfaces and cross-instance querying, you can build highly scalable, dynamically meshed services in Clan.
+## 5. Advanced Filtering and Consuming Exports
+
+The `clanLib.selectExports` function takes a predicate function that evaluates the **scope** of each export. 
+
+The `scope` object contains four properties parsed from the export's internal key:
+- `serviceName`
+- `instanceName`
+- `roleName`
+- `machineName`
+
+You can filter exports by combining these properties logically.
+
+```nix
+# Filter by Service AND Instance (Only nodes in the same cluster instance)
+clanLib.selectExports (scope: 
+  scope.serviceName == "kubernetes" && 
+  scope.instanceName == instanceName
+) exports
+
+# Filter by Service AND Role (Only get data from 'server' nodes)
+clanLib.selectExports (scope: 
+  scope.serviceName == "kubernetes" && 
+  scope.roleName == "server"
+) exports
+```
+
+### Best Practices for Consuming Exported Data
+
+`selectExports` returns an attribute set where the keys are the internal scope keys (e.g., `"kubernetes:cluster-1:server:node-1"`) and the values are the structured exported data. 
+
+To consume this, use standard Nix library functions like `lib.attrValues` or `lib.mapAttrsToList` to extract the exact data you need.
+
+```nix
+# Example: Extracting all cluster IP addresses from the exports
+let
+  # 1. Filter the exports
+  kubernetesExports = clanLib.selectExports (scope: scope.serviceName == "kubernetes") exports;
+  
+  # 2. Extract just the values (ignoring the scope keys)
+  exportValues = lib.attrValues kubernetesExports;
+  
+  # 3. Map over the values to extract the specific nested data
+  clusterAddresses = map (data: data.kubernetesMesh.address) exportValues;
+in {
+  # Result: [ "10.67.67.1" "10.67.67.2" ]
+  environment.etc."cluster-ips.txt".text = lib.concatStringsSep "\n" clusterAddresses;
+}
+```
+
+This pattern of **Filter -> Extract Values -> Map** is the most robust way to consume structured data from `clan.exports`.
