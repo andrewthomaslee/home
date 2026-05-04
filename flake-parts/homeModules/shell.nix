@@ -71,6 +71,7 @@
             # backups
             fabric-backup = "rsync -av --progress --delete kamrui-p1:/srv/minecraft/fabric/world/ /mnt/storagebox/BACKUPS/minecraft/fabric/world/";
             fabric-backup-local = "rsync -av --progress --delete /srv/minecraft/fabric/world/ /mnt/storagebox/Backups/fabric/world/";
+            obsidian-pull = "rsync -avz -e 'ssh -p 23' u488514@u488514.your-storagebox.de:/home/PRIVATE/OBSIDIAN/Main/ ~/Desktop/Main/";
             # k3s
             k3s-wipe = "systemctl stop k3s.service && rm -fr /var/lib/rancher/ && rm -fr /etc/rancher/ && k3s-killall.sh && ip link delete cilium_host && ip link delete cilium_vxlan && iptables-save | grep -iv cilium | iptables-restore && ip6tables-save | grep -iv cilium | ip6tables-restore";
             kubefetch-latest = ''nix run "https://flakehub.com/f/andrewthomaslee/kubefetch/*"'';
