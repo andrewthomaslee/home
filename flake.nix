@@ -56,10 +56,7 @@
     };
 
     # neofetch for kube
-    kubefetch = {
-      url = "https://flakehub.com/f/andrewthomaslee/kubefetch/*";
-      inputs.nixpkgs.follows = "nixpkgs-unstable";
-    };
+    kubefetch.url = "https://flakehub.com/f/andrewthomaslee/kubefetch/*";
 
     # --- Minecraft --- #
     nix-minecraft = {
