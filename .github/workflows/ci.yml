@@ -1,4 +1,4 @@
-name: Publish Flake
+name: CI
 
 on:
   push:
@@ -13,10 +13,14 @@ on:
         required: true
 
 jobs:
-  flakehub:
+  CI:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     permissions:
       id-token: write
+      pages: write
       contents: read
     steps:
       - name: Checkout
@@ -29,39 +33,25 @@ jobs:
         uses: DeterminateSystems/determinate-nix-action@main
 
       - name: Nix Cache
-        uses: DeterminateSystems/magic-nix-cache-action@main
+        uses: DeterminateSystems/flakehub-cache-action@main
 
-      - name: Publish to FlakeHub
-        uses: DeterminateSystems/flakehub-push@main
+      - name: Flake Checker
+        uses: DeterminateSystems/flake-checker-action@main
         with:
-          visibility: public
-          name: andrewthomaslee/home
-          tag: ${{ inputs.tag }}
-          include-output-paths: true
+          check-owner: false
+          check-supported: false
+          fail-mode: true
 
-  mkdocs:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    runs-on: ubuntu-latest
-    needs: flakehub
-    permissions:
-      contents: read
-      pages: write
-      id-token: write
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v6.0.2
-        with:
-          ref: ${{ (inputs.tag != null) && format('refs/tags/{0}', inputs.tag) || '' }}
+      - name: Build Playit
+        run: nix build .#playit
 
-      - name: Install Nix  
-        uses: DeterminateSystems/determinate-nix-action@main
+      - name: Build Clan CLI
+        run: nix build .#clan-cli
 
-      - name: Nix Cache
-        uses: DeterminateSystems/magic-nix-cache-action@main
-
-      - name: Build documentation
+      - name: Build Clan Machines
+        run: nix run .#clan-cli -- machines build --debug
+      
+      - name: Build MkDocs
         run: nix build .#documentation
 
       - name: Setup Pages
@@ -75,3 +65,11 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v5.0.0
+
+      - name: Publish to FlakeHub
+        uses: DeterminateSystems/flakehub-push@main
+        with:
+          visibility: public
+          name: andrewthomaslee/home
+          tag: ${{ inputs.tag }}
+          include-output-paths: true

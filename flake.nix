@@ -41,6 +41,7 @@
     # Utility Flakes
     flake-parts.follows = "clan-core/flake-parts";
     import-tree.url = "github:vic/import-tree";
+    flake-schemas.url = "https://flakehub.com/f/DeterminateSystems/flake-schemas/0";
 
     # ------ Packages ------ #
     # Zen Browser
@@ -299,23 +300,6 @@
       url = "https://cdn.modrinth.com/data/EL95Q1AM/versions/bf8Q2X39/villagerpickup-fabric-1.21.11-1.3.jar";
       flake = false;
     };
-  };
-
-  nixConfig = {
-    extra-trusted-public-keys = [
-      "cache.flakehub.com-3:hJuILl5sVK4iKm86JzgdXW12Y2Hwd5G07qKtHTOcDCM="
-      "cache.clan.lol-1:3KztgSAB5R1M+Dz7vzkBGzXdodizbgLXGXKXlcQLA28="
-      "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
-      "nix-cache:4FILs79Adxn/798F8qk2PC1U8HaTlaPqptwNJrXNA1g="
-      "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY="
-    ];
-    extra-substituters = [
-      "https://install.determinate.systems"
-      "https://cache.clan.lol"
-      "https://nix-community.cachix.org"
-      "https://cache.lounge.rocks/nix-cache"
-      "https://cache.nixos.org"
-    ];
   };
 
   outputs = inputs:
