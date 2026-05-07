@@ -22,6 +22,7 @@
           ++ (with pkgs.unstable; [
             bash
             bun
+            k9s
             fluxcd
             flux9s
             cilium-cli
