@@ -71,35 +71,32 @@ in {
           };
         };
       }
-      # {
-      #   apiVersion = "helm.toolkit.fluxcd.io/v2";
-      #   kind = "HelmRelease";
-      #   metadata = {
-      #     name = "vcluster-helsinki";
-      #     namespace = "vcluster-helsinki";
-      #   };
-      #   spec = {
-      #     interval = "24h";
-      #     chart = {
-      #       spec = {
-      #         chart = "vcluster";
-      #         version = "0.34.0";
-      #         interval = "24h";
-      #         sourceRef = {
-      #           kind = "HelmRepository";
-      #           name = "vcluster";
-      #           namespace = "flux-system";
-      #         };
-      #       };
-      #     };
-      #     values = {
-      #       sync.fromHost.nodes = {
-      #         enabled = true;
-      #         selector.labels.role = "server";
-      #       };
-      #     };
-      #   };
-      # }
+      {
+        apiVersion = "helm.toolkit.fluxcd.io/v2";
+        kind = "HelmRelease";
+        metadata = {
+          name = "vcluster-helsinki";
+          namespace = "vcluster-helsinki";
+        };
+        spec = {
+          interval = "24h";
+          chart = {
+            spec = {
+              chart = "vcluster";
+              version = "0.34.0";
+              interval = "24h";
+              sourceRef = {
+                kind = "HelmRepository";
+                name = "vcluster";
+                namespace = "flux-system";
+              };
+            };
+          };
+          values = {
+            sync.fromHost.nodes.enabled = false;
+          };
+        };
+      }
     ];
   };
 }

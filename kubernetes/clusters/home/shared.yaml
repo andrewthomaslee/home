@@ -6,7 +6,7 @@
       "kind": "Namespace",
       "metadata": {
         "labels": {
-          "kubenix/hash": "587cdc3eac924d469069c8eb3e78772c2f98e09a"
+          "kubenix/hash": "8e9eac93b755d3a08ec02268e72ed3d04e97dd5a"
         },
         "name": "cloudflare"
       }
@@ -16,7 +16,27 @@
       "kind": "Namespace",
       "metadata": {
         "labels": {
-          "kubenix/hash": "587cdc3eac924d469069c8eb3e78772c2f98e09a"
+          "kubenix/hash": "8e9eac93b755d3a08ec02268e72ed3d04e97dd5a"
+        },
+        "name": "vcluster-home"
+      }
+    },
+    {
+      "apiVersion": "v1",
+      "kind": "Namespace",
+      "metadata": {
+        "labels": {
+          "kubenix/hash": "8e9eac93b755d3a08ec02268e72ed3d04e97dd5a"
+        },
+        "name": "vcluster-helsinki"
+      }
+    },
+    {
+      "apiVersion": "v1",
+      "kind": "Namespace",
+      "metadata": {
+        "labels": {
+          "kubenix/hash": "8e9eac93b755d3a08ec02268e72ed3d04e97dd5a"
         },
         "name": "whoami"
       }
@@ -26,7 +46,7 @@
       "kind": "HelmRepository",
       "metadata": {
         "labels": {
-          "kubenix/hash": "587cdc3eac924d469069c8eb3e78772c2f98e09a"
+          "kubenix/hash": "8e9eac93b755d3a08ec02268e72ed3d04e97dd5a"
         },
         "name": "cloudflared",
         "namespace": "flux-system"
@@ -37,11 +57,26 @@
       }
     },
     {
+      "apiVersion": "source.toolkit.fluxcd.io/v1",
+      "kind": "HelmRepository",
+      "metadata": {
+        "labels": {
+          "kubenix/hash": "8e9eac93b755d3a08ec02268e72ed3d04e97dd5a"
+        },
+        "name": "vcluster",
+        "namespace": "flux-system"
+      },
+      "spec": {
+        "interval": "24h",
+        "url": "https://charts.loft.sh"
+      }
+    },
+    {
       "apiVersion": "apps/v1",
       "kind": "DaemonSet",
       "metadata": {
         "labels": {
-          "kubenix/hash": "587cdc3eac924d469069c8eb3e78772c2f98e09a"
+          "kubenix/hash": "8e9eac93b755d3a08ec02268e72ed3d04e97dd5a"
         },
         "name": "whoami",
         "namespace": "whoami"
@@ -103,7 +138,7 @@
           "service.cilium.io/global": "true"
         },
         "labels": {
-          "kubenix/hash": "587cdc3eac924d469069c8eb3e78772c2f98e09a"
+          "kubenix/hash": "8e9eac93b755d3a08ec02268e72ed3d04e97dd5a"
         },
         "name": "whoami",
         "namespace": "whoami"
@@ -129,7 +164,7 @@
   ],
   "kind": "List",
   "labels": {
-    "kubenix/hash": "587cdc3eac924d469069c8eb3e78772c2f98e09a",
+    "kubenix/hash": "8e9eac93b755d3a08ec02268e72ed3d04e97dd5a",
     "kubenix/k8s-version": "1.35",
     "kubenix/project-name": "shared"
   }
