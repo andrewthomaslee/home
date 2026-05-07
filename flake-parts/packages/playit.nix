@@ -1,11 +1,11 @@
 {...}: {
   # ------ Per-System ------ #
   perSystem = {pkgs, ...}: {
-    packages.playit = pkgs.stdenv.mkDerivation {
+    packages.playit = pkgs.stdenv.mkDerivation rec {
       pname = "playit";
-      version = "0.17.1";
+      version = "v0.17.1";
       src = pkgs.fetchurl {
-        url = "https://github.com/playit-cloud/playit-agent/releases/download/v0.17.1/playit-linux-amd64";
+        url = "https://github.com/playit-cloud/playit-agent/releases/download/${version}/playit-linux-amd64";
         hash = "sha256-541GPZOqHj7Dagbe1aH0/oeZBf3OuGXfj0zvYST4pVU=";
       };
       meta = {
