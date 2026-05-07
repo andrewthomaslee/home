@@ -71,6 +71,30 @@ in {
           };
         };
       }
+      {
+        apiVersion = "helm.toolkit.fluxcd.io/v2";
+        kind = "HelmRelease";
+        metadata = {
+          name = "tailscale";
+          namespace = "tailscale";
+        };
+        spec = {
+          interval = "24h";
+          chart = {
+            spec = {
+              chart = "tailscale-operator";
+              version = "1.96.5";
+              interval = "24h";
+              sourceRef = {
+                kind = "HelmRepository";
+                name = "tailscale-operator";
+                namespace = "flux-system";
+              };
+            };
+          };
+          values = {};
+        };
+      }
     ];
   };
 }

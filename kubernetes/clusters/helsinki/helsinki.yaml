@@ -6,7 +6,7 @@
       "kind": "HelmRelease",
       "metadata": {
         "labels": {
-          "kubenix/hash": "b0d0c21e84f39a20daba04a66faa50f0c90b331b"
+          "kubenix/hash": "dad686030a0405713fb87167271f00b9e724babc"
         },
         "name": "cloudflared",
         "namespace": "cloudflare"
@@ -68,7 +68,7 @@
       "kind": "HelmRelease",
       "metadata": {
         "labels": {
-          "kubenix/hash": "b0d0c21e84f39a20daba04a66faa50f0c90b331b"
+          "kubenix/hash": "dad686030a0405713fb87167271f00b9e724babc"
         },
         "name": "vcluster-helsinki",
         "namespace": "vcluster-helsinki"
@@ -97,11 +97,38 @@
           }
         }
       }
+    },
+    {
+      "apiVersion": "helm.toolkit.fluxcd.io/v2",
+      "kind": "HelmRelease",
+      "metadata": {
+        "labels": {
+          "kubenix/hash": "dad686030a0405713fb87167271f00b9e724babc"
+        },
+        "name": "tailscale",
+        "namespace": "tailscale"
+      },
+      "spec": {
+        "chart": {
+          "spec": {
+            "chart": "tailscale-operator",
+            "interval": "24h",
+            "sourceRef": {
+              "kind": "HelmRepository",
+              "name": "tailscale-operator",
+              "namespace": "flux-system"
+            },
+            "version": "1.96.5"
+          }
+        },
+        "interval": "24h",
+        "values": {}
+      }
     }
   ],
   "kind": "List",
   "labels": {
-    "kubenix/hash": "b0d0c21e84f39a20daba04a66faa50f0c90b331b",
+    "kubenix/hash": "dad686030a0405713fb87167271f00b9e724babc",
     "kubenix/k8s-version": "1.35",
     "kubenix/project-name": "helsinki"
   }

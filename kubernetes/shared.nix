@@ -31,6 +31,24 @@ in {
           url = "https://community-charts.github.io/helm-charts";
         };
       }
+      # --- tailscale --- #
+      {
+        apiVersion = "v1";
+        kind = "Namespace";
+        metadata.name = "tailscale";
+      }
+      {
+        apiVersion = "source.toolkit.fluxcd.io/v1";
+        kind = "HelmRepository";
+        metadata = {
+          name = "tailscale-operator";
+          namespace = "flux-system";
+        };
+        spec = {
+          interval = "24h";
+          url = "https://pkgs.tailscale.com/helmcharts";
+        };
+      }
       # --- vcluster --- #
       {
         apiVersion = "v1";

@@ -144,6 +144,7 @@
                   MTU = 1370;
                   operator.replicas = 1;
                   kubeProxyReplacement = true;
+                  socketLB.hostNamespaceOnly = true; # https://tailscale.com/docs/features/kubernetes-operator#cilium-in-kube-proxy-replacement-mode
                   k8sServiceHost = cfg.masterAddr;
                   k8sServicePort = cfg.masterPort;
                   ipv4.enabled = true;
