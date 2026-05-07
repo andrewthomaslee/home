@@ -6,7 +6,7 @@
       "kind": "Namespace",
       "metadata": {
         "labels": {
-          "kubenix/hash": "1f50d347acf4c1a8d22bfb030aea14beb34d547a"
+          "kubenix/hash": "c6bc1fb56ee5e4c4df11e4f95e25bb56fd5d252b"
         },
         "name": "cloudflare"
       }
@@ -16,7 +16,7 @@
       "kind": "Namespace",
       "metadata": {
         "labels": {
-          "kubenix/hash": "1f50d347acf4c1a8d22bfb030aea14beb34d547a"
+          "kubenix/hash": "c6bc1fb56ee5e4c4df11e4f95e25bb56fd5d252b"
         },
         "name": "tailscale"
       }
@@ -26,7 +26,7 @@
       "kind": "Namespace",
       "metadata": {
         "labels": {
-          "kubenix/hash": "1f50d347acf4c1a8d22bfb030aea14beb34d547a"
+          "kubenix/hash": "c6bc1fb56ee5e4c4df11e4f95e25bb56fd5d252b"
         },
         "name": "vcluster-home"
       }
@@ -36,7 +36,7 @@
       "kind": "Namespace",
       "metadata": {
         "labels": {
-          "kubenix/hash": "1f50d347acf4c1a8d22bfb030aea14beb34d547a"
+          "kubenix/hash": "c6bc1fb56ee5e4c4df11e4f95e25bb56fd5d252b"
         },
         "name": "vcluster-helsinki"
       }
@@ -46,7 +46,7 @@
       "kind": "Namespace",
       "metadata": {
         "labels": {
-          "kubenix/hash": "1f50d347acf4c1a8d22bfb030aea14beb34d547a"
+          "kubenix/hash": "c6bc1fb56ee5e4c4df11e4f95e25bb56fd5d252b"
         },
         "name": "whoami"
       }
@@ -56,7 +56,7 @@
       "kind": "HelmRepository",
       "metadata": {
         "labels": {
-          "kubenix/hash": "1f50d347acf4c1a8d22bfb030aea14beb34d547a"
+          "kubenix/hash": "c6bc1fb56ee5e4c4df11e4f95e25bb56fd5d252b"
         },
         "name": "cloudflared",
         "namespace": "flux-system"
@@ -71,7 +71,7 @@
       "kind": "HelmRepository",
       "metadata": {
         "labels": {
-          "kubenix/hash": "1f50d347acf4c1a8d22bfb030aea14beb34d547a"
+          "kubenix/hash": "c6bc1fb56ee5e4c4df11e4f95e25bb56fd5d252b"
         },
         "name": "tailscale-operator",
         "namespace": "flux-system"
@@ -82,11 +82,42 @@
       }
     },
     {
+      "apiVersion": "helm.toolkit.fluxcd.io/v2",
+      "kind": "HelmRelease",
+      "metadata": {
+        "labels": {
+          "kubenix/hash": "c6bc1fb56ee5e4c4df11e4f95e25bb56fd5d252b"
+        },
+        "name": "tailscale",
+        "namespace": "tailscale"
+      },
+      "spec": {
+        "chart": {
+          "spec": {
+            "chart": "tailscale-operator",
+            "interval": "24h",
+            "sourceRef": {
+              "kind": "HelmRepository",
+              "name": "tailscale-operator",
+              "namespace": "flux-system"
+            },
+            "version": "1.96.5"
+          }
+        },
+        "interval": "24h",
+        "values": {
+          "apiServerProxyConfig": {
+            "mode": "true"
+          }
+        }
+      }
+    },
+    {
       "apiVersion": "source.toolkit.fluxcd.io/v1",
       "kind": "HelmRepository",
       "metadata": {
         "labels": {
-          "kubenix/hash": "1f50d347acf4c1a8d22bfb030aea14beb34d547a"
+          "kubenix/hash": "c6bc1fb56ee5e4c4df11e4f95e25bb56fd5d252b"
         },
         "name": "vcluster",
         "namespace": "flux-system"
@@ -101,7 +132,7 @@
       "kind": "DaemonSet",
       "metadata": {
         "labels": {
-          "kubenix/hash": "1f50d347acf4c1a8d22bfb030aea14beb34d547a"
+          "kubenix/hash": "c6bc1fb56ee5e4c4df11e4f95e25bb56fd5d252b"
         },
         "name": "whoami",
         "namespace": "whoami"
@@ -163,7 +194,7 @@
           "service.cilium.io/global": "true"
         },
         "labels": {
-          "kubenix/hash": "1f50d347acf4c1a8d22bfb030aea14beb34d547a"
+          "kubenix/hash": "c6bc1fb56ee5e4c4df11e4f95e25bb56fd5d252b"
         },
         "name": "whoami",
         "namespace": "whoami"
@@ -189,7 +220,7 @@
   ],
   "kind": "List",
   "labels": {
-    "kubenix/hash": "1f50d347acf4c1a8d22bfb030aea14beb34d547a",
+    "kubenix/hash": "c6bc1fb56ee5e4c4df11e4f95e25bb56fd5d252b",
     "kubenix/k8s-version": "1.35",
     "kubenix/project-name": "shared"
   }
