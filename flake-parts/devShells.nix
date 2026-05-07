@@ -27,6 +27,7 @@
             flux9s
             cilium-cli
             kubernetes-helm
+            kubectl-cnpg
             kubeseal
             cloudflared
           ]);
