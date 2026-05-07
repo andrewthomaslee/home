@@ -93,8 +93,11 @@ in {
             };
           };
           values = {
-            privateNodes.enabled = true;
             controlPlane.service.annotations."service.cilium.io/global" = "true";
+            sync.fromHost.nodes = {
+              enabled = true;
+              selector.labels.role = "server";
+            };
           };
         };
       }
