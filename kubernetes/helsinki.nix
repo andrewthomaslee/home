@@ -54,7 +54,7 @@ in {
                 memory = "64Mi";
               };
             };
-            # cloudflared tunnel route dns home <domain>.andrewlee.cloud
+            # cloudflared tunnel route dns cloud <domain>.andrewlee.cloud
             ingress = [
               {
                 hostname = "whoami.andrewlee.cloud";
@@ -68,6 +68,33 @@ in {
                 service = "http_status:404"; # MUST GO LAST
               }
             ];
+          };
+        };
+      }
+      {
+        apiVersion = "helm.toolkit.fluxcd.io/v2";
+        kind = "HelmRelease";
+        metadata = {
+          name = "vcluster-helsinki";
+          namespace = "vcluster-helsinki";
+        };
+        spec = {
+          interval = "24h";
+          chart = {
+            spec = {
+              chart = "vcluster";
+              version = "0.34.0";
+              interval = "24h";
+              sourceRef = {
+                kind = "HelmRepository";
+                name = "vcluster";
+                namespace = "flux-system";
+              };
+            };
+          };
+          values = {
+            privateNodes.enabled = true;
+            controlPlane.service.annotations."service.cilium.io/global" = "true";
           };
         };
       }

@@ -13,6 +13,7 @@ in {
     version = kubeVersion;
     namespace = "default";
     objects = [
+      # --- cloudflared --- #
       {
         apiVersion = "v1";
         kind = "Namespace";
@@ -28,6 +29,29 @@ in {
         spec = {
           interval = "24h";
           url = "https://community-charts.github.io/helm-charts";
+        };
+      }
+      # --- vcluster --- #
+      {
+        apiVersion = "v1";
+        kind = "Namespace";
+        metadata.name = "vcluster-home";
+      }
+      {
+        apiVersion = "v1";
+        kind = "Namespace";
+        metadata.name = "vcluster-helsinki";
+      }
+      {
+        apiVersion = "source.toolkit.fluxcd.io/v1";
+        kind = "HelmRepository";
+        metadata = {
+          name = "vcluster";
+          namespace = "flux-system";
+        };
+        spec = {
+          interval = "24h";
+          url = "https://charts.loft.sh";
         };
       }
       # --- whoami --- #
