@@ -45,11 +45,8 @@ jobs:
       - name: Nix Flake Check
         run: nix flake check --show-trace --all-systems
 
-      - name: Build Playit
-        run: nix build .#playit --show-trace
-
-      - name: Build Clan CLI
-        run: nix build .#clan-cli --show-trace
+      - name: Build devShell
+        run: nix build .#devShell --show-trace
 
       - name: Build Clan Machines
         run: nix run .#clan-cli -- machines build --debug

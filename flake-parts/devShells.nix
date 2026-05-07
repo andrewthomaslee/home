@@ -3,9 +3,11 @@
     pkgs,
     lib,
     inputs',
+    self',
     ...
   }:
     with pkgs; {
+      packages.devShell = self'.devShells.default;
       # ------ Default Dev Shell ------ #
       # Activate: `nix develop`
       devShells.default = mkShell {
@@ -15,6 +17,7 @@
             k3s
             clan-cli
             vcluster
+            playit
           ]
           ++ (with pkgs.unstable; [
             bash
