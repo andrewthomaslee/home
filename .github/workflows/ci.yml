@@ -42,17 +42,20 @@ jobs:
           check-supported: false
           fail-mode: true
 
+      - name: Nix Flake Check
+        run: nix flake check --show-trace --all-systems
+
       - name: Build Playit
-        run: nix build .#playit
+        run: nix build .#playit --show-trace
 
       - name: Build Clan CLI
-        run: nix build .#clan-cli
+        run: nix build .#clan-cli --show-trace
 
       - name: Build Clan Machines
         run: nix run .#clan-cli -- machines build --debug
       
       - name: Build MkDocs
-        run: nix build .#documentation
+        run: nix build .#documentation --show-trace
 
       - name: Setup Pages
         uses: actions/configure-pages@v6.0.0
