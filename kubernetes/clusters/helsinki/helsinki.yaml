@@ -6,7 +6,7 @@
       "kind": "HelmRelease",
       "metadata": {
         "labels": {
-          "kubenix/hash": "9aa8f31aee7957eedb51d6c86f02b94e174b6b60"
+          "kubenix/hash": "a8a897e580511bb1f38e2ac7765917ade93995a6"
         },
         "name": "cloudflared",
         "namespace": "cloudflare"
@@ -68,7 +68,7 @@
       "kind": "HelmRelease",
       "metadata": {
         "labels": {
-          "kubenix/hash": "9aa8f31aee7957eedb51d6c86f02b94e174b6b60"
+          "kubenix/hash": "a8a897e580511bb1f38e2ac7765917ade93995a6"
         },
         "name": "vcluster-helsinki",
         "namespace": "vcluster-helsinki"
@@ -90,10 +90,8 @@
         "values": {
           "controlPlane": {
             "service": {
-              "spec": {
-                "annotations": {
-                  "tailscale.com/expose": "true"
-                }
+              "annotations": {
+                "tailscale.com/expose": "true"
               }
             }
           },
@@ -110,7 +108,7 @@
   ],
   "kind": "List",
   "labels": {
-    "kubenix/hash": "9aa8f31aee7957eedb51d6c86f02b94e174b6b60",
+    "kubenix/hash": "a8a897e580511bb1f38e2ac7765917ade93995a6",
     "kubenix/k8s-version": "1.35",
     "kubenix/project-name": "helsinki"
   }
