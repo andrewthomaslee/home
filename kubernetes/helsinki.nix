@@ -94,6 +94,7 @@ in {
           };
           values = {
             sync.fromHost.nodes.enabled = false;
+            controlPlane.service.spec.annotations."tailscale.com/expose" = "true";
           };
         };
       }
