@@ -23,6 +23,7 @@
         '';
 
         settings = {
+          auto-optimise-store = true;
           trusted-users = ["root" "netsa"];
           allowed-users = ["root" "netsa"];
         };
