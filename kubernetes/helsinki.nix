@@ -99,7 +99,7 @@ in {
             };
           };
           values = {
-            nodeSelector."machine" = "kamrui-p1";
+            nodeSelector."machine" = "hel-1";
             image.tag = "2.3.0";
             deployment.replicaCount = 1;
             garage = {
