@@ -6,7 +6,7 @@
       "kind": "Namespace",
       "metadata": {
         "labels": {
-          "kubenix/hash": "ec281b39f59b1306fde5cd2e857b805031b3416b"
+          "kubenix/hash": "5138d9b30a0bc6515448c08055051d05d59a5d80"
         },
         "name": "garage"
       }
@@ -16,7 +16,7 @@
       "kind": "HelmRelease",
       "metadata": {
         "labels": {
-          "kubenix/hash": "ec281b39f59b1306fde5cd2e857b805031b3416b"
+          "kubenix/hash": "5138d9b30a0bc6515448c08055051d05d59a5d80"
         },
         "name": "cloudflared",
         "namespace": "cloudflare"
@@ -44,6 +44,10 @@
             {
               "hostname": "hubble.andrewlee.cloud",
               "service": "http://hubble-ui.kube-system.svc.cluster.local:80"
+            },
+            {
+              "hostname": "s3.andrewlee.cloud",
+              "service": "http://garage.garage.svc.cluster.local:3900"
             },
             {
               "hostname": "garage.andrewlee.cloud",
@@ -82,7 +86,7 @@
       "kind": "HelmRelease",
       "metadata": {
         "labels": {
-          "kubenix/hash": "ec281b39f59b1306fde5cd2e857b805031b3416b"
+          "kubenix/hash": "5138d9b30a0bc6515448c08055051d05d59a5d80"
         },
         "name": "garage",
         "namespace": "garage"
@@ -142,7 +146,7 @@
   ],
   "kind": "List",
   "labels": {
-    "kubenix/hash": "ec281b39f59b1306fde5cd2e857b805031b3416b",
+    "kubenix/hash": "5138d9b30a0bc6515448c08055051d05d59a5d80",
     "kubenix/k8s-version": "1.34",
     "kubenix/project-name": "helsinki"
   }
