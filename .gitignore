@@ -14,3 +14,5 @@ config.tf.json
 !*.env.schema
 
 .devcontainer.json
+
+tmp/

@@ -73,6 +73,10 @@ in {
                 service = "http://garage.garage.svc.cluster.local:3902";
               }
               {
+                hostname = "garage-ui.andrewlee.cloud"; # Garage Web UI
+                service = "http://garage-ui.garage-ui.svc.cluster.local:80";
+              }
+              {
                 service = "http_status:404"; # MUST GO LAST
               }
             ];
@@ -134,6 +138,71 @@ in {
               requests = {
                 cpu = "100m";
                 memory = "128Mi";
+              };
+            };
+          };
+        };
+      }
+      # --- garage-ui --- #
+      {
+        apiVersion = "v1";
+        kind = "Namespace";
+        metadata.name = "garage-ui";
+      }
+      {
+        apiVersion = "helm.toolkit.fluxcd.io/v2";
+        kind = "HelmRelease";
+        metadata = {
+          name = "garage-ui";
+          namespace = "garage-ui";
+        };
+        spec = {
+          interval = "24h";
+          chart = {
+            spec = {
+              chart = "garage-ui";
+              version = "0.2.5";
+              interval = "72h";
+              sourceRef = {
+                kind = "HelmRepository";
+                name = "garage-ui";
+                namespace = "flux-system";
+              };
+            };
+          };
+          values = {
+            image.tag = "v0.4.2";
+
+            config = {
+              server = {
+                domain = "garage-ui.andrewlee.cloud";
+                root_url = "https://garage-ui.andrewlee.cloud"; # Full external URL (required for OIDC)
+              };
+
+              garage = {
+                # Garage S3 API endpoint
+                endpoint = "http://garage.garage.svc.cluster.local:3900";
+                region = "garage";
+                # Garage Admin API endpoint
+                admin_endpoint = "http://garage.garage.svc.cluster.local:3902";
+                # Use existing secret for admin token
+                existingSecret = {
+                  name = "garage-admin-token";
+                  key = "admin-token";
+                };
+              };
+              # Admin authentication (username/password)
+              auth.admin.enabled = false;
+            };
+
+            resources = {
+              limits = {
+                cpu = "1";
+                memory = "1Gi";
+              };
+              requests = {
+                cpu = "10m";
+                memory = "64Mi";
               };
             };
           };

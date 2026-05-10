@@ -101,6 +101,19 @@ in {
           url = "https://charts.derwitt.dev";
         };
       }
+      # --- garage ui --- #
+      {
+        apiVersion = "source.toolkit.fluxcd.io/v1";
+        kind = "HelmRepository";
+        metadata = {
+          name = "garage-ui";
+          namespace = "flux-system";
+        };
+        spec = {
+          interval = "72h";
+          url = "https://helm.noste.dev/";
+        };
+      }
       # --- whoami --- #
       {
         apiVersion = "v1";
