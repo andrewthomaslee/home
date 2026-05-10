@@ -85,6 +85,7 @@ in {
           namespace = "garage";
         };
         spec = {
+          interval = "24h";
           chart = {
             spec = {
               chart = "garage";
