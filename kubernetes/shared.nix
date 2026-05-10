@@ -91,16 +91,41 @@ in {
       # --- garage --- #
       {
         apiVersion = "source.toolkit.fluxcd.io/v1";
-        kind = "HelmRepository";
+        kind = "GitRepository";
         metadata = {
           name = "garage";
           namespace = "flux-system";
         };
         spec = {
           interval = "72h";
-          url = "https://charts.derwitt.dev";
+          url = "https://git.deuxfleurs.fr/Deuxfleurs/garage.git";
+          ref.branch = "main";
         };
       }
+      {
+        apiVersion = "v1";
+        kind = "Namespace";
+        metadata.name = "garage";
+      }
+      # {
+      #   apiVersion = "v1";
+      #   kind = "Service";
+      #   metadata = {
+      #     name = "garage";
+      #     namespace = "garage";
+      #     annotations."service.cilium.io/global" = "true";
+      #   };
+      #   spec = {
+      #     type = "ClusterIP";
+      #     selector.app = "whoami";
+      #     ports = [
+      #       {
+      #         port = 3903;
+      #         targetPort = 3903;
+      #       }
+      #     ];
+      #   };
+      # }
       # --- garage ui --- #
       {
         apiVersion = "source.toolkit.fluxcd.io/v1";

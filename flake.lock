@@ -943,12 +943,12 @@
         "nixpkgs": "nixpkgs_3"
       },
       "locked": {
-        "lastModified": 1778117837,
-        "narHash": "sha256-VwVAlNBiRvNldYXgbFcG4ppJH5j47ukpQgsSNMMRdhk=",
-        "rev": "d279592b9793c8b2f9b16eaf108a25dce411df87",
-        "revCount": 75,
+        "lastModified": 1778423456,
+        "narHash": "sha256-0DCTIPZjMGi27fUHIVzJeKnYc8iKJ1z/KUhGSEC7CuA=",
+        "rev": "dc5752a69f65895f8b8d743995082e80e43ce96a",
+        "revCount": 77,
         "type": "tarball",
-        "url": "https://api.flakehub.com/f/pinned/andrewthomaslee/kubefetch/0.9.1/019e0017-3cca-7c71-8af7-5b5bd32f0764/source.tar.gz"
+        "url": "https://api.flakehub.com/f/pinned/andrewthomaslee/kubefetch/0.9.2/019e1251-b9b1-76b1-92ed-2d60b0cef159/source.tar.gz"
       },
       "original": {
         "type": "tarball",

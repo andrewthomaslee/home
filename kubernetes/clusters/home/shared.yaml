@@ -6,7 +6,7 @@
       "kind": "Namespace",
       "metadata": {
         "labels": {
-          "kubenix/hash": "51c31e3a4b38c9cba7dda6ffb15743dfe89479fd"
+          "kubenix/hash": "fbc980891d1f5d57a489f2e7fea02be80d21a850"
         },
         "name": "cloudflare"
       }
@@ -16,7 +16,7 @@
       "kind": "Namespace",
       "metadata": {
         "labels": {
-          "kubenix/hash": "51c31e3a4b38c9cba7dda6ffb15743dfe89479fd"
+          "kubenix/hash": "fbc980891d1f5d57a489f2e7fea02be80d21a850"
         },
         "name": "tailscale"
       }
@@ -26,7 +26,17 @@
       "kind": "Namespace",
       "metadata": {
         "labels": {
-          "kubenix/hash": "51c31e3a4b38c9cba7dda6ffb15743dfe89479fd"
+          "kubenix/hash": "fbc980891d1f5d57a489f2e7fea02be80d21a850"
+        },
+        "name": "garage"
+      }
+    },
+    {
+      "apiVersion": "v1",
+      "kind": "Namespace",
+      "metadata": {
+        "labels": {
+          "kubenix/hash": "fbc980891d1f5d57a489f2e7fea02be80d21a850"
         },
         "name": "whoami"
       }
@@ -36,7 +46,7 @@
       "kind": "HelmRepository",
       "metadata": {
         "labels": {
-          "kubenix/hash": "51c31e3a4b38c9cba7dda6ffb15743dfe89479fd"
+          "kubenix/hash": "fbc980891d1f5d57a489f2e7fea02be80d21a850"
         },
         "name": "cloudflared",
         "namespace": "flux-system"
@@ -51,7 +61,7 @@
       "kind": "HelmRepository",
       "metadata": {
         "labels": {
-          "kubenix/hash": "51c31e3a4b38c9cba7dda6ffb15743dfe89479fd"
+          "kubenix/hash": "fbc980891d1f5d57a489f2e7fea02be80d21a850"
         },
         "name": "tailscale-operator",
         "namespace": "flux-system"
@@ -66,7 +76,7 @@
       "kind": "HelmRelease",
       "metadata": {
         "labels": {
-          "kubenix/hash": "51c31e3a4b38c9cba7dda6ffb15743dfe89479fd"
+          "kubenix/hash": "fbc980891d1f5d57a489f2e7fea02be80d21a850"
         },
         "name": "tailscale",
         "namespace": "tailscale"
@@ -97,7 +107,7 @@
       "kind": "HelmRepository",
       "metadata": {
         "labels": {
-          "kubenix/hash": "51c31e3a4b38c9cba7dda6ffb15743dfe89479fd"
+          "kubenix/hash": "fbc980891d1f5d57a489f2e7fea02be80d21a850"
         },
         "name": "valkey",
         "namespace": "flux-system"
@@ -109,17 +119,20 @@
     },
     {
       "apiVersion": "source.toolkit.fluxcd.io/v1",
-      "kind": "HelmRepository",
+      "kind": "GitRepository",
       "metadata": {
         "labels": {
-          "kubenix/hash": "51c31e3a4b38c9cba7dda6ffb15743dfe89479fd"
+          "kubenix/hash": "fbc980891d1f5d57a489f2e7fea02be80d21a850"
         },
         "name": "garage",
         "namespace": "flux-system"
       },
       "spec": {
         "interval": "72h",
-        "url": "https://charts.derwitt.dev"
+        "ref": {
+          "branch": "main"
+        },
+        "url": "https://git.deuxfleurs.fr/Deuxfleurs/garage.git"
       }
     },
     {
@@ -127,7 +140,7 @@
       "kind": "HelmRepository",
       "metadata": {
         "labels": {
-          "kubenix/hash": "51c31e3a4b38c9cba7dda6ffb15743dfe89479fd"
+          "kubenix/hash": "fbc980891d1f5d57a489f2e7fea02be80d21a850"
         },
         "name": "garage-ui",
         "namespace": "flux-system"
@@ -142,7 +155,7 @@
       "kind": "DaemonSet",
       "metadata": {
         "labels": {
-          "kubenix/hash": "51c31e3a4b38c9cba7dda6ffb15743dfe89479fd"
+          "kubenix/hash": "fbc980891d1f5d57a489f2e7fea02be80d21a850"
         },
         "name": "whoami",
         "namespace": "whoami"
@@ -204,7 +217,7 @@
           "service.cilium.io/global": "true"
         },
         "labels": {
-          "kubenix/hash": "51c31e3a4b38c9cba7dda6ffb15743dfe89479fd"
+          "kubenix/hash": "fbc980891d1f5d57a489f2e7fea02be80d21a850"
         },
         "name": "whoami",
         "namespace": "whoami"
@@ -230,7 +243,7 @@
   ],
   "kind": "List",
   "labels": {
-    "kubenix/hash": "51c31e3a4b38c9cba7dda6ffb15743dfe89479fd",
+    "kubenix/hash": "fbc980891d1f5d57a489f2e7fea02be80d21a850",
     "kubenix/k8s-version": "1.34",
     "kubenix/project-name": "shared"
   }
