@@ -88,6 +88,19 @@ in {
           url = "https://valkey.io/valkey-helm/";
         };
       }
+      # --- garage --- #
+      {
+        apiVersion = "source.toolkit.fluxcd.io/v1";
+        kind = "HelmRepository";
+        metadata = {
+          name = "garage";
+          namespace = "flux-system";
+        };
+        spec = {
+          interval = "72h";
+          url = "https://charts.derwitt.dev";
+        };
+      }
       # --- whoami --- #
       {
         apiVersion = "v1";
