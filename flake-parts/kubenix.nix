@@ -19,6 +19,7 @@
       name:
         (inputs.kubenix.evalModules.${system} {
           module = kubeDir + "/${name}.nix";
+          specialArgs = {inherit pkgs;};
         }).config.kubernetes.result
     );
 

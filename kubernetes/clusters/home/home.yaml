@@ -67,7 +67,7 @@
   "kind": "List",
   "labels": {
     "kubenix/hash": "daf4d4f8d39bbb577fa700677dcbd9e08ac10633",
-    "kubenix/k8s-version": "1.35",
+    "kubenix/k8s-version": "1.34",
     "kubenix/project-name": "home"
   }
 }
