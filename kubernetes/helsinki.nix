@@ -72,156 +72,155 @@ in {
         };
       }
       # --- garage --- #
-      {
-        apiVersion = "v1";
-        kind = "Namespace";
-        metadata.name = "garage";
-      }
-      {
-        apiVersion = "helm.toolkit.fluxcd.io/v2";
-        kind = "HelmRelease";
-        metadata = {
-          name = "garage";
-          namespace = "garage";
-        };
-        spec = {
-          interval = "24h";
-          chart = {
-            spec = {
-              chart = "garage";
-              version = "2.3.2";
-              interval = "72h";
-              sourceRef = {
-                kind = "HelmRepository";
-                name = "garage";
-                namespace = "flux-system";
-              };
-            };
-          };
-          values = {
-            nodeSelector."machine" = "hel-1";
-            image.tag = "2.3.0";
-            deployment.replicaCount = 1;
-            garage = {
-              replicationFactor = 1;
-              compressionLevel = 19;
-              metadataAutoSnapshotInterval = "2 days";
-            };
-            persistence = {
-              meta = {
-                size = "5Gi";
-                storageClass = "local-path";
-              };
-              data = {
-                size = "50Gi";
-                storageClass = "local-path";
-              };
-            };
-            # Resource requests/limits
-            resources = {
-              limits = {
-                cpu = "2";
-                memory = "4Gi";
-              };
-              requests = {
-                cpu = "100m";
-                memory = "128Mi";
-              };
-            };
-          };
-        };
-      }
+      # {
+      #   apiVersion = "v1";
+      #   kind = "Namespace";
+      #   metadata.name = "garage";
+      # }
+      # {
+      #   apiVersion = "helm.toolkit.fluxcd.io/v2";
+      #   kind = "HelmRelease";
+      #   metadata = {
+      #     name = "garage";
+      #     namespace = "garage";
+      #   };
+      #   spec = {
+      #     interval = "24h";
+      #     chart = {
+      #       spec = {
+      #         chart = "garage";
+      #         version = "2.3.2";
+      #         interval = "72h";
+      #         sourceRef = {
+      #           kind = "HelmRepository";
+      #           name = "garage";
+      #           namespace = "flux-system";
+      #         };
+      #       };
+      #     };
+      #     values = {
+      #       nodeSelector."machine" = "hel-1";
+      #       image.tag = "2.3.0";
+      #       deployment.replicaCount = 1;
+      #       garage = {
+      #         replicationFactor = 1;
+      #         compressionLevel = 19;
+      #         metadataAutoSnapshotInterval = "2 days";
+      #       };
+      #       persistence = {
+      #         meta = {
+      #           size = "5Gi";
+      #           storageClass = "local-path";
+      #         };
+      #         data = {
+      #           size = "50Gi";
+      #           storageClass = "local-path";
+      #         };
+      #       };
+      #       # Resource requests/limits
+      #       resources = {
+      #         limits = {
+      #           cpu = "2";
+      #           memory = "4Gi";
+      #         };
+      #         requests = {
+      #           cpu = "100m";
+      #           memory = "128Mi";
+      #         };
+      #       };
+      #     };
+      #   };
+      # }
       # --- GitLab --- #
-      {
-        apiVersion = "v1";
-        kind = "Namespace";
-        metadata.name = "gitlab";
-      }
+      # {
+      #   apiVersion = "v1";
+      #   kind = "Namespace";
+      #   metadata.name = "gitlab";
+      # }
       # --- Postgres ---#
-      {
-        apiVersion = "postgresql.cnpg.io/v1";
-        kind = "Cluster";
-        metadata = {
-          name = "postgres";
-          namespace = "gitlab";
-        };
-        spec = {
-          instances = 1;
-          storage = {
-            size = "150Gi";
-            storageClass = "local-path";
-          };
-          walStorage = {
-            size = "15Gi";
-            storageClass = "local-path";
-          };
-          resources = {
-            limits = {
-              cpu = "2";
-              memory = "4Gi";
-            };
-            requests = {
-              cpu = "100m";
-              memory = "128Mi";
-            };
-          };
-        };
-      }
+      # {
+      #   apiVersion = "postgresql.cnpg.io/v1";
+      #   kind = "Cluster";
+      #   metadata = {
+      #     name = "postgres";
+      #     namespace = "gitlab";
+      #   };
+      #   spec = {
+      #     instances = 1;
+      #     storage = {
+      #       size = "150Gi";
+      #       storageClass = "local-path";
+      #     };
+      #     walStorage = {
+      #       size = "15Gi";
+      #       storageClass = "local-path";
+      #     };
+      #     resources = {
+      #       limits = {
+      #         cpu = "2";
+      #         memory = "4Gi";
+      #       };
+      #       requests = {
+      #         cpu = "100m";
+      #         memory = "128Mi";
+      #       };
+      #     };
+      #   };
+      # }
       #--- Valkey --- #
-      {
-        apiVersion = "helm.toolkit.fluxcd.io/v2";
-        kind = "HelmRelease";
-        metadata = {
-          name = "valkey";
-          namespace = "gitlab";
-        };
-        spec = {
-          interval = "72h";
-          chart = {
-            spec = {
-              chart = "valkey";
-              version = "0.9.4";
-              interval = "72h";
-              sourceRef = {
-                kind = "HelmRepository";
-                name = "valkey";
-                namespace = "flux-system";
-              };
-            };
-          };
-          values = {
-            image.tag = "9.0.2";
-            # Resource requests/limits
-            resources = {
-              limits = {
-                cpu = "1";
-                memory = "1Gi";
-              };
-              requests = {
-                cpu = "100m";
-                memory = "128Mi";
-              };
-            };
-            initResources = {
-              limits = {
-                cpu = "1";
-                memory = "1Gi";
-              };
-              requests = {
-                cpu = "100m";
-                memory = "128Mi";
-              };
-            };
-            # Persistence
-            dataStorage = {
-              enabled = true;
-              requestedSize = "8Gi";
-              className = "local-path";
-              nodeSelector."machine" = "kamrui-p1";
-            };
-          };
-        };
-      }
+      # {
+      #   apiVersion = "helm.toolkit.fluxcd.io/v2";
+      #   kind = "HelmRelease";
+      #   metadata = {
+      #     name = "valkey";
+      #     namespace = "gitlab";
+      #   };
+      #   spec = {
+      #     interval = "72h";
+      #     chart = {
+      #       spec = {
+      #         chart = "valkey";
+      #         version = "0.9.4";
+      #         interval = "72h";
+      #         sourceRef = {
+      #           kind = "HelmRepository";
+      #           name = "valkey";
+      #           namespace = "flux-system";
+      #         };
+      #       };
+      #     };
+      #     values = {
+      #       image.tag = "9.0.2";
+      #       # Resource requests/limits
+      #       resources = {
+      #         limits = {
+      #           cpu = "1";
+      #           memory = "1Gi";
+      #         };
+      #         requests = {
+      #           cpu = "100m";
+      #           memory = "128Mi";
+      #         };
+      #       };
+      #       initResources = {
+      #         limits = {
+      #           cpu = "1";
+      #           memory = "2Gi";
+      #         };
+      #         requests = {
+      #           cpu = "100m";
+      #           memory = "128Mi";
+      #         };
+      #       };
+      #       # Persistence
+      #       dataStorage = {
+      #         enabled = true;
+      #         requestedSize = "8Gi";
+      #         className = "local-path";
+      #       };
+      #     };
+      #   };
+      # }
     ];
   };
 }
