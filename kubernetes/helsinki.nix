@@ -65,6 +65,10 @@ in {
                 service = "http://hubble-ui.kube-system.svc.cluster.local:80";
               }
               {
+                hostname = "garage.andrewlee.cloud";
+                service = "http://garage.garage.svc.cluster.local:3902";
+              }
+              {
                 service = "http_status:404"; # MUST GO LAST
               }
             ];
