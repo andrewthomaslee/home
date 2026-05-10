@@ -100,7 +100,7 @@ in {
           };
           values = {
             nodeSelector."role" = "server";
-            image.tag = "2.3.0";
+            image.tag = "v2.3.0";
             deployment.replicaCount = 1;
             garage = {
               replicationFactor = 1;
