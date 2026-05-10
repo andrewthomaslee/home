@@ -114,6 +114,7 @@ in {
             nodeSelector."role" = "server";
             image.tag = "v2.3.0";
             deployment.replicaCount = 1;
+            service.admin.port = 3903;
             garage = {
               replicationFactor = 1;
               compressionLevel = 19;

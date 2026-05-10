@@ -6,7 +6,7 @@
       "kind": "Namespace",
       "metadata": {
         "labels": {
-          "kubenix/hash": "9d4e0acffbada7bce077fad932da67ded9a1fc0d"
+          "kubenix/hash": "35a0188c02cbfe3cc0b20bf7f3cc7c6ba91de3c1"
         },
         "name": "garage"
       }
@@ -16,7 +16,7 @@
       "kind": "Namespace",
       "metadata": {
         "labels": {
-          "kubenix/hash": "9d4e0acffbada7bce077fad932da67ded9a1fc0d"
+          "kubenix/hash": "35a0188c02cbfe3cc0b20bf7f3cc7c6ba91de3c1"
         },
         "name": "garage-ui"
       }
@@ -26,7 +26,7 @@
       "kind": "HelmRelease",
       "metadata": {
         "labels": {
-          "kubenix/hash": "9d4e0acffbada7bce077fad932da67ded9a1fc0d"
+          "kubenix/hash": "35a0188c02cbfe3cc0b20bf7f3cc7c6ba91de3c1"
         },
         "name": "cloudflared",
         "namespace": "cloudflare"
@@ -100,7 +100,7 @@
       "kind": "HelmRelease",
       "metadata": {
         "labels": {
-          "kubenix/hash": "9d4e0acffbada7bce077fad932da67ded9a1fc0d"
+          "kubenix/hash": "35a0188c02cbfe3cc0b20bf7f3cc7c6ba91de3c1"
         },
         "name": "garage",
         "namespace": "garage"
@@ -153,6 +153,11 @@
               "cpu": "100m",
               "memory": "128Mi"
             }
+          },
+          "service": {
+            "admin": {
+              "port": 3903
+            }
           }
         }
       }
@@ -162,7 +167,7 @@
       "kind": "HelmRelease",
       "metadata": {
         "labels": {
-          "kubenix/hash": "9d4e0acffbada7bce077fad932da67ded9a1fc0d"
+          "kubenix/hash": "35a0188c02cbfe3cc0b20bf7f3cc7c6ba91de3c1"
         },
         "name": "garage-ui",
         "namespace": "garage-ui"
@@ -221,7 +226,7 @@
   ],
   "kind": "List",
   "labels": {
-    "kubenix/hash": "9d4e0acffbada7bce077fad932da67ded9a1fc0d",
+    "kubenix/hash": "35a0188c02cbfe3cc0b20bf7f3cc7c6ba91de3c1",
     "kubenix/k8s-version": "1.34",
     "kubenix/project-name": "helsinki"
   }
