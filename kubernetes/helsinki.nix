@@ -100,13 +100,11 @@ in {
           values = {
             nodeSelector."machine" = "kamrui-p1";
             image.tag = "2.3.0";
+            deployment.replicaCount = 1;
             garage = {
               replicationFactor = 1;
               compressionLevel = 19;
               metadataAutoSnapshotInterval = "2 days";
-            };
-            deployment = {
-              replicaCount = 1;
             };
             persistence = {
               meta = {
@@ -123,16 +121,6 @@ in {
               limits = {
                 cpu = "2";
                 memory = "4Gi";
-              };
-              requests = {
-                cpu = "100m";
-                memory = "128Mi";
-              };
-            };
-            initResources = {
-              limits = {
-                cpu = "1";
-                memory = "1Gi";
               };
               requests = {
                 cpu = "100m";

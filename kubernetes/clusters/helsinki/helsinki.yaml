@@ -6,7 +6,7 @@
       "kind": "Namespace",
       "metadata": {
         "labels": {
-          "kubenix/hash": "ca6b952a7e833c204c91daeb1601c93ab89e988c"
+          "kubenix/hash": "9d392fc102ef4fd20847bc463b39950b027cca92"
         },
         "name": "garage"
       }
@@ -16,7 +16,7 @@
       "kind": "Namespace",
       "metadata": {
         "labels": {
-          "kubenix/hash": "ca6b952a7e833c204c91daeb1601c93ab89e988c"
+          "kubenix/hash": "9d392fc102ef4fd20847bc463b39950b027cca92"
         },
         "name": "gitlab"
       }
@@ -26,7 +26,7 @@
       "kind": "HelmRelease",
       "metadata": {
         "labels": {
-          "kubenix/hash": "ca6b952a7e833c204c91daeb1601c93ab89e988c"
+          "kubenix/hash": "9d392fc102ef4fd20847bc463b39950b027cca92"
         },
         "name": "cloudflared",
         "namespace": "cloudflare"
@@ -88,7 +88,7 @@
       "kind": "HelmRelease",
       "metadata": {
         "labels": {
-          "kubenix/hash": "ca6b952a7e833c204c91daeb1601c93ab89e988c"
+          "kubenix/hash": "9d392fc102ef4fd20847bc463b39950b027cca92"
         },
         "name": "garage",
         "namespace": "garage"
@@ -117,16 +117,6 @@
           },
           "image": {
             "tag": "2.3.0"
-          },
-          "initResources": {
-            "limits": {
-              "cpu": "1",
-              "memory": "1Gi"
-            },
-            "requests": {
-              "cpu": "100m",
-              "memory": "128Mi"
-            }
           },
           "nodeSelector": {
             "machine": "kamrui-p1"
@@ -159,7 +149,7 @@
       "kind": "Cluster",
       "metadata": {
         "labels": {
-          "kubenix/hash": "ca6b952a7e833c204c91daeb1601c93ab89e988c"
+          "kubenix/hash": "9d392fc102ef4fd20847bc463b39950b027cca92"
         },
         "name": "postgres",
         "namespace": "gitlab"
@@ -191,7 +181,7 @@
       "kind": "HelmRelease",
       "metadata": {
         "labels": {
-          "kubenix/hash": "ca6b952a7e833c204c91daeb1601c93ab89e988c"
+          "kubenix/hash": "9d392fc102ef4fd20847bc463b39950b027cca92"
         },
         "name": "valkey",
         "namespace": "gitlab"
@@ -248,7 +238,7 @@
   ],
   "kind": "List",
   "labels": {
-    "kubenix/hash": "ca6b952a7e833c204c91daeb1601c93ab89e988c",
+    "kubenix/hash": "9d392fc102ef4fd20847bc463b39950b027cca92",
     "kubenix/k8s-version": "1.34",
     "kubenix/project-name": "helsinki"
   }
