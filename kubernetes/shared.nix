@@ -27,7 +27,7 @@ in {
           namespace = "flux-system";
         };
         spec = {
-          interval = "24h";
+          interval = "72h";
           url = "https://community-charts.github.io/helm-charts";
         };
       }
@@ -45,7 +45,7 @@ in {
           namespace = "flux-system";
         };
         spec = {
-          interval = "24h";
+          interval = "72h";
           url = "https://pkgs.tailscale.com/helmcharts";
         };
       }
@@ -57,12 +57,12 @@ in {
           namespace = "tailscale";
         };
         spec = {
-          interval = "24h";
+          interval = "72h";
           chart = {
             spec = {
               chart = "tailscale-operator";
               version = "1.96.5";
-              interval = "24h";
+              interval = "72h";
               sourceRef = {
                 kind = "HelmRepository";
                 name = "tailscale-operator";
@@ -73,6 +73,19 @@ in {
           values = {
             apiServerProxyConfig.mode = "true";
           };
+        };
+      }
+      # --- valkey --- #
+      {
+        apiVersion = "source.toolkit.fluxcd.io/v1";
+        kind = "HelmRepository";
+        metadata = {
+          name = "valkey";
+          namespace = "flux-system";
+        };
+        spec = {
+          interval = "72h";
+          url = "https://valkey.io/valkey-helm/";
         };
       }
       # --- whoami --- #

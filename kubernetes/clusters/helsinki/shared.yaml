@@ -6,7 +6,7 @@
       "kind": "Namespace",
       "metadata": {
         "labels": {
-          "kubenix/hash": "953b65ce9d5046b13398e2703e75a6107e696122"
+          "kubenix/hash": "8dbdd19b40cbf43f01b4ee5c87842ca129d0cb4e"
         },
         "name": "cloudflare"
       }
@@ -16,7 +16,7 @@
       "kind": "Namespace",
       "metadata": {
         "labels": {
-          "kubenix/hash": "953b65ce9d5046b13398e2703e75a6107e696122"
+          "kubenix/hash": "8dbdd19b40cbf43f01b4ee5c87842ca129d0cb4e"
         },
         "name": "tailscale"
       }
@@ -26,7 +26,7 @@
       "kind": "Namespace",
       "metadata": {
         "labels": {
-          "kubenix/hash": "953b65ce9d5046b13398e2703e75a6107e696122"
+          "kubenix/hash": "8dbdd19b40cbf43f01b4ee5c87842ca129d0cb4e"
         },
         "name": "whoami"
       }
@@ -36,13 +36,13 @@
       "kind": "HelmRepository",
       "metadata": {
         "labels": {
-          "kubenix/hash": "953b65ce9d5046b13398e2703e75a6107e696122"
+          "kubenix/hash": "8dbdd19b40cbf43f01b4ee5c87842ca129d0cb4e"
         },
         "name": "cloudflared",
         "namespace": "flux-system"
       },
       "spec": {
-        "interval": "24h",
+        "interval": "72h",
         "url": "https://community-charts.github.io/helm-charts"
       }
     },
@@ -51,13 +51,13 @@
       "kind": "HelmRepository",
       "metadata": {
         "labels": {
-          "kubenix/hash": "953b65ce9d5046b13398e2703e75a6107e696122"
+          "kubenix/hash": "8dbdd19b40cbf43f01b4ee5c87842ca129d0cb4e"
         },
         "name": "tailscale-operator",
         "namespace": "flux-system"
       },
       "spec": {
-        "interval": "24h",
+        "interval": "72h",
         "url": "https://pkgs.tailscale.com/helmcharts"
       }
     },
@@ -66,7 +66,7 @@
       "kind": "HelmRelease",
       "metadata": {
         "labels": {
-          "kubenix/hash": "953b65ce9d5046b13398e2703e75a6107e696122"
+          "kubenix/hash": "8dbdd19b40cbf43f01b4ee5c87842ca129d0cb4e"
         },
         "name": "tailscale",
         "namespace": "tailscale"
@@ -75,7 +75,7 @@
         "chart": {
           "spec": {
             "chart": "tailscale-operator",
-            "interval": "24h",
+            "interval": "72h",
             "sourceRef": {
               "kind": "HelmRepository",
               "name": "tailscale-operator",
@@ -84,7 +84,7 @@
             "version": "1.96.5"
           }
         },
-        "interval": "24h",
+        "interval": "72h",
         "values": {
           "apiServerProxyConfig": {
             "mode": "true"
@@ -93,11 +93,26 @@
       }
     },
     {
+      "apiVersion": "source.toolkit.fluxcd.io/v1",
+      "kind": "HelmRepository",
+      "metadata": {
+        "labels": {
+          "kubenix/hash": "8dbdd19b40cbf43f01b4ee5c87842ca129d0cb4e"
+        },
+        "name": "valkey",
+        "namespace": "flux-system"
+      },
+      "spec": {
+        "interval": "72h",
+        "url": "https://valkey.io/valkey-helm/"
+      }
+    },
+    {
       "apiVersion": "apps/v1",
       "kind": "DaemonSet",
       "metadata": {
         "labels": {
-          "kubenix/hash": "953b65ce9d5046b13398e2703e75a6107e696122"
+          "kubenix/hash": "8dbdd19b40cbf43f01b4ee5c87842ca129d0cb4e"
         },
         "name": "whoami",
         "namespace": "whoami"
@@ -159,7 +174,7 @@
           "service.cilium.io/global": "true"
         },
         "labels": {
-          "kubenix/hash": "953b65ce9d5046b13398e2703e75a6107e696122"
+          "kubenix/hash": "8dbdd19b40cbf43f01b4ee5c87842ca129d0cb4e"
         },
         "name": "whoami",
         "namespace": "whoami"
@@ -185,7 +200,7 @@
   ],
   "kind": "List",
   "labels": {
-    "kubenix/hash": "953b65ce9d5046b13398e2703e75a6107e696122",
+    "kubenix/hash": "8dbdd19b40cbf43f01b4ee5c87842ca129d0cb4e",
     "kubenix/k8s-version": "1.35",
     "kubenix/project-name": "shared"
   }

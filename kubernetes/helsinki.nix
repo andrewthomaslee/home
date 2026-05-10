@@ -71,6 +71,99 @@ in {
           };
         };
       }
+      # --- GitLab --- #
+      {
+        apiVersion = "v1";
+        kind = "Namespace";
+        metadata.name = "gitlab";
+      }
+      # --- Postgres ---#
+      {
+        apiVersion = "postgresql.cnpg.io/v1";
+        kind = "Cluster";
+        metadata = {
+          name = "postgres";
+          namespace = "gitlab";
+        };
+        spec = {
+          nodeSelector."machine" = "kamrui-p1";
+          instances = 1;
+          storage = {
+            size = "150Gi";
+            storageClass = "local-path";
+          };
+          walStorage = {
+            size = "10Gi";
+            storageClass = "local-path";
+          };
+
+          resources = {
+            limits = {
+              cpu = "2";
+              memory = "4Gi";
+            };
+            requests = {
+              cpu = "100m";
+              memory = "128Mi";
+            };
+          };
+        };
+      }
+      #--- Valkey --- #
+      {
+        apiVersion = "helm.toolkit.fluxcd.io/v2";
+        kind = "HelmRelease";
+        metadata = {
+          name = "valkey";
+          namespace = "gitlab";
+        };
+        spec = {
+          interval = "72h";
+          chart = {
+            spec = {
+              chart = "valkey";
+              version = "0.9.4";
+              interval = "72h";
+              sourceRef = {
+                kind = "HelmRepository";
+                name = "valkey";
+                namespace = "flux-system";
+              };
+            };
+          };
+          values = {
+            image.tag = "9.0.2";
+            # Resource requests/limits
+            resources = {
+              limits = {
+                cpu = "1";
+                memory = "1Gi";
+              };
+              requests = {
+                cpu = "100m";
+                memory = "128Mi";
+              };
+            };
+            initResources = {
+              limits = {
+                cpu = "1";
+                memory = "1Gi";
+              };
+              requests = {
+                cpu = "100m";
+                memory = "128Mi";
+              };
+            };
+            # Persistence
+            dataStorage = {
+              enabled = true;
+              requestedSize = "8Gi";
+              className = "local-path";
+              nodeSelector."machine" = "kamrui-p1";
+            };
+          };
+        };
+      }
     ];
   };
 }
