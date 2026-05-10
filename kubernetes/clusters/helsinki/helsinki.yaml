@@ -2,11 +2,21 @@
   "apiVersion": "v1",
   "items": [
     {
+      "apiVersion": "v1",
+      "kind": "Namespace",
+      "metadata": {
+        "labels": {
+          "kubenix/hash": "4c5778c0e998b74c9a97dcd63e80aa0a91d5b1ce"
+        },
+        "name": "garage"
+      }
+    },
+    {
       "apiVersion": "helm.toolkit.fluxcd.io/v2",
       "kind": "HelmRelease",
       "metadata": {
         "labels": {
-          "kubenix/hash": "895b798cbf410dd82b3ddaecb9d0d4cff7e4dde8"
+          "kubenix/hash": "4c5778c0e998b74c9a97dcd63e80aa0a91d5b1ce"
         },
         "name": "cloudflared",
         "namespace": "cloudflare"
@@ -62,11 +72,73 @@
           }
         }
       }
+    },
+    {
+      "apiVersion": "helm.toolkit.fluxcd.io/v2",
+      "kind": "HelmRelease",
+      "metadata": {
+        "labels": {
+          "kubenix/hash": "4c5778c0e998b74c9a97dcd63e80aa0a91d5b1ce"
+        },
+        "name": "garage",
+        "namespace": "garage"
+      },
+      "spec": {
+        "chart": {
+          "spec": {
+            "chart": "garage",
+            "interval": "72h",
+            "sourceRef": {
+              "kind": "HelmRepository",
+              "name": "garage",
+              "namespace": "flux-system"
+            },
+            "version": "2.3.2"
+          }
+        },
+        "interval": "24h",
+        "values": {
+          "deployment": {
+            "replicaCount": 1
+          },
+          "garage": {
+            "compressionLevel": 19,
+            "metadataAutoSnapshotInterval": "2 days",
+            "replicationFactor": 1
+          },
+          "image": {
+            "tag": "2.3.0"
+          },
+          "nodeSelector": {
+            "role": "server"
+          },
+          "persistence": {
+            "data": {
+              "size": "50Gi",
+              "storageClass": "local-path"
+            },
+            "meta": {
+              "size": "5Gi",
+              "storageClass": "local-path"
+            }
+          },
+          "resources": {
+            "limits": {
+              "cpu": "2",
+              "memory": "4Gi"
+            },
+            "requests": {
+              "cpu": "100m",
+              "memory": "128Mi"
+            }
+          }
+        }
+      }
     }
   ],
   "kind": "List",
   "labels": {
-    "kubenix/hash": "895b798cbf410dd82b3ddaecb9d0d4cff7e4dde8",
+    "kubenix/hash": "4c5778c0e998b74c9a97dcd63e80aa0a91d5b1ce",
     "kubenix/k8s-version": "1.34",
     "kubenix/project-name": "helsinki"
   }

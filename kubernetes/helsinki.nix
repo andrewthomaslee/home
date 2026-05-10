@@ -72,65 +72,65 @@ in {
         };
       }
       # --- garage --- #
-      # {
-      #   apiVersion = "v1";
-      #   kind = "Namespace";
-      #   metadata.name = "garage";
-      # }
-      # {
-      #   apiVersion = "helm.toolkit.fluxcd.io/v2";
-      #   kind = "HelmRelease";
-      #   metadata = {
-      #     name = "garage";
-      #     namespace = "garage";
-      #   };
-      #   spec = {
-      #     interval = "24h";
-      #     chart = {
-      #       spec = {
-      #         chart = "garage";
-      #         version = "2.3.2";
-      #         interval = "72h";
-      #         sourceRef = {
-      #           kind = "HelmRepository";
-      #           name = "garage";
-      #           namespace = "flux-system";
-      #         };
-      #       };
-      #     };
-      #     values = {
-      #       nodeSelector."machine" = "hel-1";
-      #       image.tag = "2.3.0";
-      #       deployment.replicaCount = 1;
-      #       garage = {
-      #         replicationFactor = 1;
-      #         compressionLevel = 19;
-      #         metadataAutoSnapshotInterval = "2 days";
-      #       };
-      #       persistence = {
-      #         meta = {
-      #           size = "5Gi";
-      #           storageClass = "local-path";
-      #         };
-      #         data = {
-      #           size = "50Gi";
-      #           storageClass = "local-path";
-      #         };
-      #       };
-      #       # Resource requests/limits
-      #       resources = {
-      #         limits = {
-      #           cpu = "2";
-      #           memory = "4Gi";
-      #         };
-      #         requests = {
-      #           cpu = "100m";
-      #           memory = "128Mi";
-      #         };
-      #       };
-      #     };
-      #   };
-      # }
+      {
+        apiVersion = "v1";
+        kind = "Namespace";
+        metadata.name = "garage";
+      }
+      {
+        apiVersion = "helm.toolkit.fluxcd.io/v2";
+        kind = "HelmRelease";
+        metadata = {
+          name = "garage";
+          namespace = "garage";
+        };
+        spec = {
+          interval = "24h";
+          chart = {
+            spec = {
+              chart = "garage";
+              version = "2.3.2";
+              interval = "72h";
+              sourceRef = {
+                kind = "HelmRepository";
+                name = "garage";
+                namespace = "flux-system";
+              };
+            };
+          };
+          values = {
+            nodeSelector."role" = "server";
+            image.tag = "2.3.0";
+            deployment.replicaCount = 1;
+            garage = {
+              replicationFactor = 1;
+              compressionLevel = 19;
+              metadataAutoSnapshotInterval = "2 days";
+            };
+            persistence = {
+              meta = {
+                size = "5Gi";
+                storageClass = "local-path";
+              };
+              data = {
+                size = "50Gi";
+                storageClass = "local-path";
+              };
+            };
+            # Resource requests/limits
+            resources = {
+              limits = {
+                cpu = "2";
+                memory = "4Gi";
+              };
+              requests = {
+                cpu = "100m";
+                memory = "128Mi";
+              };
+            };
+          };
+        };
+      }
       # --- GitLab --- #
       # {
       #   apiVersion = "v1";
