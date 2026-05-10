@@ -86,17 +86,15 @@ in {
           namespace = "gitlab";
         };
         spec = {
-          nodeSelector."machine" = "kamrui-p1";
           instances = 1;
           storage = {
             size = "150Gi";
             storageClass = "local-path";
           };
           walStorage = {
-            size = "10Gi";
+            size = "15Gi";
             storageClass = "local-path";
           };
-
           resources = {
             limits = {
               cpu = "2";
