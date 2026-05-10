@@ -184,7 +184,7 @@ in {
                 endpoint = "http://garage.garage.svc.cluster.local:3900";
                 region = "garage";
                 # Garage Admin API endpoint
-                admin_endpoint = "http://garage.garage.svc.cluster.local:3902";
+                admin_endpoint = "http://garage.garage.svc.cluster.local:3903";
                 # Use existing secret for admin token
                 existingSecret = {
                   name = "garage-admin-token";
