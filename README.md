@@ -12,7 +12,7 @@
 
 <p align="center">
   <a href="https://github.com/andrewthomaslee/home"><img src="https://img.shields.io/badge/github-repo-24292e?logo=github&style=for-the-badge" alt="GitHub Repo"></a>
-  <a href="https://flakehub.com/flake/andrewthomaslee/home?view=usage"><img src="https://img.shields.io/badge/flakehub-repo-purple?style=for-the-badge" alt="FlakeHub Repo"></a>
+  <a href="https://flakehub.com/flake/andrewthomaslee/home"><img src="https://img.shields.io/endpoint?url=https://flakehub.com/f/andrewthomaslee/home/badge&style=for-the-badge" alt="FlakeHub"></a>
 </p>
 
 
