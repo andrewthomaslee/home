@@ -14,10 +14,7 @@
   in {
     options.homeSpec.programs.uv.enable = lib.mkEnableOption "default uv configuration";
     config = lib.mkIf cfg.enable {
-      home = {
-        packages = [pkgs.python314-wrapped];
-        sessionVariables.UV_PYTHON = "${pkgs.python314-wrapped}/bin/python";
-      };
+      home.packages = [pkgs.unstable.python314];
       programs.uv = {
         enable = true;
         package = pkgs.unstable.uv;
