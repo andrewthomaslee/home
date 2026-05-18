@@ -61,6 +61,12 @@ in {
           )
           self.nixosModules));
 
+      # nix-ld
+      programs.nix-ld = {
+        enable = true;
+        libraries = [pkgs.stdenv.cc.cc];
+      };
+
       # acme
       security.acme = {
         acceptTerms = true;

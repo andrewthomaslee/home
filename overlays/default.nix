@@ -18,4 +18,9 @@
 
   vcluster = self.packages.${final.stdenv.hostPlatform.system}.vcluster;
   playit = self.packages.${final.stdenv.hostPlatform.system}.playit;
+
+  python3-wrapped = final.writeShellScriptBin "python" ''
+    export LD_LIBRARY_PATH=$NIX_LD_LIBRARY_PATH
+    exec ${prev.python3}/bin/python "$@"
+  '';
 }
