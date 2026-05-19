@@ -4,13 +4,8 @@
   ...
 }: let
   # Define custom lib accessable as `lib.custom`
-  customLib = inputs.nixpkgs.lib.extend (
-    self: super: {
-      custom = import ../lib {
-        inherit (inputs.nixpkgs) lib;
-      };
-    }
-  );
+  customLib = inputs.nixpkgs.lib.extend (self: super: {custom = import ../lib {inherit (inputs.nixpkgs) lib;};});
+  inherit (customLib.custom) relativeToRoot;
 in {
   perSystem = {
     pkgs,
@@ -19,7 +14,6 @@ in {
   }: {
     _module.args = {
       lib = customLib;
-      # Make pkgs.unstable available in perSystem evaluation as well
       pkgs = import inputs.nixpkgs {
         inherit system;
         overlays = [self.overlays.default];
@@ -27,22 +21,17 @@ in {
       };
     };
 
-    # Formatter
-    formatter = pkgs.unstable.alejandra;
+    formatter = pkgs.alejandra;
 
     # Dev Shell
     devShells.default = pkgs.mkShell {
-      buildInputs = with pkgs; [
-        bashInteractive
+      packages = with pkgs; [
         bash
-      ];
-      packages = with pkgs.unstable; [
-        alejandra
         bun
       ];
       shellHook = ''
-        export REPO_ROOT
-        REPO_ROOT=$(git rev-parse --show-toplevel)
+        export LD_LIBRARY_PATH=$NIX_LD_LIBRARY_PATH
+        export REPO_ROOT=$(git rev-parse --show-toplevel)
         eval "$(bunx varlock load --format shell)"
       '';
     };
@@ -52,18 +41,10 @@ in {
     # Default NixOS Module
     nixosModules.default = {pkgs, ...}: {
       _module.args.lib = customLib;
-
-      nixpkgs = {
-        overlays = [self.overlays.default];
-        config.allowUnfree = true;
-      };
-
-      imports = [
-        inputs.determinate.nixosModules.default
-      ];
+      nixpkgs.overlays = [self.overlays.default];
     };
 
     # Overlays
-    overlays.default = import ../overlays {inherit inputs self;};
+    overlays.default = import (relativeToRoot "overlays") {inherit inputs self;};
   };
 }
