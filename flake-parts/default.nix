@@ -216,6 +216,10 @@ in {
         path = ../templates/clan;
         description = "Dendritic Clan Flake";
       };
+      self = {
+        path = self;
+        description = "This Flake";
+      };
     };
 
     # --- Clan Configuration ------ #
