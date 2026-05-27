@@ -30,6 +30,7 @@
             kubectl-cnpg
             kubeseal
             cloudflared
+            dive
           ]);
         shellHook = ''
           export REPO_ROOT

@@ -59,7 +59,7 @@ jobs:
     needs: flake-check
     strategy:
       matrix:
-        artifact: [devShell, tofu]
+        artifact: [devShell, tofu, oci-home, oci-hcloud]
     runs-on: ubuntu-latest
     permissions:
       id-token: write
@@ -74,7 +74,7 @@ jobs:
       - uses: DeterminateSystems/flakehub-cache-action@main
 
       - name: Build ${{ matrix.artifact }}
-        run: nix build .#${{ matrix.artifact }}
+        run: nix build .#${{ matrix.artifact }} --show-trace
 
   publish:
     needs: 
@@ -124,3 +124,99 @@ jobs:
           include-output-paths: true
           rolling: true
           rolling-minor: 3
+
+  release:
+    needs: publish
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    outputs:
+      tag: ${{ steps.semver.outputs.tag }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6.0.2
+        with:
+          persist-credentials: true
+          fetch-depth: 0
+
+      - name: Generate semver tag
+        id: semver
+        run: |
+          COMMIT_COUNT=$(git rev-list --count HEAD)
+          TAG="0.3.${COMMIT_COUNT}"
+          echo "tag=${TAG}" >> $GITHUB_OUTPUT
+          echo "Generated tag: ${TAG}"
+
+      - name: Create and push tag
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag -a ${{ steps.semver.outputs.tag }} -m "Release ${{ steps.semver.outputs.tag }}" ${{ github.sha }}
+          git push origin ${{ steps.semver.outputs.tag }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create GitHub release
+        uses: softprops/action-gh-release@v3.0.0
+        with:
+          tag_name: ${{ steps.semver.outputs.tag }}
+          name: ${{ steps.semver.outputs.tag }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  push-oci:
+    needs: release
+    strategy:
+      matrix:
+        cluster: [home, hcloud]
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      packages: write
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6.0.2
+        with:
+          persist-credentials: false
+          
+      - name: Install Nix  
+        uses: DeterminateSystems/determinate-nix-action@main
+
+      - name: Nix Cache
+        uses: DeterminateSystems/flakehub-cache-action@main
+
+      - name: Build OCI image
+        run: nix build .#oci-${{ matrix.cluster }} --show-trace
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v4.2.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Load, Tag, and Push Docker image
+        run: |
+          docker load -i result
+          
+          IMAGE_NAME="ghcr.io/${{ github.repository_owner }}/flux-${{ matrix.cluster }}"
+          IMAGE_NAME=$(echo "$IMAGE_NAME" | tr '[:upper:]' '[:lower:]')
+          TAG="${{ needs.release.outputs.tag }}"
+          
+          docker tag flux-${{ matrix.cluster }}:latest $IMAGE_NAME:$TAG
+          docker tag flux-${{ matrix.cluster }}:latest $IMAGE_NAME:latest
+          
+          docker push $IMAGE_NAME:$TAG
+          docker push $IMAGE_NAME:latest
+
+      - name: Install Cosign
+        uses: sigstore/cosign-installer@v4.1.2
+
+      - name: Sign the images with GitHub OIDC Token
+        run: |
+          IMAGE_NAME="ghcr.io/${{ github.repository_owner }}/flux-${{ matrix.cluster }}"
+          IMAGE_NAME=$(echo "$IMAGE_NAME" | tr '[:upper:]' '[:lower:]')
+          TAG="${{ needs.release.outputs.tag }}"
+          
+          cosign sign --yes ${IMAGE_NAME}:${TAG} ${IMAGE_NAME}:latest
