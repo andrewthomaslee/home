@@ -48,7 +48,6 @@ in {
       # nixosModules imported
       imports =
         [
-          inputs.determinate.nixosModules.default
           inputs.home-manager.nixosModules.home-manager
         ]
         # Import all NixOS Modules from `flake-parts/nixosModules`
@@ -218,7 +217,7 @@ in {
         description = "Dendritic Clan Flake";
       };
       self = {
-        path = self;
+        path = relativeToRoot ".";
         description = "This Flake";
       };
     };

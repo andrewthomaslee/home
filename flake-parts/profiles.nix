@@ -1,7 +1,7 @@
 {
-  # inputs,
+  inputs,
   self,
-  # lib,
+  lib,
   ...
 }: {
   flake = {
@@ -10,7 +10,10 @@
       # --- Developer --- #
       # For Andrew's PCs
       profile-developer = {
-        imports = [self.nixosModules.default];
+        imports = [
+          inputs.determinate.nixosModules.default
+          self.nixosModules.default
+        ];
         config = {
           # hostSpec options
           hostSpec = {
@@ -49,7 +52,10 @@
       # --- Server --- #
       # For Headless Servers
       profile-server = {
-        imports = [self.nixosModules.default];
+        imports = [
+          inputs.determinate.nixosModules.default
+          self.nixosModules.default
+        ];
         config = {
           # hostSpec options
           hostSpec = {
@@ -75,10 +81,45 @@
           };
         };
       };
+      # --- VMs --- #
+      # For Headless Servers
+      profile-vms = {
+        imports = [
+          inputs.packer.nixosModules.default
+          inputs.packer.nixosModules.hcloud
+          inputs.packer.nixosModules.ext4
+          self.nixosModules.default
+        ];
+        config = {
+          # hostSpec options
+          hostSpec = {
+            clan.enable = true;
+            networking = {
+              enable = true;
+              tailscale.enable = true;
+            };
+            services = {
+              motd.enable = true;
+              openssh.enable = true;
+              storagebox.enable = false;
+            };
+          };
+          # Home Profile
+          home-manager.users = {
+            netsa = self.homeModules.profile-server;
+            root = self.homeModules.profile-server;
+          };
+
+          networking.networkmanager.enable = lib.mkForce false;
+        };
+      };
       # --- Normal --- #
       # For Other's PCs
       profile-normal = {
-        imports = [self.nixosModules.default];
+        imports = [
+          inputs.determinate.nixosModules.default
+          self.nixosModules.default
+        ];
         config = {
           # hostSpec options
           hostSpec = {

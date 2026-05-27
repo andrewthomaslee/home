@@ -37,15 +37,15 @@
     # Cloud VMs
     hel-1 = {
       deploy.targetHost = "root@hel-1.armadillo-frog.ts.net";
-      tags = ["server" "vms"];
+      tags = ["vms"];
     };
     hel-2 = {
       deploy.targetHost = "root@hel-2.armadillo-frog.ts.net";
-      tags = ["server" "vms"];
+      tags = ["vms"];
     };
     hel-3 = {
       deploy.targetHost = "root@hel-3.armadillo-frog.ts.net";
-      tags = ["server" "vms"];
+      tags = ["vms"];
     };
 
     # Other's PCs
@@ -87,11 +87,7 @@
       module.name = "importer";
       roles.default = {
         tags = ["vms"];
-        extraModules = with inputs.packer.nixosModules; [
-          default
-          hcloud
-          ext4
-        ];
+        extraModules = [self.nixosModules.profile-vms];
       };
     };
 
