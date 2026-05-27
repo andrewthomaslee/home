@@ -2,49 +2,56 @@
   self,
   inputs,
   customLib,
-}: let
-  clusters = {
-    home = {
-      address = "10.67.67.1";
-      port = 32379;
-    };
-    helsinki = {
-      address = "10.67.67.2";
-      port = 32379;
-    };
-  };
-in {
+}: {
   meta = {
-    name = "ccc";
-    description = "ccc";
-    domain = "ccc";
+    name = "home";
+    description = "monorepo";
+    domain = "andrewlee.fun";
   };
 
   machines = {
     # Andrew's PCs
     nixos = {
-      tags = ["developer"];
       deploy.targetHost = "root@nixos.armadillo-frog.ts.net";
+      tags = ["developer"];
     };
     ghost = {
-      tags = ["developer"];
       deploy.targetHost = "root@ghost.armadillo-frog.ts.net";
+      tags = ["developer"];
     };
 
     # Headless Servers
     kamrui-p1 = {
-      tags = ["server" "home-server" "home-agent"];
       deploy.targetHost = "root@kamrui-p1.armadillo-frog.ts.net";
+      tags = ["server"];
     };
+    inuc-celeron = {
+      deploy.targetHost = "root@inuc-celeron.armadillo-frog.ts.net";
+      tags = ["server"];
+    };
+    inuc-i5 = {
+      deploy.targetHost = "root@inuc-i5.armadillo-frog.ts.net";
+      tags = ["server"];
+    };
+
+    # Cloud VMs
     hel-1 = {
-      tags = ["server" "helsinki-server" "helsinki-agent"];
-      deploy.targetHost = "root@hel-1.andrewlee.cloud";
+      deploy.targetHost = "root@hel-1.armadillo-frog.ts.net";
+      tags = ["server" "vms"];
+    };
+    hel-2 = {
+      deploy.targetHost = "root@hel-2.armadillo-frog.ts.net";
+      tags = ["server" "vms"];
+    };
+    hel-3 = {
+      deploy.targetHost = "root@hel-3.armadillo-frog.ts.net";
+      tags = ["server" "vms"];
     };
 
     # Other's PCs
     hp-notebook = {
-      tags = ["normal"];
       deploy.targetHost = "root@hp-notebook.armadillo-frog.ts.net";
+      tags = ["normal"];
     };
   };
 
@@ -73,6 +80,18 @@ in {
       roles.default = {
         tags = ["normal"];
         extraModules = [self.nixosModules.profile-normal];
+      };
+    };
+    # For Cloud VMs
+    vms = {
+      module.name = "importer";
+      roles.default = {
+        tags = ["vms"];
+        extraModules = with inputs.packer.nixosModules; [
+          default
+          hcloud
+          ext4
+        ];
       };
     };
 
@@ -136,61 +155,53 @@ in {
     # https://clan.lol/docs/unstable/services/official/emergency-access
     emergency-access.roles.default.tags = ["all"];
 
-    # Cluster Mesh
-    cm = {
-      module = {
-        name = "@andrewthomaslee/cluster-mesh";
-        input = "self";
-      };
-      roles.peer.machines = {
-        kamrui-p1.settings = {
-          endpoint = "home.andrewlee.fun";
-          port = 51823;
-          ipv4 = "10.67.67.1";
-          ipv6 = "fd67:67::1";
-        };
-        hel-1.settings = {
-          endpoint = "hel-1.andrewlee.cloud";
-          port = 51820;
-          ipv4 = "10.67.67.2";
-          ipv6 = "fd67:67::2";
-        };
-      };
-    };
-
-    # Kubernetes Cluster for Home
     home = {
       module = {
-        name = "@andrewthomaslee/kubernetes";
-        input = "self";
+        name = "rancher";
+        input = "clan-community";
       };
       roles = {
-        init.machines.kamrui-p1.settings = {
-          id = 1;
-          inherit clusters;
-          clusterCidr = "10.42.0.0/16,fd42::/56";
-          serviceCidr = "10.43.0.0/16,fd43::/112";
+        master.machines.kamrui-p1.settings = {
+          distro = "k3s";
+          cilium.id = 1;
+          traefik.enable = false;
+          wireguard = {
+            ipv4 = "172.16.0.1";
+            endpoint = "home.andrewlee.fun";
+            port = 51823;
+          };
         };
-        server.tags = ["home-server"];
-        default.tags = ["home-agent"];
+        worker.machines = {
+          inuc-celeron.settings.wireguard = {
+            ipv4 = "172.16.0.2";
+            endpoint = "home.andrewlee.fun";
+            port = 51825;
+          };
+          inuc-i5.settings.wireguard = {
+            ipv4 = "172.16.0.3";
+            endpoint = "home.andrewlee.fun";
+            port = 51826;
+          };
+        };
       };
     };
 
-    # Kubernetes Cluster for Helsinki
-    helsinki = {
+    hcloud = {
       module = {
-        name = "@andrewthomaslee/kubernetes";
-        input = "self";
+        name = "rancher";
+        input = "clan-community";
       };
       roles = {
-        init.machines.hel-1.settings = {
-          id = 2;
-          inherit clusters;
-          clusterCidr = "10.52.0.0/16,fd52::/56";
-          serviceCidr = "10.53.0.0/16,fd53::/112";
+        master.machines.hel-1.settings = {
+          distro = "rke2";
+          cilium.id = 2;
+          traefik.enable = true;
+          wireguard.ipv4 = "172.16.1.1";
         };
-        server.tags = ["helsinki-server"];
-        default.tags = ["helsinki-agent"];
+        manager.machines = {
+          hel-2.settings.wireguard.ipv4 = "172.16.1.2";
+          hel-3.settings.wireguard.ipv4 = "172.16.1.3";
+        };
       };
     };
   };

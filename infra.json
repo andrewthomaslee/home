@@ -1,0 +1,32 @@
+{
+    "meta": {},
+    "clusters": [
+        {
+            "name": "hcloud",
+            "master": {
+                "name": "hel-1",
+                "cloud": {
+                    "region": "hel1",
+                    "server_type": "cpx32"
+                }
+            },
+            "managers": [
+                {
+                    "name": "hel-2",
+                    "cloud": {
+                        "region": "hel1",
+                        "server_type": "cpx32"
+                    }
+                },
+                {
+                    "name": "hel-3",
+                    "cloud": {
+                        "region": "hel1",
+                        "server_type": "cpx32"
+                    }
+                }
+            ],
+            "workers": []
+        }
+    ]
+}

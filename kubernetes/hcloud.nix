@@ -64,18 +64,6 @@ in {
                 hostname = "hubble.andrewlee.cloud";
                 service = "http://hubble-ui.kube-system.svc.cluster.local:80";
               }
-              # {
-              #   hostname = "s3.andrewlee.cloud"; # The S3 API for Cyberduck/AWS CLI
-              #   service = "http://garage.garage.svc.cluster.local:3900";
-              # }
-              # {
-              #   hostname = "garage.andrewlee.cloud"; # The default S3 Web route
-              #   service = "http://garage.garage.svc.cluster.local:3902";
-              # }
-              # {
-              #   hostname = "garage-ui.andrewlee.cloud"; # Garage Web UI
-              #   service = "http://garage-ui.garage-ui.svc.cluster.local:80";
-              # }
               {
                 service = "http_status:404"; # MUST GO LAST
               }

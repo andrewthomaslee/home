@@ -17,9 +17,13 @@
 
     # Clan.lol Community
     clan-community = {
-      url = "https://git.clan.lol/clan/clan-community/archive/main.tar.gz";
+      url = "git+https://git.clan.lol/andrewthomaslee/clan-community.git?ref=feat/rancher";
       inputs.clan-core.follows = "clan-core";
     };
+
+    terranix.url = "github:terranix/terranix";
+
+    packer.url = "https://flakehub.com/f/andrewthomaslee/packer/*";
 
     kubenix = {
       url = "github:hall/kubenix";
@@ -313,6 +317,7 @@
         inputs.mkdocs-flake.flakeModules.default
         inputs.clan-core.flakeModules.default
         inputs.home-manager.flakeModules.home-manager
+        inputs.terranix.flakeModule
       ];
     };
 }

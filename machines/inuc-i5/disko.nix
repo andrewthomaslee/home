@@ -3,7 +3,7 @@
     disk = {
       main = {
         type = "disk";
-        device = "/dev/disk/by-id/scsi-0QEMU_QEMU_HARDDISK_116446982";
+        device = "/dev/disk/by-id/ata-WDC_WDBNCE0010PNC_184898801017";
         content = {
           type = "gpt";
           partitions = {
@@ -13,7 +13,7 @@
               priority = 1;
             };
             ESP = {
-              size = "2G";
+              size = "3G";
               type = "EF00";
               priority = 2;
               content = {

@@ -6,7 +6,7 @@
       "kind": "Namespace",
       "metadata": {
         "labels": {
-          "kubenix/hash": "fbc980891d1f5d57a489f2e7fea02be80d21a850"
+          "kubenix/hash": "964a1776adc625cf87cbcb7ddb7747954f20d919"
         },
         "name": "cloudflare"
       }
@@ -16,27 +16,7 @@
       "kind": "Namespace",
       "metadata": {
         "labels": {
-          "kubenix/hash": "fbc980891d1f5d57a489f2e7fea02be80d21a850"
-        },
-        "name": "tailscale"
-      }
-    },
-    {
-      "apiVersion": "v1",
-      "kind": "Namespace",
-      "metadata": {
-        "labels": {
-          "kubenix/hash": "fbc980891d1f5d57a489f2e7fea02be80d21a850"
-        },
-        "name": "garage"
-      }
-    },
-    {
-      "apiVersion": "v1",
-      "kind": "Namespace",
-      "metadata": {
-        "labels": {
-          "kubenix/hash": "fbc980891d1f5d57a489f2e7fea02be80d21a850"
+          "kubenix/hash": "964a1776adc625cf87cbcb7ddb7747954f20d919"
         },
         "name": "whoami"
       }
@@ -46,7 +26,7 @@
       "kind": "HelmRepository",
       "metadata": {
         "labels": {
-          "kubenix/hash": "fbc980891d1f5d57a489f2e7fea02be80d21a850"
+          "kubenix/hash": "964a1776adc625cf87cbcb7ddb7747954f20d919"
         },
         "name": "cloudflared",
         "namespace": "flux-system"
@@ -61,53 +41,7 @@
       "kind": "HelmRepository",
       "metadata": {
         "labels": {
-          "kubenix/hash": "fbc980891d1f5d57a489f2e7fea02be80d21a850"
-        },
-        "name": "tailscale-operator",
-        "namespace": "flux-system"
-      },
-      "spec": {
-        "interval": "72h",
-        "url": "https://pkgs.tailscale.com/helmcharts"
-      }
-    },
-    {
-      "apiVersion": "helm.toolkit.fluxcd.io/v2",
-      "kind": "HelmRelease",
-      "metadata": {
-        "labels": {
-          "kubenix/hash": "fbc980891d1f5d57a489f2e7fea02be80d21a850"
-        },
-        "name": "tailscale",
-        "namespace": "tailscale"
-      },
-      "spec": {
-        "chart": {
-          "spec": {
-            "chart": "tailscale-operator",
-            "interval": "72h",
-            "sourceRef": {
-              "kind": "HelmRepository",
-              "name": "tailscale-operator",
-              "namespace": "flux-system"
-            },
-            "version": "1.96.5"
-          }
-        },
-        "interval": "72h",
-        "values": {
-          "apiServerProxyConfig": {
-            "mode": "true"
-          }
-        }
-      }
-    },
-    {
-      "apiVersion": "source.toolkit.fluxcd.io/v1",
-      "kind": "HelmRepository",
-      "metadata": {
-        "labels": {
-          "kubenix/hash": "fbc980891d1f5d57a489f2e7fea02be80d21a850"
+          "kubenix/hash": "964a1776adc625cf87cbcb7ddb7747954f20d919"
         },
         "name": "valkey",
         "namespace": "flux-system"
@@ -118,44 +52,11 @@
       }
     },
     {
-      "apiVersion": "source.toolkit.fluxcd.io/v1",
-      "kind": "GitRepository",
-      "metadata": {
-        "labels": {
-          "kubenix/hash": "fbc980891d1f5d57a489f2e7fea02be80d21a850"
-        },
-        "name": "garage",
-        "namespace": "flux-system"
-      },
-      "spec": {
-        "interval": "72h",
-        "ref": {
-          "branch": "main"
-        },
-        "url": "https://git.deuxfleurs.fr/Deuxfleurs/garage.git"
-      }
-    },
-    {
-      "apiVersion": "source.toolkit.fluxcd.io/v1",
-      "kind": "HelmRepository",
-      "metadata": {
-        "labels": {
-          "kubenix/hash": "fbc980891d1f5d57a489f2e7fea02be80d21a850"
-        },
-        "name": "garage-ui",
-        "namespace": "flux-system"
-      },
-      "spec": {
-        "interval": "72h",
-        "url": "https://helm.noste.dev/"
-      }
-    },
-    {
       "apiVersion": "apps/v1",
-      "kind": "DaemonSet",
+      "kind": "Deployment",
       "metadata": {
         "labels": {
-          "kubenix/hash": "fbc980891d1f5d57a489f2e7fea02be80d21a850"
+          "kubenix/hash": "964a1776adc625cf87cbcb7ddb7747954f20d919"
         },
         "name": "whoami",
         "namespace": "whoami"
@@ -214,10 +115,11 @@
       "kind": "Service",
       "metadata": {
         "annotations": {
+          "service.cilium.io/affinity": "remote",
           "service.cilium.io/global": "true"
         },
         "labels": {
-          "kubenix/hash": "fbc980891d1f5d57a489f2e7fea02be80d21a850"
+          "kubenix/hash": "964a1776adc625cf87cbcb7ddb7747954f20d919"
         },
         "name": "whoami",
         "namespace": "whoami"
@@ -243,8 +145,8 @@
   ],
   "kind": "List",
   "labels": {
-    "kubenix/hash": "fbc980891d1f5d57a489f2e7fea02be80d21a850",
-    "kubenix/k8s-version": "1.34",
+    "kubenix/hash": "964a1776adc625cf87cbcb7ddb7747954f20d919",
+    "kubenix/k8s-version": "1.35",
     "kubenix/project-name": "shared"
   }
 }

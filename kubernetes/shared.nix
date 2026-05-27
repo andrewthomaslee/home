@@ -32,49 +32,49 @@ in {
         };
       }
       # --- tailscale --- #
-      {
-        apiVersion = "v1";
-        kind = "Namespace";
-        metadata.name = "tailscale";
-      }
-      {
-        apiVersion = "source.toolkit.fluxcd.io/v1";
-        kind = "HelmRepository";
-        metadata = {
-          name = "tailscale-operator";
-          namespace = "flux-system";
-        };
-        spec = {
-          interval = "72h";
-          url = "https://pkgs.tailscale.com/helmcharts";
-        };
-      }
-      {
-        apiVersion = "helm.toolkit.fluxcd.io/v2";
-        kind = "HelmRelease";
-        metadata = {
-          name = "tailscale";
-          namespace = "tailscale";
-        };
-        spec = {
-          interval = "72h";
-          chart = {
-            spec = {
-              chart = "tailscale-operator";
-              version = "1.96.5";
-              interval = "72h";
-              sourceRef = {
-                kind = "HelmRepository";
-                name = "tailscale-operator";
-                namespace = "flux-system";
-              };
-            };
-          };
-          values = {
-            apiServerProxyConfig.mode = "true";
-          };
-        };
-      }
+      # {
+      #   apiVersion = "v1";
+      #   kind = "Namespace";
+      #   metadata.name = "tailscale";
+      # }
+      # {
+      #   apiVersion = "source.toolkit.fluxcd.io/v1";
+      #   kind = "HelmRepository";
+      #   metadata = {
+      #     name = "tailscale-operator";
+      #     namespace = "flux-system";
+      #   };
+      #   spec = {
+      #     interval = "72h";
+      #     url = "https://pkgs.tailscale.com/helmcharts";
+      #   };
+      # }
+      # {
+      #   apiVersion = "helm.toolkit.fluxcd.io/v2";
+      #   kind = "HelmRelease";
+      #   metadata = {
+      #     name = "tailscale";
+      #     namespace = "tailscale";
+      #   };
+      #   spec = {
+      #     interval = "72h";
+      #     chart = {
+      #       spec = {
+      #         chart = "tailscale-operator";
+      #         version = "1.96.5";
+      #         interval = "72h";
+      #         sourceRef = {
+      #           kind = "HelmRepository";
+      #           name = "tailscale-operator";
+      #           namespace = "flux-system";
+      #         };
+      #       };
+      #     };
+      #     values = {
+      #       apiServerProxyConfig.mode = "true";
+      #     };
+      #   };
+      # }
       # --- valkey --- #
       {
         apiVersion = "source.toolkit.fluxcd.io/v1";
@@ -88,57 +88,6 @@ in {
           url = "https://valkey.io/valkey-helm/";
         };
       }
-      # --- garage --- #
-      {
-        apiVersion = "source.toolkit.fluxcd.io/v1";
-        kind = "GitRepository";
-        metadata = {
-          name = "garage";
-          namespace = "flux-system";
-        };
-        spec = {
-          interval = "72h";
-          url = "https://git.deuxfleurs.fr/Deuxfleurs/garage.git";
-          ref.branch = "main";
-        };
-      }
-      {
-        apiVersion = "v1";
-        kind = "Namespace";
-        metadata.name = "garage";
-      }
-      # {
-      #   apiVersion = "v1";
-      #   kind = "Service";
-      #   metadata = {
-      #     name = "garage";
-      #     namespace = "garage";
-      #     annotations."service.cilium.io/global" = "true";
-      #   };
-      #   spec = {
-      #     type = "ClusterIP";
-      #     selector.app = "whoami";
-      #     ports = [
-      #       {
-      #         port = 3903;
-      #         targetPort = 3903;
-      #       }
-      #     ];
-      #   };
-      # }
-      # --- garage ui --- #
-      {
-        apiVersion = "source.toolkit.fluxcd.io/v1";
-        kind = "HelmRepository";
-        metadata = {
-          name = "garage-ui";
-          namespace = "flux-system";
-        };
-        spec = {
-          interval = "72h";
-          url = "https://helm.noste.dev/";
-        };
-      }
       # --- whoami --- #
       {
         apiVersion = "v1";
@@ -147,7 +96,7 @@ in {
       }
       {
         apiVersion = "apps/v1";
-        kind = "DaemonSet";
+        kind = "Deployment";
         metadata = {
           name = "whoami";
           namespace = "whoami";
@@ -189,7 +138,10 @@ in {
         metadata = {
           name = "whoami";
           namespace = "whoami";
-          annotations."service.cilium.io/global" = "true";
+          annotations = {
+            "service.cilium.io/global" = "true";
+            "service.cilium.io/affinity" = "remote";
+          };
         };
         spec = {
           type = "ClusterIP";

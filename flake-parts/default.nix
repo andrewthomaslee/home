@@ -6,6 +6,7 @@
 }: let
   # Define custom lib accessable as `customLib.custom`
   customLib = lib.extend (self: super: {custom = import ../lib {inherit lib;};});
+  inherit (customLib.custom) relativeToRoot;
 in {
   # ------ Per-System ------ #
   perSystem = {
@@ -28,7 +29,7 @@ in {
     # Formatter
     formatter = pkgs.unstable.alejandra;
     # Mkdocs
-    documentation.mkdocs-root = ../documentation;
+    documentation.mkdocs-root = relativeToRoot "documentation";
   };
 
   flake = {
@@ -200,20 +201,20 @@ in {
     };
 
     # ------ Overlays ------ #
-    overlays.default = import ../overlays {inherit inputs self;};
+    overlays.default = import (relativeToRoot "overlays") {inherit inputs self;};
 
     # ------ Templates ------ #
     templates = {
       default = {
-        path = ../templates/default;
+        path = relativeToRoot "templates/default";
         description = "Dendritic Flake";
       };
       minimal = {
-        path = ../templates/minimal;
+        path = relativeToRoot "templates/minimal";
         description = "Minimal Dendritic Flake";
       };
       clan = {
-        path = ../templates/clan;
+        path = relativeToRoot "templates/clan";
         description = "Dendritic Clan Flake";
       };
       self = {
@@ -222,14 +223,14 @@ in {
       };
     };
 
+    # -- Terranix Modules ------ #
+    terranixModules.hcloud = import (relativeToRoot "terranixModules/tofu");
+
     # --- Clan Configuration ------ #
     clan = {
-      inventory = import ../inventory.nix {inherit self inputs customLib;};
+      inventory = import (relativeToRoot "inventory.nix") {inherit self inputs customLib;};
       specialArgs = {inherit customLib inputs self;};
-      modules = {
-        "@andrewthomaslee/cluster-mesh" = ../clanServices/cluster-mesh;
-        "@andrewthomaslee/kubernetes" = ../clanServices/kubernetes;
-      };
+      inherit ((import "${inputs.clan-community}/services/rancher/flake-module.nix" {}).clan) exportInterfaces;
     };
   };
 }

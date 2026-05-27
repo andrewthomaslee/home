@@ -2,32 +2,21 @@ name: CI
 
 on:
   push:
-    tags:
-      - v?[0-9]+.[0-9]+.[0-9]+*
+    branches:
+      - main
 
-  workflow_dispatch:
-    inputs:
-      tag:
-        description: The existing tag to publish to FlakeHub
-        type: string
-        required: true
 
 jobs:
-  CI:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+  flake-check:
     runs-on: ubuntu-latest
     permissions:
       id-token: write
-      pages: write
       contents: read
     steps:
       - name: Checkout
         uses: actions/checkout@v6.0.2
         with:
-          persist-credentials: false
-          ref: ${{ (inputs.tag != null) && format('refs/tags/{0}', inputs.tag) || '' }}
+          persist-credentials: true
 
       - name: Install Nix  
         uses: DeterminateSystems/determinate-nix-action@main
@@ -43,13 +32,74 @@ jobs:
           fail-mode: true
 
       - name: Nix Flake Check
-        run: nix flake check --show-trace --all-systems
+        run: nix flake check --show-trace
 
-      - name: Build devShell
-        run: nix build .#devShell --show-trace
+  build-machines:
+    needs: flake-check
+    strategy:
+      matrix:
+        machine: [nixos, ghost, kamrui-p1, inuc-celeron, inuc-i5, hp-notebook, hel-1, hel-2, hel-3]
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6.0.2
+        with:
+          persist-credentials: true
 
-      - name: Build Clan Machines
-        run: nix run .#clan-cli -- machines build --debug
+      - uses: DeterminateSystems/determinate-nix-action@main
+      - uses: DeterminateSystems/flakehub-cache-action@main
+
+      - name: Build Machine ${{ matrix.machine }}
+        run: nix build .#nixosConfigurations.${{ matrix.machine }}.config.system.build.toplevel
+
+  build-artifacts:
+    needs: flake-check
+    strategy:
+      matrix:
+        artifact: [devShell, tofu]
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6.0.2
+        with:
+          persist-credentials: true
+
+      - uses: DeterminateSystems/determinate-nix-action@main
+      - uses: DeterminateSystems/flakehub-cache-action@main
+
+      - name: Build ${{ matrix.artifact }}
+        run: nix build .#${{ matrix.artifact }}
+
+  publish:
+    needs: 
+      - build-machines
+      - build-artifacts
+      - flake-check
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      pages: write
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6.0.2
+        with:
+          persist-credentials: true
+
+      - name: Install Nix  
+        uses: DeterminateSystems/determinate-nix-action@main
+
+      - name: Nix Cache
+        uses: DeterminateSystems/flakehub-cache-action@main
       
       - name: Build MkDocs
         run: nix build .#documentation --show-trace
@@ -71,5 +121,6 @@ jobs:
         with:
           visibility: public
           name: andrewthomaslee/home
-          tag: ${{ inputs.tag }}
           include-output-paths: true
+          rolling: true
+          rolling-minor: 3
