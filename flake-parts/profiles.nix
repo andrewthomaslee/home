@@ -91,19 +91,6 @@
           self.nixosModules.default
         ];
         config = {
-          # hostSpec options
-          hostSpec = {
-            clan.enable = true;
-            networking = {
-              enable = true;
-              tailscale.enable = true;
-            };
-            services = {
-              motd.enable = true;
-              openssh.enable = true;
-              storagebox.enable = false;
-            };
-          };
           # Home Profile
           home-manager.users = {
             netsa = self.homeModules.profile-server;

@@ -129,46 +129,6 @@ in {
           efiInstallAsRemovable = lib.mkDefault true;
         };
       };
-
-      # disk
-      disko.devices = lib.mkDefault {
-        disk = {
-          main = {
-            name = "main";
-            device = lib.mkDefault "/dev/sda";
-            type = "disk";
-            content = {
-              type = "gpt";
-              partitions = {
-                "boot" = {
-                  size = "1M";
-                  type = "EF02";
-                  priority = 1;
-                };
-                ESP = {
-                  type = "EF00";
-                  size = "2G";
-                  content = {
-                    type = "filesystem";
-                    format = "vfat";
-                    mountpoint = "/boot";
-                    mountOptions = ["umask=0077"];
-                  };
-                };
-                nixos = {
-                  size = "100%";
-                  content = {
-                    type = "filesystem";
-                    format = "ext4";
-                    mountpoint = "/";
-                    mountOptions = ["noatime"];
-                  };
-                };
-              };
-            };
-          };
-        };
-      };
     };
 
     # ------ Home-manager Default Module ------ #
