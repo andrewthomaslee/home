@@ -223,7 +223,7 @@ in {
     };
 
     # -- Terranix Modules ------ #
-    terranixModules.hcloud = import (relativeToRoot "terranixModules/tofu");
+    terranixModules.tofu = import (relativeToRoot "terranixModules/tofu");
 
     # --- Clan Configuration ------ #
     clan = {
