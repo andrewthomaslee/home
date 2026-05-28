@@ -28,7 +28,6 @@ in {
           chart = {
             spec = {
               chart = "cloudflared";
-              version = "2.2.7";
               interval = "24h";
               sourceRef = {
                 kind = "HelmRepository";
@@ -42,10 +41,10 @@ in {
               existingPemFileSecret.name = "cloudflared-cert-pem-file-secret";
               existingConfigJsonFileSecret.name = "cloudflared-config-json-file-secret";
             };
-            tunnelConfig.name = "home";
+            tunnelConfig.name = domain;
             resources = {
               limits = {
-                cpu = "300m";
+                cpu = "500m";
                 memory = "256Mi";
               };
               requests = {

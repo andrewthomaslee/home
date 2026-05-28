@@ -28,7 +28,6 @@ in {
           chart = {
             spec = {
               chart = "cloudflared";
-              version = "2.2.7";
               interval = "24h";
               sourceRef = {
                 kind = "HelmRepository";
@@ -45,8 +44,8 @@ in {
             tunnelConfig.name = domain;
             resources = {
               limits = {
-                cpu = "1";
-                memory = "1Gi";
+                cpu = "2";
+                memory = "2Gi";
               };
               requests = {
                 cpu = "100m";
@@ -56,12 +55,8 @@ in {
             # cloudflared tunnel route dns cloud <domain>.andrewlee.cloud
             ingress = [
               {
-                hostname = "whoami.${domain}";
-                service = "http://whoami.whoami.svc.cluster.local:80";
-              }
-              {
-                hostname = "hubble.${domain}";
-                service = "http://hubble-ui.kube-system.svc.cluster.local:80";
+                hostname = "*.${domain}";
+                service = "http://traefik.traefik.svc.cluster.local:8000";
               }
               {
                 service = "http_status:404"; # MUST GO LAST

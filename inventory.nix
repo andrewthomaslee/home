@@ -43,23 +43,23 @@
     # Cloud VMs
     # eu
     hel-1 = {
-      deploy.targetHost = "root@hel-1.andrewllee.cloud";
+      deploy.targetHost = "root@hel-1.andrewlee.cloud";
       tags = ["vms"];
     };
     hel-2 = {
-      deploy.targetHost = "root@hel-2.andrewllee.cloud";
+      deploy.targetHost = "root@hel-2.andrewlee.cloud";
       tags = ["vms"];
     };
     hel-3 = {
-      deploy.targetHost = "root@hel-3.andrewllee.cloud";
+      deploy.targetHost = "root@hel-3.andrewlee.cloud";
       tags = ["vms"];
     };
     fsn-1 = {
-      deploy.targetHost = "root@hel-4.andrewllee.cloud";
+      deploy.targetHost = "root@fsn-1.andrewlee.cloud";
       tags = ["vms"];
     };
     nbg-1 = {
-      deploy.targetHost = "root@hel-5.andrewllee.cloud";
+      deploy.targetHost = "root@nbg-1.andrewlee.cloud";
       tags = ["vms"];
     };
   };

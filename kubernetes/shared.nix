@@ -31,6 +31,41 @@ in {
           url = "https://community-charts.github.io/helm-charts";
         };
       }
+      # --- sealed-secrets --- #
+      {
+        apiVersion = "source.toolkit.fluxcd.io/v1";
+        kind = "HelmRepository";
+        metadata = {
+          name = "sealed-secrets";
+          namespace = "flux-system";
+        };
+        spec = {
+          interval = "72h";
+          url = "https://bitnami-labs.github.io/sealed-secrets";
+        };
+      }
+      {
+        apiVersion = "helm.toolkit.fluxcd.io/v2";
+        kind = "HelmRelease";
+        metadata = {
+          name = "sealed-secrets";
+          namespace = "flux-system";
+        };
+        spec = {
+          interval = "72h";
+          chart = {
+            spec = {
+              chart = "sealed-secrets";
+              sourceRef = {
+                kind = "HelmRepository";
+                name = "sealed-secrets";
+              };
+            };
+          };
+          install.crds = "CreateReplace";
+          upgrade.crds = "CreateReplace";
+        };
+      }
       # --- valkey --- #
       {
         apiVersion = "source.toolkit.fluxcd.io/v1";
