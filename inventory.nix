@@ -6,7 +6,7 @@
   meta = {
     name = "home";
     description = "monorepo";
-    domain = "andrewlee.fun";
+    domain = "andrewlee.cloud";
   };
 
   machines = {
@@ -20,7 +20,13 @@
       tags = ["developer"];
     };
 
-    # Headless Servers
+    # Other's PCs
+    hp-notebook = {
+      deploy.targetHost = "root@hp-notebook.armadillo-frog.ts.net";
+      tags = ["normal"];
+    };
+
+    # Home Servers
     kamrui-p1 = {
       deploy.targetHost = "root@kamrui-p1.armadillo-frog.ts.net";
       tags = ["server"];
@@ -35,23 +41,32 @@
     };
 
     # Cloud VMs
+    # eu
     hel-1 = {
-      deploy.targetHost = "root@hel-1.armadillo-frog.ts.net";
+      deploy.targetHost = "root@hel-1.andrewllee.cloud";
       tags = ["vms"];
     };
     hel-2 = {
-      deploy.targetHost = "root@hel-2.armadillo-frog.ts.net";
+      deploy.targetHost = "root@hel-2.andrewllee.cloud";
       tags = ["vms"];
     };
     hel-3 = {
-      deploy.targetHost = "root@hel-3.armadillo-frog.ts.net";
+      deploy.targetHost = "root@hel-3.andrewllee.cloud";
       tags = ["vms"];
     };
 
-    # Other's PCs
-    hp-notebook = {
-      deploy.targetHost = "root@hp-notebook.armadillo-frog.ts.net";
-      tags = ["normal"];
+    # us-west
+    hil-1 = {
+      deploy.targetHost = "root@hil-1.andrewllee.cloud";
+      tags = ["vms"];
+    };
+    hil-2 = {
+      deploy.targetHost = "root@hil-2.andrewllee.cloud";
+      tags = ["vms"];
+    };
+    hil-3 = {
+      deploy.targetHost = "root@hil-3.andrewllee.cloud";
+      tags = ["vms"];
     };
   };
 
@@ -158,31 +173,29 @@
       };
       roles = {
         master.machines.kamrui-p1.settings = {
+          domain = "andrewlee.fun";
           distro = "k3s";
-          cilium.id = 1;
+          cilium.clustermesh.enable = false;
           traefik.enable = false;
           wireguard = {
             ipv4 = "172.16.0.1";
-            endpoint = "home.andrewlee.fun";
-            port = 51823;
+            endpoint = "192.168.1.251";
           };
         };
         worker.machines = {
           inuc-celeron.settings.wireguard = {
             ipv4 = "172.16.0.2";
-            endpoint = "home.andrewlee.fun";
-            port = 51825;
+            endpoint = "192.168.1.249";
           };
           inuc-i5.settings.wireguard = {
             ipv4 = "172.16.0.3";
-            endpoint = "home.andrewlee.fun";
-            port = 51826;
+            endpoint = "192.168.1.248";
           };
         };
       };
     };
 
-    hcloud = {
+    hcloud-eu = {
       module = {
         name = "rancher";
         input = "clan-community";
@@ -197,6 +210,25 @@
         manager.machines = {
           hel-2.settings.wireguard.ipv4 = "172.16.1.2";
           hel-3.settings.wireguard.ipv4 = "172.16.1.3";
+        };
+      };
+    };
+
+    hcloud-us-west = {
+      module = {
+        name = "rancher";
+        input = "clan-community";
+      };
+      roles = {
+        master.machines.hil-1.settings = {
+          distro = "rke2";
+          cilium.id = 3;
+          traefik.enable = true;
+          wireguard.ipv4 = "172.16.3.1";
+        };
+        manager.machines = {
+          hil-2.settings.wireguard.ipv4 = "172.16.3.2";
+          hil-3.settings.wireguard.ipv4 = "172.16.3.3";
         };
       };
     };
