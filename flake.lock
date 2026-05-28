@@ -1773,12 +1773,12 @@
         "nixpkgs": "nixpkgs_9"
       },
       "locked": {
-        "lastModified": 1779064587,
-        "narHash": "sha256-FcPfHlznSiIgOg6Eb2Xm4zqog/iJzS5VRCPnRpGPvbA=",
-        "rev": "59022ac4a35c22c412f058b3b92ad425cbfeb81d",
-        "revCount": 46,
+        "lastModified": 1779916098,
+        "narHash": "sha256-oqRZimLyikKy8hNIkdats8ZlxVDonu2PvG7Pz1OOm7Q=",
+        "rev": "92d6ea7ea2b67ede5759bd78dc9659e023f8616a",
+        "revCount": 47,
         "type": "tarball",
-        "url": "https://api.flakehub.com/f/pinned/andrewthomaslee/packer/0.1.46%2Brev-59022ac4a35c22c412f058b3b92ad425cbfeb81d/019e3886-0f78-76e1-a0d6-dca53abff9ed/source.tar.gz"
+        "url": "https://api.flakehub.com/f/pinned/andrewthomaslee/packer/0.1.47%2Brev-92d6ea7ea2b67ede5759bd78dc9659e023f8616a/019e6b4c-e6cf-7312-a208-d768a3d9e945/source.tar.gz"
       },
       "original": {
         "type": "tarball",

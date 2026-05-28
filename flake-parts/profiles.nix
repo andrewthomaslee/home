@@ -67,11 +67,7 @@
             services = {
               motd.enable = true;
               openssh.enable = true;
-              storagebox = {
-                enable = true;
-                mountOnAccess = true;
-                boxUser = "u488514-sub1";
-              };
+              storagebox.enable = false;
             };
           };
           # Home Profile
@@ -91,13 +87,21 @@
           self.nixosModules.default
         ];
         config = {
+          # hostSpec options
+          hostSpec = {
+            clan.enable = true;
+            networking.tailscale.enable = true;
+            services = {
+              motd.enable = true;
+              openssh.enable = true;
+              storagebox.enable = false;
+            };
+          };
           # Home Profile
           home-manager.users = {
             netsa = self.homeModules.profile-server;
             root = self.homeModules.profile-server;
           };
-
-          networking.networkmanager.enable = lib.mkForce false;
         };
       };
       # --- Normal --- #
