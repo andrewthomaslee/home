@@ -154,13 +154,9 @@ in {
               direction = "in";
               protocol = "udp";
               port = "51820";
-              source_ips = ["0.0.0.0/0" "::/0"];
-            }
-            {
-              direction = "in";
-              protocol = "udp";
-              port = "41641";
-              source_ips = ["0.0.0.0/0" "::/0"];
+              source_ips =
+                (map (node: "\${hcloud_server.${node.name}.ipv4_address}/32") allNodes)
+                ++ (map (node: "\${hcloud_server.${node.name}.ipv6_address}/128") allNodes);
             }
           ];
         };

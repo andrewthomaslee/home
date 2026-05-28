@@ -2,7 +2,7 @@
     "meta": {},
     "clusters": [
         {
-            "name": "hcloud-eu",
+            "name": "eu",
             "master": {
                 "name": "hel-1",
                 "cloud": {
@@ -26,34 +26,22 @@
                     }
                 }
             ],
-            "workers": []
-        },
-        {
-            "name": "hcloud-us-west",
-            "master": {
-                "name": "hil-1",
-                "cloud": {
-                    "region": "hil1",
-                    "server_type": "cpx22"
-                }
-            },
-            "managers": [
+            "workers": [
                 {
-                    "name": "hil-2",
+                    "name": "nbg-1",
                     "cloud": {
-                        "region": "hil1",
+                        "region": "nbg1",
                         "server_type": "cpx22"
                     }
                 },
                 {
-                    "name": "hil-3",
+                    "name": "fsn-1",
                     "cloud": {
-                        "region": "hil1",
+                        "region": "fsn1",
                         "server_type": "cpx22"
                     }
                 }
-            ],
-            "workers": []
+            ]
         }
     ]
 }

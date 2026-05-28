@@ -56,11 +56,11 @@ in {
             # cloudflared tunnel route dns cloud <domain>.andrewlee.cloud
             ingress = [
               {
-                hostname = "whoami-hcloud-us-west.${domain}";
+                hostname = "whoami.${domain}";
                 service = "http://whoami.whoami.svc.cluster.local:80";
               }
               {
-                hostname = "hubble-hcloud-us-west.${domain}";
+                hostname = "hubble.${domain}";
                 service = "http://hubble-ui.kube-system.svc.cluster.local:80";
               }
               {

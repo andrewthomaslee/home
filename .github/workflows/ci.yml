@@ -39,7 +39,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        machine: [nixos, ghost, kamrui-p1, inuc-celeron, inuc-i5, hp-notebook, hel-1, hel-2, hel-3, hil-1, hil-2, hil-3]
+        machine: [nixos, ghost, kamrui-p1, inuc-celeron, inuc-i5, hp-notebook, hel-1, hel-2, hel-3, nbg-1, fsn-1]
     runs-on: ubuntu-latest
     permissions:
       id-token: write
@@ -86,10 +86,8 @@ jobs:
         include:
           - package: oci-home
             image: flux-home
-          - package: oci-hcloud-eu
-            image: flux-hcloud-eu
-          - package: oci-hcloud-us-west
-            image: flux-hcloud-us-west
+          - package: oci-hcloud
+            image: flux-hcloud
           - package: oci-tofu-source
             image: tofu-source
           - package: oci-tofu-runner
@@ -137,7 +135,7 @@ jobs:
         uses: DeterminateSystems/flakehub-cache-action@main
       
       - name: Build MkDocs
-        run: nix build .#documentation --show-trace
+        run: nix build .#documentation
 
       - name: Setup Pages
         uses: actions/configure-pages@v6.0.0
@@ -206,10 +204,8 @@ jobs:
         include:
           - package: oci-home
             image: flux-home
-          - package: oci-hcloud-eu
-            image: flux-hcloud-eu
-          - package: oci-hcloud-us-west
-            image: flux-hcloud-us-west
+          - package: oci-hcloud
+            image: flux-hcloud
           - package: oci-tofu-source
             image: tofu-source
           - package: oci-tofu-runner
@@ -232,7 +228,7 @@ jobs:
         uses: DeterminateSystems/flakehub-cache-action@main
 
       - name: Build OCI image
-        run: nix build .#${{ matrix.package }} --show-trace
+        run: nix build .#${{ matrix.package }}
 
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v4.2.0

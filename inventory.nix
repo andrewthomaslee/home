@@ -54,18 +54,12 @@
       deploy.targetHost = "root@hel-3.andrewllee.cloud";
       tags = ["vms"];
     };
-
-    # us-west
-    hil-1 = {
-      deploy.targetHost = "root@hil-1.andrewllee.cloud";
+    fsn-1 = {
+      deploy.targetHost = "root@hel-4.andrewllee.cloud";
       tags = ["vms"];
     };
-    hil-2 = {
-      deploy.targetHost = "root@hil-2.andrewllee.cloud";
-      tags = ["vms"];
-    };
-    hil-3 = {
-      deploy.targetHost = "root@hil-3.andrewllee.cloud";
+    nbg-1 = {
+      deploy.targetHost = "root@hel-5.andrewllee.cloud";
       tags = ["vms"];
     };
   };
@@ -195,40 +189,28 @@
       };
     };
 
-    hcloud-eu = {
+    hcloud = {
       module = {
         name = "rancher";
         input = "clan-community";
       };
       roles = {
         master.machines.hel-1.settings = {
+          domain = "andrewlee.cloud";
           distro = "rke2";
-          cilium.id = 2;
-          traefik.enable = true;
+          cilium = {
+            id = 2;
+            clustermesh.enable = false;
+          };
           wireguard.ipv4 = "172.16.1.1";
         };
         manager.machines = {
           hel-2.settings.wireguard.ipv4 = "172.16.1.2";
           hel-3.settings.wireguard.ipv4 = "172.16.1.3";
         };
-      };
-    };
-
-    hcloud-us-west = {
-      module = {
-        name = "rancher";
-        input = "clan-community";
-      };
-      roles = {
-        master.machines.hil-1.settings = {
-          distro = "rke2";
-          cilium.id = 3;
-          traefik.enable = true;
-          wireguard.ipv4 = "172.16.3.1";
-        };
-        manager.machines = {
-          hil-2.settings.wireguard.ipv4 = "172.16.3.2";
-          hil-3.settings.wireguard.ipv4 = "172.16.3.3";
+        worker.machines = {
+          fsn-1.settings.wireguard.ipv4 = "172.16.1.4";
+          nbg-1.settings.wireguard.ipv4 = "172.16.1.5";
         };
       };
     };
