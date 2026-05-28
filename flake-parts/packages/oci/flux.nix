@@ -30,7 +30,6 @@
         in
           pkgs.dockerTools.buildImage {
             name = "flux-${name}";
-            tag = "latest";
             copyToRoot = [manifests];
             config.Cmd = ["/bin/true"];
           };

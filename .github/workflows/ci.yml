@@ -37,6 +37,7 @@ jobs:
   build-machines:
     needs: flake-check
     strategy:
+      fail-fast: false
       matrix:
         machine: [nixos, ghost, kamrui-p1, inuc-celeron, inuc-i5, hp-notebook, hel-1, hel-2, hel-3]
     runs-on: ubuntu-latest
@@ -58,8 +59,9 @@ jobs:
   build-artifacts:
     needs: flake-check
     strategy:
+      fail-fast: false
       matrix:
-        artifact: [devShell, tofu, oci-home, oci-hcloud]
+        artifact: [devShell, tofu]
     runs-on: ubuntu-latest
     permissions:
       id-token: write
@@ -76,10 +78,41 @@ jobs:
       - name: Build ${{ matrix.artifact }}
         run: nix build .#${{ matrix.artifact }} --show-trace
 
+  build-oci:
+    needs: flake-check
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - package: oci-home
+            image: flux-home
+          - package: oci-hcloud
+            image: flux-hcloud
+          - package: oci-tofu-source
+            image: tofu-source
+          - package: oci-tofu-runner
+            image: tofu-runner
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6.0.2
+        with:
+          persist-credentials: true
+
+      - uses: DeterminateSystems/determinate-nix-action@main
+      - uses: DeterminateSystems/flakehub-cache-action@main
+
+      - name: Build ${{ matrix.package }}
+        run: nix build .#${{ matrix.package }} --show-trace
+
   publish:
     needs: 
       - build-machines
       - build-artifacts
+      - build-oci
       - flake-check
     environment:
       name: github-pages
@@ -168,7 +201,15 @@ jobs:
     needs: release
     strategy:
       matrix:
-        cluster: [home, hcloud]
+        include:
+          - package: oci-home
+            image: flux-home
+          - package: oci-hcloud
+            image: flux-hcloud
+          - package: oci-tofu-source
+            image: tofu-source
+          - package: oci-tofu-runner
+            image: tofu-runner
     runs-on: ubuntu-latest
     permissions:
       id-token: write
@@ -187,7 +228,7 @@ jobs:
         uses: DeterminateSystems/flakehub-cache-action@main
 
       - name: Build OCI image
-        run: nix build .#oci-${{ matrix.cluster }} --show-trace
+        run: nix build .#${{ matrix.package }} --show-trace
 
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v4.2.0
@@ -198,25 +239,39 @@ jobs:
 
       - name: Load, Tag, and Push Docker image
         run: |
-          docker load -i result
+          # Load the image and capture the output to find the hash tag
+          LOAD_OUTPUT=$(docker load -i result)
+          # Expected output: "Loaded image: name:hash"
+          LOADED_IMAGE=$(echo "$LOAD_OUTPUT" | grep -oP 'Loaded image: \K.*')
           
-          IMAGE_NAME="ghcr.io/${{ github.repository_owner }}/flux-${{ matrix.cluster }}"
+          IMAGE_NAME="ghcr.io/${{ github.repository_owner }}/${{ matrix.image }}"
           IMAGE_NAME=$(echo "$IMAGE_NAME" | tr '[:upper:]' '[:lower:]')
-          TAG="${{ needs.release.outputs.tag }}"
+          SEMVER_TAG="${{ needs.release.outputs.tag }}"
           
-          docker tag flux-${{ matrix.cluster }}:latest $IMAGE_NAME:$TAG
-          docker tag flux-${{ matrix.cluster }}:latest $IMAGE_NAME:latest
+          # The loaded image is already tagged with the derivation hash
+          # Tag with semver and latest
+          docker tag $LOADED_IMAGE $IMAGE_NAME:$SEMVER_TAG
+          docker tag $LOADED_IMAGE $IMAGE_NAME:latest
           
-          docker push $IMAGE_NAME:$TAG
+          # If the loaded image doesn't match the remote IMAGE_NAME, we need to tag it to match
+          HASH_TAG=$(echo "$LOADED_IMAGE" | cut -d':' -f2)
+          docker tag $LOADED_IMAGE $IMAGE_NAME:$HASH_TAG
+          
+          # Push all tags
+          docker push $IMAGE_NAME:$HASH_TAG
+          docker push $IMAGE_NAME:$SEMVER_TAG
           docker push $IMAGE_NAME:latest
+          
+          # Save HASH_TAG to environment for the signing step
+          echo "HASH_TAG=$HASH_TAG" >> $GITHUB_ENV
 
       - name: Install Cosign
         uses: sigstore/cosign-installer@v4.1.2
 
       - name: Sign the images with GitHub OIDC Token
         run: |
-          IMAGE_NAME="ghcr.io/${{ github.repository_owner }}/flux-${{ matrix.cluster }}"
+          IMAGE_NAME="ghcr.io/${{ github.repository_owner }}/${{ matrix.image }}"
           IMAGE_NAME=$(echo "$IMAGE_NAME" | tr '[:upper:]' '[:lower:]')
-          TAG="${{ needs.release.outputs.tag }}"
+          SEMVER_TAG="${{ needs.release.outputs.tag }}"
           
-          cosign sign --yes ${IMAGE_NAME}:${TAG} ${IMAGE_NAME}:latest
+          cosign sign --yes ${IMAGE_NAME}:${SEMVER_TAG} ${IMAGE_NAME}:latest ${IMAGE_NAME}:${HASH_TAG}

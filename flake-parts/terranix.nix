@@ -25,6 +25,7 @@
         extraRuntimeInputs = with pkgs;
         with inputs'; [
           clan-core.packages.clan-cli
+          self'.packages.get-keys
           bash
           git
           bun

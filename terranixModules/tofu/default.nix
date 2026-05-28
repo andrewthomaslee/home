@@ -2,7 +2,6 @@
   lib,
   customLib,
   config,
-  self',
   ...
 }: let
   cfg = config.terranix;
@@ -93,7 +92,7 @@ in {
 
       variable.flakehub_token.sensitive = true;
 
-      data.external.machine_keys.program = ["${self'.apps.get-keys.program}"];
+      data.external.machine_keys.program = ["get-keys"];
     }
     # --- TLS SSH Key Pair --- #
     {
