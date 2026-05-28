@@ -1,7 +1,6 @@
 {
   inputs,
   self,
-  lib,
   ...
 }: {
   flake = {
@@ -90,7 +89,6 @@
           # hostSpec options
           hostSpec = {
             clan.enable = true;
-            networking.tailscale.enable = true;
             services = {
               motd.enable = true;
               openssh.enable = true;

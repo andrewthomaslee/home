@@ -31,50 +31,6 @@ in {
           url = "https://community-charts.github.io/helm-charts";
         };
       }
-      # --- tailscale --- #
-      # {
-      #   apiVersion = "v1";
-      #   kind = "Namespace";
-      #   metadata.name = "tailscale";
-      # }
-      # {
-      #   apiVersion = "source.toolkit.fluxcd.io/v1";
-      #   kind = "HelmRepository";
-      #   metadata = {
-      #     name = "tailscale-operator";
-      #     namespace = "flux-system";
-      #   };
-      #   spec = {
-      #     interval = "72h";
-      #     url = "https://pkgs.tailscale.com/helmcharts";
-      #   };
-      # }
-      # {
-      #   apiVersion = "helm.toolkit.fluxcd.io/v2";
-      #   kind = "HelmRelease";
-      #   metadata = {
-      #     name = "tailscale";
-      #     namespace = "tailscale";
-      #   };
-      #   spec = {
-      #     interval = "72h";
-      #     chart = {
-      #       spec = {
-      #         chart = "tailscale-operator";
-      #         version = "1.96.5";
-      #         interval = "72h";
-      #         sourceRef = {
-      #           kind = "HelmRepository";
-      #           name = "tailscale-operator";
-      #           namespace = "flux-system";
-      #         };
-      #       };
-      #     };
-      #     values = {
-      #       apiServerProxyConfig.mode = "true";
-      #     };
-      #   };
-      # }
       # --- valkey --- #
       {
         apiVersion = "source.toolkit.fluxcd.io/v1";

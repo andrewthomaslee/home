@@ -39,7 +39,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        machine: [nixos, ghost, kamrui-p1, inuc-celeron, inuc-i5, hp-notebook, hel-1, hel-2, hel-3]
+        machine: [nixos, ghost, kamrui-p1, inuc-celeron, inuc-i5, hp-notebook, hel-1, hel-2, hel-3, hil-1, hil-2, hil-3]
     runs-on: ubuntu-latest
     permissions:
       id-token: write
@@ -61,7 +61,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        artifact: [devShell, tofu]
+        artifact: [devShell, documentation]
     runs-on: ubuntu-latest
     permissions:
       id-token: write
@@ -86,8 +86,10 @@ jobs:
         include:
           - package: oci-home
             image: flux-home
-          - package: oci-hcloud
-            image: flux-hcloud
+          - package: oci-hcloud-eu
+            image: flux-hcloud-eu
+          - package: oci-hcloud-us-west
+            image: flux-hcloud-us-west
           - package: oci-tofu-source
             image: tofu-source
           - package: oci-tofu-runner
@@ -204,8 +206,10 @@ jobs:
         include:
           - package: oci-home
             image: flux-home
-          - package: oci-hcloud
-            image: flux-hcloud
+          - package: oci-hcloud-eu
+            image: flux-hcloud-eu
+          - package: oci-hcloud-us-west
+            image: flux-hcloud-us-west
           - package: oci-tofu-source
             image: tofu-source
           - package: oci-tofu-runner

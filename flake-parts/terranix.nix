@@ -13,6 +13,7 @@
     ...
   }: {
     terranix.terranixConfigurations.tofu = {
+      workdir = ".";
       modules = [self.terranixModules.tofu];
       extraArgs = {inherit inputs self pkgs customLib inputs' self';};
       terraformWrapper = {
