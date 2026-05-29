@@ -263,16 +263,13 @@ jobs:
           docker push $IMAGE_NAME:$SEMVER_TAG
           docker push $IMAGE_NAME:latest
           
-          # Save HASH_TAG to environment for the signing step
-          echo "HASH_TAG=$HASH_TAG" >> $GITHUB_ENV
+          # Save digest to environment for the signing step
+          IMAGE_DIGEST=$(docker inspect --format='{{index .RepoDigests 0}}' $IMAGE_NAME:latest)
+          echo "IMAGE_DIGEST=$IMAGE_DIGEST" >> $GITHUB_ENV
 
       - name: Install Cosign
         uses: sigstore/cosign-installer@v4.1.2
 
       - name: Sign the images with GitHub OIDC Token
         run: |
-          IMAGE_NAME="ghcr.io/${{ github.repository_owner }}/${{ matrix.image }}"
-          IMAGE_NAME=$(echo "$IMAGE_NAME" | tr '[:upper:]' '[:lower:]')
-          SEMVER_TAG="${{ needs.release.outputs.tag }}"
-          
-          cosign sign --yes ${IMAGE_NAME}:${SEMVER_TAG} ${IMAGE_NAME}:latest ${IMAGE_NAME}:${HASH_TAG}
+          cosign sign --yes ${IMAGE_DIGEST}
