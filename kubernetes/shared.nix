@@ -14,7 +14,7 @@ in {
   kubenix.project = "shared";
   kubernetes = {
     version = kubeVersion;
-    namespace = "default";
+    namespace = "shared";
     resources = {
       namespaces = {
         cert-manager = {};
@@ -97,7 +97,7 @@ in {
     };
     objects = [
       {
-        apiVersion = "source.toolkit.fluxcd.io/v1beta2";
+        apiVersion = "source.toolkit.fluxcd.io/v1";
         kind = "HelmRepository";
         metadata = {
           name = "sealed-secrets-oci";
@@ -110,7 +110,7 @@ in {
         };
       }
       {
-        apiVersion = "helm.toolkit.fluxcd.io/v2beta1";
+        apiVersion = "helm.toolkit.fluxcd.io/v2";
         kind = "HelmRelease";
         metadata = {
           name = "sealed-secrets";
@@ -147,7 +147,7 @@ in {
         };
       }
       {
-        apiVersion = "source.toolkit.fluxcd.io/v1beta2";
+        apiVersion = "source.toolkit.fluxcd.io/v1";
         kind = "HelmRepository";
         metadata = {
           name = "cert-manager-oci";
@@ -160,7 +160,7 @@ in {
         };
       }
       {
-        apiVersion = "helm.toolkit.fluxcd.io/v2beta1";
+        apiVersion = "helm.toolkit.fluxcd.io/v2";
         kind = "HelmRelease";
         metadata = {
           name = "cert-manager";

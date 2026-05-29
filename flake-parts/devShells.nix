@@ -31,6 +31,7 @@
             kubeseal
             cloudflared
             dive
+            kustomize
           ]);
         shellHook = ''
           export REPO_ROOT

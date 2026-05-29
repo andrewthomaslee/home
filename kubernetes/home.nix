@@ -15,7 +15,7 @@ in {
   kubenix.project = "home";
   kubernetes = {
     version = kubeVersion;
-    namespace = "default";
+    namespace = "home";
     resources.namespaces.cloudflare = {};
     helm.releases = {
       cloudflared = {
