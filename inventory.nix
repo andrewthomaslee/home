@@ -32,11 +32,11 @@
       tags = ["server"];
     };
     inuc-celeron = {
-      deploy.targetHost = "root@192.168.1.249";
+      deploy.targetHost = "root@inuc-celeron.armadillo-frog.ts.net";
       tags = ["server"];
     };
     inuc-i5 = {
-      deploy.targetHost = "root@192.168.1.248";
+      deploy.targetHost = "root@inuc-i5.armadillo-frog.ts.net";
       tags = ["server"];
     };
 
