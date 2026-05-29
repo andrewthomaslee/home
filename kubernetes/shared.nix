@@ -15,49 +15,13 @@ in {
   kubernetes = {
     version = kubeVersion;
     namespace = "default";
-    resources.namespaces = {
-      cert-manager = {};
-      whoami = {};
-    };
-    helm.releases = {
-      sealed-secrets = {
-        namespace = "kube-system";
-        chart = kubenix.lib.helm.fetch {
-          repo = "https://bitnami-labs.github.io/sealed-secrets";
-          chart = "sealed-secrets";
-          version = "2.18.6";
-          sha256 = "";
-        };
-        values = {
-          ingress.enabled = true;
-          nodeSelector.role = "server";
-          resources = {
-            limits = {
-              cpu = "500m";
-              memory = "256Mi";
-            };
-            requests = {
-              cpu = "1m";
-              memory = "8Mi";
-            };
-          };
-        };
+    resources = {
+      namespaces = {
+        cert-manager = {};
+        whoami = {};
       };
-    };
-    objects = [
-      # --- whoami --- #
-      {
-        apiVersion = "v1";
-        kind = "Namespace";
-        metadata.name = "whoami";
-      }
-      {
-        apiVersion = "apps/v1";
-        kind = "Deployment";
-        metadata = {
-          name = "whoami";
-          namespace = "whoami";
-        };
+      deployments.whoami = {
+        metadata.namespace = "whoami";
         spec = {
           selector.matchLabels.app = "whoami";
           template = {
@@ -70,30 +34,26 @@ in {
                 fsGroup = 1000;
                 seccompProfile.type = "RuntimeDefault";
               };
-              containers = [
-                {
-                  name = "whoami";
-                  image = "traefik/whoami";
-                  args = [
-                    "--port"
-                    "8080"
-                  ];
-                  ports = [{containerPort = 8080;}];
-                  securityContext = {
-                    allowPrivilegeEscalation = false;
-                    capabilities.drop = ["ALL"];
-                  };
-                }
-              ];
+              containers.whoami = {
+                image = "traefik/whoami";
+                args = ["--port" "8080"];
+                ports = [
+                  {
+                    containerPort = 8080;
+                    protocol = "TCP";
+                  }
+                ];
+                securityContext = {
+                  allowPrivilegeEscalation = false;
+                  capabilities.drop = ["ALL"];
+                };
+              };
             };
           };
         };
-      }
-      {
-        apiVersion = "v1";
-        kind = "Service";
+      };
+      services.whoami = {
         metadata = {
-          name = "whoami";
           namespace = "whoami";
           annotations = {
             "service.cilium.io/global" = "true";
@@ -108,9 +68,133 @@ in {
           ports = [
             {
               port = 80;
+              protocol = "TCP";
               targetPort = 8080;
             }
           ];
+        };
+      };
+      ingresses.whoami = {
+        metadata.namespace = "whoami";
+        spec.rules = [
+          {
+            host = "whoami.localhost";
+            http.paths = [
+              {
+                path = "/";
+                pathType = "Prefix";
+                backend = {
+                  service = {
+                    name = "whoami";
+                    port.number = 80;
+                  };
+                };
+              }
+            ];
+          }
+        ];
+      };
+    };
+    objects = [
+      {
+        apiVersion = "source.toolkit.fluxcd.io/v1beta2";
+        kind = "HelmRepository";
+        metadata = {
+          name = "sealed-secrets-oci";
+          namespace = "flux-system";
+        };
+        spec = {
+          type = "oci";
+          interval = "7d";
+          url = "oci://registry-1.docker.io/bitnamicharts";
+        };
+      }
+      {
+        apiVersion = "helm.toolkit.fluxcd.io/v2beta1";
+        kind = "HelmRelease";
+        metadata = {
+          name = "sealed-secrets";
+          namespace = "kube-system";
+        };
+        spec = {
+          interval = "7d";
+          chart.spec = {
+            chart = "sealed-secrets";
+            version = "2.18.6";
+            reconcileStrategy = "ChartVersion";
+            sourceRef = {
+              kind = "HelmRepository";
+              name = "sealed-secrets-oci";
+              namespace = "flux-system";
+            };
+          };
+          install.crds = "CreateReplace";
+          upgrade.crds = "CreateReplace";
+          values = {
+            ingress.enabled = true;
+            nodeSelector.role = "server";
+            resources = {
+              limits = {
+                cpu = "500m";
+                memory = "256Mi";
+              };
+              requests = {
+                cpu = "1m";
+                memory = "8Mi";
+              };
+            };
+          };
+        };
+      }
+      {
+        apiVersion = "source.toolkit.fluxcd.io/v1beta2";
+        kind = "HelmRepository";
+        metadata = {
+          name = "cert-manager-oci";
+          namespace = "flux-system";
+        };
+        spec = {
+          type = "oci";
+          interval = "7d";
+          url = "oci://quay.io/jetstack/charts";
+        };
+      }
+      {
+        apiVersion = "helm.toolkit.fluxcd.io/v2beta1";
+        kind = "HelmRelease";
+        metadata = {
+          name = "cert-manager";
+          namespace = "cert-manager";
+        };
+        spec = {
+          interval = "7d";
+          chart = {
+            spec = {
+              chart = "cert-manager";
+              version = "v1.14.0";
+              reconcileStrategy = "ChartVersion";
+              sourceRef = {
+                kind = "HelmRepository";
+                name = "cert-manager-oci";
+                namespace = "flux-system";
+              };
+            };
+          };
+          install.crds = "CreateReplace";
+          upgrade.crds = "CreateReplace";
+          values = {
+            nodeSelector.role = "server";
+            resources = {
+              limits = {
+                cpu = "500m";
+                memory = "256Mi";
+              };
+              requests = {
+                cpu = "10m";
+                memory = "32Mi";
+              };
+            };
+          };
         };
       }
     ];

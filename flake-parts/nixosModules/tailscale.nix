@@ -31,7 +31,7 @@
         useRoutingFeatures = "server";
         extraUpFlags = [
           "--advertise-exit-node"
-          "--advertise-tags=tag:home"
+          "--advertise-tags=tag:netsam"
         ];
       };
       networking = {

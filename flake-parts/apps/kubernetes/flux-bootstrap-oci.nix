@@ -11,7 +11,7 @@
         program = lib.getExe (pkgs.writeShellApplication {
           name = "flux-bootstrap-oci";
           runtimeInputs = [
-            pkgs.kubectl
+            pkgs.k3s
             pkgs.unstable.fluxcd
           ];
           text = ''
@@ -29,7 +29,7 @@
             echo "Configuring OCI Source (Idempotent)..."
             flux create source oci flux-system \
               --url="oci://ghcr.io/andrewthomaslee/flux-$CLUSTER" \
-              --tag-semver="0.3.x" \
+              --tag"latest" \
               --interval=10m \
               --export | kubectl apply -f -
 

@@ -4,7 +4,7 @@
   kubenix,
   ...
 }: let
-  kubeVersion = builtins.substring 0 4 "${pkgs.k3s.version}";
+  kubeVersion = builtins.substring 0 4 "${pkgs.rke2.version}";
   domain = "andrewlee.cloud";
 in {
   imports = [
