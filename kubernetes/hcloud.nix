@@ -9,6 +9,7 @@
 in {
   imports = [
     kubenix.modules.k8s
+    kubenix.modules.helm
   ];
 
   kubenix.project = "helsinki";

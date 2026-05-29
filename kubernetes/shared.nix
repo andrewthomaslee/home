@@ -6,79 +6,45 @@
 }: let
   kubeVersion = builtins.substring 0 4 "${pkgs.k3s.version}";
 in {
-  imports = [kubenix.modules.k8s];
+  imports = [
+    kubenix.modules.k8s
+    kubenix.modules.helm
+  ];
 
   kubenix.project = "shared";
   kubernetes = {
     version = kubeVersion;
     namespace = "default";
-    objects = [
-      # --- cloudflared --- #
-      {
-        apiVersion = "v1";
-        kind = "Namespace";
-        metadata.name = "cloudflare";
-      }
-      {
-        apiVersion = "source.toolkit.fluxcd.io/v1";
-        kind = "HelmRepository";
-        metadata = {
-          name = "cloudflared";
-          namespace = "flux-system";
+    resources.namespaces = {
+      cert-manager = {};
+      whoami = {};
+    };
+    helm.releases = {
+      sealed-secrets = {
+        namespace = "kube-system";
+        chart = kubenix.lib.helm.fetch {
+          repo = "https://bitnami-labs.github.io/sealed-secrets";
+          chart = "sealed-secrets";
+          version = "2.18.6";
+          sha256 = "";
         };
-        spec = {
-          interval = "72h";
-          url = "https://community-charts.github.io/helm-charts";
-        };
-      }
-      # --- sealed-secrets --- #
-      {
-        apiVersion = "source.toolkit.fluxcd.io/v1";
-        kind = "HelmRepository";
-        metadata = {
-          name = "sealed-secrets";
-          namespace = "flux-system";
-        };
-        spec = {
-          interval = "72h";
-          url = "https://bitnami-labs.github.io/sealed-secrets";
-        };
-      }
-      {
-        apiVersion = "helm.toolkit.fluxcd.io/v2";
-        kind = "HelmRelease";
-        metadata = {
-          name = "sealed-secrets";
-          namespace = "flux-system";
-        };
-        spec = {
-          interval = "72h";
-          chart = {
-            spec = {
-              chart = "sealed-secrets";
-              sourceRef = {
-                kind = "HelmRepository";
-                name = "sealed-secrets";
-              };
+        values = {
+          ingress.enabled = true;
+          nodeSelector.role = "server";
+          resources = {
+            limits = {
+              cpu = "500m";
+              memory = "256Mi";
+            };
+            requests = {
+              cpu = "1m";
+              memory = "8Mi";
             };
           };
-          install.crds = "CreateReplace";
-          upgrade.crds = "CreateReplace";
         };
-      }
-      # --- valkey --- #
-      {
-        apiVersion = "source.toolkit.fluxcd.io/v1";
-        kind = "HelmRepository";
-        metadata = {
-          name = "valkey";
-          namespace = "flux-system";
-        };
-        spec = {
-          interval = "72h";
-          url = "https://valkey.io/valkey-helm/";
-        };
-      }
+      };
+    };
+    objects = [
       # --- whoami --- #
       {
         apiVersion = "v1";

@@ -17,13 +17,6 @@
                 "kamrui-p1": "192.168.1.251",
                 "hp-notebook": "192.168.1.250"
             }
-        },
-        "wireguard": {
-            "port": {
-                "kamrui-p1": 51823,
-                "inuc-celeron": 51825,
-                "inuc-i5": 51826
-            }
         }
     }
 }
