@@ -5,17 +5,17 @@
   ...
 }: let
   kubeVersion = builtins.substring 0 4 "${pkgs.k3s.version}";
-  domain = "andrewlee.fun";
+  domain = "domain.com";
 in {
   imports = [
     kubenix.modules.k8s
     kubenix.modules.helm
   ];
 
-  kubenix.project = "home";
+  kubenix.project = "cloudflared";
   kubernetes = {
     version = kubeVersion;
-    namespace = "home";
+    namespace = "cloudflare";
     resources.namespaces.cloudflare = {};
     helm.releases = {
       cloudflared = {
@@ -38,20 +38,12 @@ in {
               memory = "256Mi";
             };
             requests = {
-              cpu = "10m";
-              memory = "16Mi";
+              cpu = "1m";
+              memory = "4Mi";
             };
           };
           # cloudflared tunnel route dns home <domain>.andrewlee.fun
           ingress = [
-            {
-              hostname = "whoami.${domain}";
-              service = "http://whoami.whoami.svc.cluster.local:80";
-            }
-            {
-              hostname = "hubble.${domain}";
-              service = "http://hubble-ui.kube-system.svc.cluster.local:80";
-            }
             {
               service = "http_status:404"; # MUST GO LAST
             }

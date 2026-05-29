@@ -84,10 +84,12 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - package: oci-home
-            image: flux-home
-          - package: oci-hcloud
-            image: flux-hcloud
+          - package: oci-base
+            image: oci-base
+          - package: oci-cloudflared
+            image: oci-cloudflared
+          - package: oci-whoami
+            image: oci-whoami
           - package: oci-tofu-source
             image: tofu-source
           - package: oci-tofu-runner
@@ -203,10 +205,12 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - package: oci-home
-            image: flux-home
-          - package: oci-hcloud
-            image: flux-hcloud
+          - package: oci-base
+            image: oci-base
+          - package: oci-cloudflared
+            image: oci-cloudflared
+          - package: oci-whoami
+            image: oci-whoami
           - package: oci-tofu-source
             image: tofu-source
           - package: oci-tofu-runner

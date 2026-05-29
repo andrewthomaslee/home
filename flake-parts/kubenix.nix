@@ -8,22 +8,68 @@
     pkgs,
     ...
   }: let
-    # Search for all kubernetes files in the kubernetes directory and generate a list of names to then generate packages and apps for managing the manifests
-    kubeDir = customLib.custom.relativeToRoot "kubernetes";
-    kubeFiles = builtins.readDir kubeDir;
-    nixFiles = lib.filterAttrs (n: v: v == "regular" && lib.hasSuffix ".nix" n) kubeFiles;
-    kubeNames = map (lib.removeSuffix ".nix") (builtins.attrNames nixFiles);
-  in {
-    # Dynamically generate packages for each kubernetes file
-    packages = lib.genAttrs kubeNames (
+    # Search for all folders in the kubernetes/packages directory
+    packagesDir = customLib.custom.relativeToRoot "kubernetes/packages";
+    packageDirs = builtins.readDir packagesDir;
+    packageNames = builtins.attrNames (lib.filterAttrs (n: v: v == "directory") packageDirs);
+
+    # Generate the base kubenix evaluated JSON for each package
+    kubenixPackages = lib.genAttrs packageNames (
       name:
         (inputs.kubenix.evalModules.${system} {
-          module = kubeDir + "/${name}.nix";
+          module = packagesDir + "/${name}/default.nix";
           specialArgs = {inherit pkgs;};
         }).config.kubernetes.result
     );
 
-    # Dynamically generate app to update all kubernetes manifests
+    # Generate the manifests directory and OCI artifact for each package
+    ociPackages = builtins.listToAttrs (builtins.concatMap (name: let
+        evaluated = kubenixPackages.${name};
+        manifests = pkgs.stdenv.mkDerivation {
+          name = "${name}-manifests";
+          nativeBuildInputs = [pkgs.jq];
+          src = packagesDir + "/${name}";
+          buildCommand = ''
+            mkdir -p $out
+
+            # Copy all contents except default.nix
+            if [ -d $src ]; then
+              cp -r $src/. $out/
+              chmod -R u+w $out
+              rm -f $out/default.nix
+            fi
+
+            # Save the evaluated JSON from kubenix
+            cat ${evaluated} | jq > $out/${name}.json
+
+            # Generate kustomization.yaml including all resources
+            echo "resources:" > $out/kustomization.yaml
+            for f in $(ls $out | grep -E '\.(yaml|yml|json)$' | grep -v 'kustomization.yaml'); do
+              echo "  - $f" >> $out/kustomization.yaml
+            done
+          '';
+        };
+        oci = pkgs.dockerTools.buildImage {
+          name = "flux-${name}";
+          copyToRoot = [manifests];
+          config.Cmd = ["/bin/true"];
+        };
+      in [
+        {
+          name = "manifests-${name}";
+          value = manifests;
+        }
+        {
+          name = "oci-${name}";
+          value = oci;
+        }
+      ])
+      packageNames);
+  in {
+    # Dynamically generate packages
+    packages = kubenixPackages // ociPackages;
+
+    # Dynamically generate app to update all kubernetes manifests locally if desired for inspection
     apps.kubenix = {
       type = "app";
       program = lib.getExe (pkgs.writeShellApplication {
@@ -33,26 +79,15 @@
           coreutils
         ];
         text = let
-          clusters = builtins.filter (x: x != "shared") kubeNames;
-          hasShared = builtins.elem "shared" kubeNames;
-
-          clusterCmds =
-            lib.concatMapStringsSep "\n" (cluster: ''
-              echo "Generating manifests for ${cluster}..."
-              mkdir -p "$REPO_ROOT"/kubernetes/clusters/${cluster}
-              cat ${self'.packages.${cluster}} | jq > "$REPO_ROOT"/kubernetes/clusters/${cluster}/${cluster}.yaml
+          cmds =
+            lib.concatMapStringsSep "\n" (name: ''
+              echo "Generating manifests for ${name}..."
+              mkdir -p "$REPO_ROOT"/kubernetes/packages/${name}/result
+              cp -rf ${self'.packages."manifests-${name}"}/* "$REPO_ROOT"/kubernetes/packages/${name}/result
             '')
-            clusters;
-
-          sharedCmds = lib.optionalString hasShared (lib.concatMapStringsSep "\n" (cluster: ''
-              echo "Copying shared manifests to ${cluster}..."
-              mkdir -p "$REPO_ROOT"/kubernetes/clusters/${cluster}
-              cat ${self'.packages.shared} | jq > "$REPO_ROOT"/kubernetes/clusters/${cluster}/shared.yaml
-            '')
-            clusters);
+            packageNames;
         in ''
-          ${clusterCmds}
-          ${sharedCmds}
+          ${cmds}
           echo "All manifests updated successfully!"
         '';
       });
