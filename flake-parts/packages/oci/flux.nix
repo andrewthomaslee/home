@@ -22,8 +22,11 @@
             buildCommand = ''
               mkdir -p $out
               cat ${self'.packages.${name}} | jq > $out/${name}.json
+              echo "resources:" > $out/kustomization.yaml
+              echo "  - ${name}.json" >> $out/kustomization.yaml
               ${lib.optionalString (name != "shared" && builtins.elem "shared" kubeNames) ''
                 cat ${self'.packages.shared} | jq > $out/shared.json
+                echo "  - shared.json" >> $out/kustomization.yaml
               ''}
             '';
           };

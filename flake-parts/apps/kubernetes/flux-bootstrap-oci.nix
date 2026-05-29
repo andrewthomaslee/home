@@ -29,7 +29,7 @@
             echo "Configuring OCI Source (Idempotent)..."
             flux create source oci flux-system \
               --url="oci://ghcr.io/andrewthomaslee/flux-$CLUSTER" \
-              --tag"latest" \
+              --tag="latest" \
               --interval=10m \
               --export | kubectl apply -f -
 
