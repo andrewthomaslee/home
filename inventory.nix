@@ -170,16 +170,19 @@
           domain = "andrewlee.fun";
           distro = "k3s";
           cilium.clustermesh.enable = false;
-          traefik.enable = false;
+          traefik.enable = true;
           wireguard = {
             ipv4 = "172.16.0.1";
             endpoint = "192.168.1.251";
           };
         };
         worker.machines = {
-          inuc-celeron.settings.wireguard = {
-            ipv4 = "172.16.0.2";
-            endpoint = "192.168.1.249";
+          inuc-celeron.settings = {
+            web = false;
+            wireguard = {
+              ipv4 = "172.16.0.2";
+              endpoint = "192.168.1.249";
+            };
           };
           inuc-i5.settings.wireguard = {
             ipv4 = "172.16.0.3";
