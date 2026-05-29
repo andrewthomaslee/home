@@ -3,8 +3,13 @@
   perSystem = {
     pkgs,
     lib,
+    customLib,
     ...
-  }: {
+  }: let
+    packagesDir = customLib.custom.relativeToRoot "kubernetes/packages";
+    packageDirs = builtins.readDir packagesDir;
+    packageNames = builtins.attrNames (lib.filterAttrs (n: v: v == "directory") packageDirs);
+  in {
     apps = {
       flux-bootstrap-oci = {
         type = "app";
@@ -21,27 +26,36 @@
             fi
 
             CLUSTER=$1
-            kubectl config use-context "$CLUSTER"
+            OUT_DIR="$REPO_ROOT/kubernetes/clusters/$CLUSTER/oci"
+            mkdir -p "$OUT_DIR"
 
-            echo "Installing Flux controllers..."
-            flux install
+            echo "Generating OCI manifests into $OUT_DIR..."
 
-            echo "Configuring OCI Source (Idempotent)..."
-            flux create source oci flux-system \
-              --url="oci://ghcr.io/andrewthomaslee/flux-$CLUSTER" \
-              --tag="latest" \
-              --interval=10m \
-              --export | kubectl apply -f -
+            cat <<EOF > "$OUT_DIR/kustomization.yaml"
+            apiVersion: kustomize.config.k8s.io/v1beta1
+            kind: Kustomization
+            resources:
+            EOF
 
-            echo "Configuring Kustomization (Idempotent)..."
-            flux create kustomization flux-system \
-              --source=OCIRepository/flux-system \
-              --path=. \
-              --prune=true \
-              --interval=10m \
-              --export | kubectl apply -f -
+            ${lib.concatMapStringsSep "\n" (pkg: ''
+                echo "Generating manifests for ${pkg}..."
+                flux create source oci oci-${pkg} \
+                  --url="oci://ghcr.io/andrewthomaslee/oci-${pkg}" \
+                  --tag="latest" \
+                  --interval=5m \
+                  --export > "$OUT_DIR/source-oci-${pkg}.yaml"
+                echo "  - source-oci-${pkg}.yaml" >> "$OUT_DIR/kustomization.yaml"
 
-            echo "Flux OCI Bootstrap Complete!"
+                flux create kustomization oci-${pkg} \
+                  --source=OCIRepository/oci-${pkg} \
+                  --path=. \
+                  --prune=true \
+                  --interval=5m \
+                  --export > "$OUT_DIR/kustomization-${pkg}.yaml"
+                echo "  - kustomization-${pkg}.yaml" >> "$OUT_DIR/kustomization.yaml"
+              '')
+              packageNames}
+            echo "Flux OCI Bootstrap Manifests Generated Successfully!"
           '';
         });
       };

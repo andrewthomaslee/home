@@ -1,6 +1,5 @@
 {
   pkgs,
-  # config,
   kubenix,
   ...
 }: let
@@ -61,7 +60,7 @@ in {
               };
               requests = {
                 cpu = "1m";
-                memory = "4Mi";
+                memory = "2Mi";
               };
             };
           };
@@ -113,7 +112,7 @@ in {
               };
               requests = {
                 cpu = "1m";
-                memory = "4Mi";
+                memory = "2Mi";
               };
             };
           };
