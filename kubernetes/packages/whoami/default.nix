@@ -91,5 +91,44 @@ in {
         }
       ];
     };
+    objects = [
+      {
+        apiVersion = "gateway.networking.k8s.io/v1";
+        kind = "HTTPRoute";
+        metadata = {
+          name = "whoami";
+          namespace = "whoami";
+        };
+        spec = {
+          parentRefs = [
+            {
+              name = "traefik-gateway";
+              sectionName = "web";
+            }
+          ];
+          hostnames = [
+            "whoami.localhost"
+          ];
+          rules = [
+            {
+              matches = [
+                {
+                  path = {
+                    type = "PathPrefix";
+                    value = "/whoami";
+                  };
+                }
+              ];
+              backendRefs = [
+                {
+                  name = "whoami";
+                  port = 80;
+                }
+              ];
+            }
+          ];
+        };
+      }
+    ];
   };
 }
