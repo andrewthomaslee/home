@@ -27,6 +27,7 @@ in {
           sha256 = "sha256-rIFTfA0qQxEQriSzZJ06ZOafg/ZHTM/DwPfRC4g0Zvc=";
         };
         values = {
+          nodeSelector.web = "true";
           tunnelSecrets = {
             existingPemFileSecret.name = "cloudflared-cert-pem-file-secret";
             existingConfigJsonFileSecret.name = "cloudflared-config-json-file-secret";
