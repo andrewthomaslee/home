@@ -50,9 +50,8 @@
           '';
         };
         oci = pkgs.dockerTools.buildImage {
-          name = "flux-${name}";
+          name = "oci-${name}";
           copyToRoot = [manifests];
-          config.Cmd = ["/bin/true"];
         };
       in [
         {
