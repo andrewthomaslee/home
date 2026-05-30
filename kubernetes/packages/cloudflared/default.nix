@@ -29,8 +29,14 @@ in {
         values = {
           nodeSelector.web = "true";
           tunnelSecrets = {
-            existingPemFileSecret.name = "cloudflared-cert-pem-file-secret";
-            existingConfigJsonFileSecret.name = "cloudflared-config-json-file-secret";
+            existingPemFileSecret = {
+              name = "cloudflared-cert";
+              key = "cert.pem";
+            };
+            existingConfigJsonFileSecret = {
+              name = "cloudflared-credentials";
+              key = "credentials.json";
+            };
           };
           tunnelConfig.name = domain;
           resources = {
