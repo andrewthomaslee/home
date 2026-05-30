@@ -3,3 +3,5 @@ kind: Kustomization
 resources:
 - flux-system
 - oci
+- cloudflared-cert-secret.yaml
+- cloudflared-credentials-secret.yaml
