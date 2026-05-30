@@ -25,7 +25,7 @@ in {
         };
         spec = {
           type = "oci";
-          interval = "72h";
+          interval = "5h";
           url = "oci://registry-1.docker.io/bitnamicharts";
         };
       }
@@ -38,7 +38,7 @@ in {
         };
         spec = {
           targetNamespace = "kube-system";
-          interval = "72h";
+          interval = "5h";
           chart.spec = {
             chart = "sealed-secrets";
             version = "2.18.x";
@@ -51,6 +51,7 @@ in {
           install.crds = "CreateReplace";
           upgrade.crds = "CreateReplace";
           values = {
+            fullnameOverride = "sealed-secrets-controller";
             ingress.enabled = true;
             nodeSelector.role = "server";
             resources = {
@@ -75,7 +76,7 @@ in {
         };
         spec = {
           type = "oci";
-          interval = "72h";
+          interval = "5h";
           url = "oci://quay.io/jetstack/charts";
         };
       }
@@ -87,12 +88,12 @@ in {
           namespace = "base";
         };
         spec = {
-          interval = "72h";
+          interval = "5h";
           targetNamespace = "cert-manager";
           chart = {
             spec = {
               chart = "cert-manager";
-              version = "1.14.x";
+              version = "1.20.x";
               reconcileStrategy = "ChartVersion";
               sourceRef = {
                 kind = "HelmRepository";
