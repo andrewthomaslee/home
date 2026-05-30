@@ -18,6 +18,8 @@ patches:
             connectTimeout: 30s
           
           ingress: 
+            - hostname: "capacitor.andrewlee.fun"
+              service: http://capacitor.flux-system.svc.cluster.local:9000
             - hostname: "whoami.andrewlee.fun"
               service: http://whoami.whoami.svc.cluster.local:80
             - hostname: "hubble.andrewlee.fun"
