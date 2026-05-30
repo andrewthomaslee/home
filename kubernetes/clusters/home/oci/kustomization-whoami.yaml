@@ -11,3 +11,12 @@ spec:
   sourceRef:
     kind: OCIRepository
     name: oci-whoami
+  patches:
+    - patch: |-
+        - op: add
+          path: /spec/hostnames/-
+          value: "whoami.andrewlee.fun"
+      target:
+        kind: HTTPRoute
+        name: whoami
+        namespace: whoami
