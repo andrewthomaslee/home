@@ -1,0 +1,17 @@
+{
+  "apiVersion": "kustomize.toolkit.fluxcd.io/v1",
+  "kind": "Kustomization",
+  "metadata": {
+    "name": "oci-cloudflared",
+    "namespace": "flux-system"
+  },
+  "spec": {
+    "interval": "5m0s",
+    "path": "./",
+    "prune": true,
+    "sourceRef": {
+      "kind": "OCIRepository",
+      "name": "oci-cloudflared"
+    }
+  }
+}

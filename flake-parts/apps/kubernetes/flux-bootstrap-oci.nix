@@ -18,44 +18,74 @@
           runtimeInputs = [
             pkgs.k3s
             pkgs.unstable.fluxcd
+            pkgs.yq-go
           ];
           text = ''
             if [ -z "''${1:-}" ]; then
-              echo "Usage: flux-bootstrap-oci <cluster>"
+              echo "Usage: flux-bootstrap-oci <cluster> [package|all]"
               exit 1
             fi
 
             CLUSTER=$1
-            OUT_DIR="$REPO_ROOT/kubernetes/clusters/$CLUSTER/oci"
-            mkdir -p "$OUT_DIR"
+            PACKAGE=''${2:-all}
+            CLUSTER_OCI_DIR="$REPO_ROOT/kubernetes/clusters/$CLUSTER/oci"
 
-            echo "Generating OCI manifests into $OUT_DIR..."
-
-            cat <<EOF > "$OUT_DIR/kustomization.yaml"
+            # Create or update main kustomization.yaml
+            if [ ! -f "$CLUSTER_OCI_DIR/kustomization.yaml" ]; then
+              mkdir -p "$CLUSTER_OCI_DIR"
+              cat <<EOF > "$CLUSTER_OCI_DIR/kustomization.yaml"
             apiVersion: kustomize.config.k8s.io/v1beta1
             kind: Kustomization
             resources:
             EOF
+            fi
 
-            ${lib.concatMapStringsSep "\n" (pkg: ''
-                echo "Generating manifests for ${pkg}..."
-                flux create source oci oci-${pkg} \
-                  --url="oci://ghcr.io/andrewthomaslee/oci-${pkg}" \
-                  --tag="latest" \
-                  --interval=5m \
-                  --export > "$OUT_DIR/source-oci-${pkg}.yaml"
-                echo "  - source-oci-${pkg}.yaml" >> "$OUT_DIR/kustomization.yaml"
+            generate_package() {
+              local pkg=$1
+              local pkg_dir="$CLUSTER_OCI_DIR/packages/$pkg"
+              mkdir -p "$pkg_dir"
 
-                flux create kustomization oci-${pkg} \
-                  --source=OCIRepository/oci-${pkg} \
-                  --path=. \
-                  --prune=true \
-                  --interval=5m \
-                  --export > "$OUT_DIR/kustomization-${pkg}.yaml"
-                echo "  - kustomization-${pkg}.yaml" >> "$OUT_DIR/kustomization.yaml"
-              '')
-              packageNames}
-            echo "Flux OCI Bootstrap Manifests Generated Successfully!"
+              echo "Generating OCI manifests into $pkg_dir..."
+
+              # Add package to main kustomization.yaml if not present
+              if ! grep -q "packages/$pkg" "$CLUSTER_OCI_DIR/kustomization.yaml"; then
+                echo "  - packages/$pkg" >> "$CLUSTER_OCI_DIR/kustomization.yaml"
+              fi
+
+              # Create package kustomization.yaml
+              cat <<EOF > "$pkg_dir/kustomization.yaml"
+            apiVersion: kustomize.config.k8s.io/v1beta1
+            kind: Kustomization
+            resources:
+              - source-oci-$pkg.json
+              - kustomization-$pkg.json
+            EOF
+
+              echo "Generating manifests for $pkg..."
+              flux create source oci "oci-$pkg" \
+                --url="oci://ghcr.io/andrewthomaslee/oci-$pkg" \
+                --tag="latest" \
+                --interval=5m \
+                --export | yq -o=json > "$pkg_dir/source-oci-$pkg.json"
+
+              flux create kustomization "oci-$pkg" \
+                --source="OCIRepository/oci-$pkg" \
+                --path=. \
+                --prune=true \
+                --interval=5m \
+                --export | yq -o=json > "$pkg_dir/kustomization-$pkg.json"
+            }
+
+            if [ "$PACKAGE" = "all" ]; then
+              echo "Generating manifests for all packages..."
+              for p in ${builtins.concatStringsSep " " packageNames}; do
+                generate_package "$p"
+              done
+              echo "Flux OCI Bootstrap Manifests Generated Successfully for all packages!"
+            else
+              generate_package "$PACKAGE"
+              echo "Flux OCI Bootstrap Manifests Generated Successfully for $PACKAGE!"
+            fi
           '';
         });
       };
