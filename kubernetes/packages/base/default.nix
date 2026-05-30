@@ -105,6 +105,7 @@ in {
           install.crds = "CreateReplace";
           upgrade.crds = "CreateReplace";
           values = {
+            crds.enabled = true;
             nodeSelector.role = "server";
             resources = {
               limits = {
