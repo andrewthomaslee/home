@@ -183,7 +183,10 @@ in {
     };
 
     # -- Terranix Modules ------ #
-    terranixModules.tofu = import (relativeToRoot "terranixModules/tofu");
+    terranixModules = {
+      tofu = import (relativeToRoot "terranixModules/tofu");
+      cloudflare = import (relativeToRoot "terranixModules/cloudflare");
+    };
 
     # --- Clan Configuration ------ #
     clan = {

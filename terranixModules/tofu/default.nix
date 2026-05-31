@@ -110,10 +110,9 @@ in {
       terraform.required_providers.cloudflare.source = "cloudflare/cloudflare";
       provider.cloudflare = {};
 
-      variable = {
-        cloudflare_account_id.sensitive = true;
-        cloudflare_zone_id.sensitive = true;
-      };
+      variable.cloudflare_account_id.sensitive = true;
+
+      data.cloudflare_zone.cluster_domain.name = cfg.meta.domain;
     }
     # --- Hcloud --- #
     {
@@ -208,20 +207,20 @@ in {
           })
           allNodes);
 
-        cloudflare_dns_record = lib.mkMerge (map (node: {
+        cloudflare_dns_record = lib.mkMerge (map (node: let
+            name = "${node.name}.${cfg.meta.domain}";
+            zone_id = "\${data.cloudflare_zone.cluster_domain.id}";
+            ttl = 1;
+          in {
             "${node.name}-v4" = {
-              zone_id = "\${var.cloudflare_zone_id}";
-              name = "${node.name}.${cfg.meta.domain}";
+              inherit zone_id ttl name;
               type = "A";
               content = "\${hcloud_server.${node.name}.ipv4_address}";
-              ttl = 1;
             };
             "${node.name}-v6" = {
-              zone_id = "\${var.cloudflare_zone_id}";
-              name = "${node.name}.${cfg.meta.domain}";
+              inherit zone_id ttl name;
               type = "AAAA";
               content = "\${hcloud_server.${node.name}.ipv6_address}";
-              ttl = 1;
             };
           })
           allNodes);

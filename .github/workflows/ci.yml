@@ -85,15 +85,19 @@ jobs:
       matrix:
         include:
           - package: oci-base
-            image: oci-base
+            image: home/oci/packages/base
           - package: oci-cloudflared
-            image: oci-cloudflared
+            image: home/oci/packages/cloudflared
           - package: oci-whoami
-            image: oci-whoami
+            image: home/oci/packages/whoami
           - package: oci-tofu-source
-            image: tofu-source
+            image: home/flux-iac/tf-source/tofu
           - package: oci-tofu-runner
-            image: tofu-runner
+            image: home/flux-iac/tf-runner/tofu
+          - package: oci-cloudflare-source
+            image: home/flux-iac/tf-source/cloudflare
+          - package: oci-cloudflare-runner
+            image: home/flux-iac/tf-runner/cloudflare
     runs-on: ubuntu-latest
     permissions:
       id-token: write
@@ -206,15 +210,19 @@ jobs:
       matrix:
         include:
           - package: oci-base
-            image: oci-base
+            image: home/oci/packages/base
           - package: oci-cloudflared
-            image: oci-cloudflared
+            image: home/oci/packages/cloudflared
           - package: oci-whoami
-            image: oci-whoami
+            image: home/oci/packages/whoami
           - package: oci-tofu-source
-            image: tofu-source
+            image: home/flux-iac/tf-source/tofu
           - package: oci-tofu-runner
-            image: tofu-runner
+            image: home/flux-iac/tf-runner/tofu
+          - package: oci-cloudflare-source
+            image: home/flux-iac/tf-source/cloudflare
+          - package: oci-cloudflare-runner
+            image: home/flux-iac/tf-runner/cloudflare
     runs-on: ubuntu-latest
     permissions:
       id-token: write

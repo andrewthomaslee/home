@@ -171,22 +171,15 @@
           distro = "k3s";
           cilium.clustermesh.enable = false;
           traefik.enable = true;
-          wireguard = {
-            ipv4 = "172.16.0.1";
-            endpoint = "192.168.1.251";
-          };
+          wireguard.ipv4 = "172.16.0.1";
         };
         worker.machines = {
           inuc-celeron.settings = {
             web = false;
-            wireguard = {
-              ipv4 = "172.16.0.2";
-              endpoint = "192.168.1.249";
-            };
+            wireguard.ipv4 = "172.16.0.2";
           };
-          inuc-i5.settings.wireguard = {
-            ipv4 = "172.16.0.3";
-            endpoint = "192.168.1.248";
+          inuc-i5.settings = {
+            wireguard.ipv4 = "172.16.0.3";
           };
         };
       };

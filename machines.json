@@ -2,6 +2,7 @@
   "machines": [
     {
       "name": "nixos",
+      "domain": "andrewlee.fun",
       "network": {
         "type": "lan",
         "interface": "enp3s0",
@@ -11,6 +12,7 @@
     },
     {
       "name": "kamrui-p1",
+      "domain": "andrewlee.fun",
       "network": {
         "type": "lan",
         "interface": "eno1",
@@ -20,6 +22,7 @@
     },
     {
       "name": "inuc-celeron",
+      "domain": "andrewlee.fun",
       "network": {
         "type": "lan",
         "interface": "eno1",
@@ -29,6 +32,7 @@
     },
     {
       "name": "inuc-i5",
+      "domain": "andrewlee.fun",
       "network": {
         "type": "lan",
         "interface": "eno1",
@@ -38,6 +42,7 @@
     },
     {
       "name": "ghost",
+      "domain": "andrewlee.fun",
       "network": {
         "type": "wan",
         "interface": "wlp0s20f3",
@@ -47,6 +52,7 @@
     },
     {
       "name": "hp-notebook",
+      "domain": "andrewlee.fun",
       "network": {
         "type": "wan",
         "interface": "wlp0s20f3",
