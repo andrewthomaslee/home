@@ -2,7 +2,7 @@
   "apiVersion": "source.toolkit.fluxcd.io/v1",
   "kind": "OCIRepository",
   "metadata": {
-    "name": "oci-base",
+    "name": "home-oci-packages-base",
     "namespace": "flux-system"
   },
   "spec": {

@@ -3,3 +3,6 @@ kind: Kustomization
 resources:
   - packages
   - helm
+  - packages/base
+  - packages/cloudflared
+  - packages/whoami

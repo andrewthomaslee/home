@@ -3,3 +3,4 @@ kind: Kustomization
 resources:
 - source-oci-capacitor.yaml
 - kustomization-capacitor.yaml
+- ingress-capacitor.yaml

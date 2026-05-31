@@ -57,23 +57,23 @@
             apiVersion: kustomize.config.k8s.io/v1beta1
             kind: Kustomization
             resources:
-              - source-oci-$pkg.json
-              - kustomization-$pkg.json
+              - source-oci-home-oci-packages-$pkg.json
+              - kustomization-home-oci-packages-$pkg.json
             EOF
 
               echo "Generating manifests for $pkg..."
-              flux create source oci "oci-$pkg" \
+              flux create source oci "home-oci-packages-$pkg" \
                 --url="oci://ghcr.io/andrewthomaslee/home/oci/packages/$pkg" \
                 --tag="latest" \
                 --interval=5m \
-                --export | yq -o=json > "$pkg_dir/source-oci-$pkg.json"
+                --export | yq -o=json > "$pkg_dir/source-oci-home-oci-packages-$pkg.json"
 
-              flux create kustomization "oci-$pkg" \
+              flux create kustomization "home-oci-packages-$pkg" \
                 --source="OCIRepository/oci-$pkg" \
                 --path=. \
                 --prune=true \
                 --interval=5m \
-                --export | yq -o=json > "$pkg_dir/kustomization-$pkg.json"
+                --export | yq -o=json > "$pkg_dir/kustomization-home-oci-packages-$pkg.json"
             }
 
             if [ "$PACKAGE" = "all" ]; then

@@ -2,7 +2,7 @@
   "apiVersion": "source.toolkit.fluxcd.io/v1",
   "kind": "OCIRepository",
   "metadata": {
-    "name": "oci-cloudflared",
+    "name": "home-oci-packages-cloudflared",
     "namespace": "flux-system"
   },
   "spec": {
