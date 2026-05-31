@@ -1,18 +1,17 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
-  - source-oci-home-oci-packages-cloudflared.json
-  - kustomization-home-oci-packages-cloudflared.json
+  - ../../../../../infra/packages/cloudflared
 patches:
   - target:
       kind: Kustomization
-      name: oci-cloudflared
+      name: home-oci-packages-cloudflared
       namespace: flux-system
     patch: |-
       apiVersion: kustomize.toolkit.fluxcd.io/v1
       kind: Kustomization
       metadata:
-        name: oci-cloudflared
+        name: home-oci-packages-cloudflared
         namespace: flux-system
       spec:
         patches:
