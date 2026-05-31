@@ -1,0 +1,58 @@
+{
+  "machines": [
+    {
+      "name": "nixos",
+      "network": {
+        "type": "lan",
+        "interface": "enp3s0",
+        "ipv4": "192.168.1.253",
+        "ipv6": "2600:1700:5e40:c2e0::10"
+      }
+    },
+    {
+      "name": "kamrui-p1",
+      "network": {
+        "type": "lan",
+        "interface": "eno1",
+        "ipv4": "192.168.1.251",
+        "ipv6": "2600:1700:5e40:c2e0::11"
+      }
+    },
+    {
+      "name": "inuc-celeron",
+      "network": {
+        "type": "lan",
+        "interface": "eno1",
+        "ipv4": "192.168.1.249",
+        "ipv6": "2600:1700:5e40:c2e0::12"
+      }
+    },
+    {
+      "name": "inuc-i5",
+      "network": {
+        "type": "lan",
+        "interface": "eno1",
+        "ipv4": "192.168.1.248",
+        "ipv6": "2600:1700:5e40:c2e0::13"
+      }
+    },
+    {
+      "name": "ghost",
+      "network": {
+        "type": "wan",
+        "interface": "wlp0s20f3",
+        "ipv4": "192.168.1.253",
+        "ipv6": "2600:1700:5e40:c2e0::20"
+      }
+    },
+    {
+      "name": "hp-notebook",
+      "network": {
+        "type": "wan",
+        "interface": "wlp0s20f3",
+        "ipv4": "192.168.1.251",
+        "ipv6": "2600:1700:5e40:c2e0::21"
+      }
+    }
+  ]
+}
