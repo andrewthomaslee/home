@@ -50,7 +50,7 @@
           '';
         };
         oci = pkgs.dockerTools.buildImage {
-          name = "home/oci/packages/${name}";
+          name = "home/infra/packages/${name}";
           copyToRoot = [manifests];
         };
       in [

@@ -23,7 +23,10 @@
     '';
   in {
     terranix.terranixConfigurations.tofu = {
-      modules = [self.terranixModules.tofu];
+      modules = with self.terranixModules; [
+        tofu
+        cloudflare
+      ];
       inherit extraArgs;
       terraformWrapper = {
         inherit prefixText;
@@ -33,25 +36,9 @@
           p.hetznercloud_hcloud
           p.cloudflare_cloudflare
         ]);
-        extraRuntimeInputs = with pkgs;
-        with inputs'; [
-          clan-core.packages.clan-cli
-          self'.packages.get-keys
-          git
-          bun
-        ];
-      };
-    };
-
-    terranix.terranixConfigurations.cloudflare = {
-      modules = [self.terranixModules.cloudflare];
-      inherit extraArgs;
-      terraformWrapper = {
-        inherit prefixText;
-        package = pkgs.opentofu.withPlugins (p: [
-          p.cloudflare_cloudflare
-        ]);
         extraRuntimeInputs = with pkgs; [
+          inputs'.clan-core.packages.clan-cli
+          self'.packages.get-keys
           git
           bun
         ];

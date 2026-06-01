@@ -1,0 +1,27 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - ../../../../../infra/helm/cloudflared
+patches:
+  - target:
+      kind: HelmRelease
+      name: cloudflared
+      namespace: flux-system
+    patch: |-
+      apiVersion: helm.toolkit.fluxcd.io/v2
+      kind: HelmRelease
+      metadata:
+        name: cloudflared
+        namespace: flux-system
+      spec:
+        values:
+          tunnelConfig:
+            name: andrewlee.fun
+          ingress:
+            - hostname: "whoami.andrewlee.fun"
+              service: http://whoami.whoami.svc.cluster.local:80
+            - hostname: "hubble.andrewlee.fun"
+              service: http://hubble-ui.kube-system.svc.cluster.local:80
+            - hostname: "*.andrewlee.fun"
+              service: http://traefik.kube-system.svc.cluster.local:80
+            - service: http_status:404

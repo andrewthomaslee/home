@@ -56,7 +56,7 @@
 
               echo "Generating manifests for $pkg..."
               flux create source oci "home-oci-packages-$pkg" \
-                --url="oci://ghcr.io/andrewthomaslee/home/oci/packages/$pkg" \
+                --url="oci://ghcr.io/andrewthomaslee/home/infra/packages/$pkg" \
                 --tag="latest" \
                 --interval=5m \
                 --export | yq -o=json > "$pkg_dir/source-oci-home-oci-packages-$pkg.json"

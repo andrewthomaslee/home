@@ -40,6 +40,10 @@
         type = lib.types.str;
         default = "x86_64";
       };
+      web = lib.mkOption {
+        type = lib.types.enum ["true" "false"];
+        default = "false";
+      };
       cloud = lib.mkOption {
         type = cloudSubmodule;
       };
@@ -65,6 +69,37 @@
       };
     };
   });
+
+  getZone = region:
+    {
+      "nbg1" = "eu-central";
+      "fsn1" = "eu-central";
+      "hel1" = "eu-central";
+      "ash" = "us-east";
+      "hil" = "us-west";
+      "sin" = "ap-southeast";
+    }
+    .${
+      region
+    } or "eu-central";
+
+  getSafeZone = zone: builtins.replaceStrings ["-"] ["_"] zone;
+
+  zones = lib.unique (map (node: getZone node.cloud.region) allNodes);
+
+  zoneSubnets = {
+    "eu-central" = "10.0.1.0/24";
+    "us-east" = "10.0.2.0/24";
+    "us-west" = "10.0.3.0/24";
+    "ap-southeast" = "10.0.4.0/24";
+  };
+
+  zoneHomeLocation = {
+    "eu-central" = "hel1";
+    "us-east" = "ash";
+    "us-west" = "hil";
+    "ap-southeast" = "sin";
+  };
 in {
   options.terranix = {
     infra_file = lib.mkOption {
@@ -112,7 +147,9 @@ in {
 
       variable.cloudflare_account_id.sensitive = true;
 
-      data.cloudflare_zone.cluster_domain.name = cfg.meta.domain;
+      data.cloudflare_zones.cluster_domain = {
+        name = cfg.meta.domain;
+      };
     }
     # --- Hcloud --- #
     {
@@ -134,9 +171,45 @@ in {
           name = "clan_ssh_key";
           public_key = "\${tls_private_key.clan_ssh_key.public_key_openssh}";
         };
+        # Networks
+        hcloud_network.clan_network = {
+          name = "clan_network";
+          ip_range = "10.0.0.0/16";
+          labels = {
+            network = "clan_network";
+          };
+        };
+        hcloud_network_subnet = builtins.listToAttrs (map (zone: {
+            name = getSafeZone zone;
+            value = {
+              type = "cloud";
+              network_id = "\${hcloud_network.clan_network.id}";
+              network_zone = zone;
+              ip_range = zoneSubnets.${zone};
+            };
+          })
+          zones);
+        # Placement Group
+        hcloud_placement_group = builtins.listToAttrs (map (zone: {
+            name = getSafeZone zone;
+            value = {
+              name = "clan_placement_group_${zone}";
+              type = "spread";
+              labels = {
+                network = "clan_network";
+                zone = zone;
+              };
+            };
+          })
+          zones);
         # Firewall
         hcloud_firewall.clan_firewall = {
           name = "clan_firewall";
+          apply_to = [
+            {
+              label_selector = "network=clan_network";
+            }
+          ];
           rule = [
             {
               direction = "in";
@@ -159,6 +232,38 @@ in {
             }
           ];
         };
+        hcloud_firewall.web = {
+          name = "web";
+          apply_to = [
+            {
+              label_selector = "web=true";
+            }
+          ];
+          rule = [
+            {
+              direction = "in";
+              protocol = "tcp";
+              port = "80";
+              source_ips = ["0.0.0.0/0" "::/0"];
+            }
+            {
+              direction = "in";
+              protocol = "tcp";
+              port = "443";
+              source_ips = ["0.0.0.0/0" "::/0"];
+            }
+          ];
+        };
+        # Floating IP
+        hcloud_floating_ip = builtins.listToAttrs (map (zone: {
+            name = "clan_floating_ipv4_${getSafeZone zone}";
+            value = {
+              name = "clan_floating_ipv4_${getSafeZone zone}";
+              type = "ipv4";
+              home_location = zoneHomeLocation.${zone};
+            };
+          })
+          zones);
       };
     }
     # --- Nodes --- #
@@ -173,11 +278,25 @@ in {
               name = node.name;
               location = node.cloud.region;
               server_type = node.cloud.server_type;
+              placement_group_id = "\${hcloud_placement_group.${getSafeZone (getZone node.cloud.region)}.id}";
+              labels = {
+                region = node.cloud.region;
+                network = "clan_network";
+                web = node.web;
+              };
               public_net = {
                 ipv4_enabled = true;
                 ipv6_enabled = true;
               };
-              firewall_ids = ["\${hcloud_firewall.clan_firewall.id}"];
+              network = [
+                {
+                  network_id = "\${hcloud_network.clan_network.id}";
+                }
+              ];
+              depends_on = [
+                "hcloud_network_subnet.${getSafeZone (getZone node.cloud.region)}"
+                "hcloud_floating_ip.clan_floating_ipv4_${getSafeZone (getZone node.cloud.region)}"
+              ];
               ssh_keys = "\${concat([hcloud_ssh_key.clan_ssh_key.id], data.hcloud_ssh_keys.all.ssh_keys.*.name)}";
               connection = {
                 type = "ssh";
@@ -209,7 +328,7 @@ in {
 
         cloudflare_dns_record = lib.mkMerge (map (node: let
             name = "${node.name}.${cfg.meta.domain}";
-            zone_id = "\${data.cloudflare_zone.cluster_domain.id}";
+            zone_id = "\${data.cloudflare_zones.cluster_domain.result[0].id}";
             ttl = 1;
           in {
             "${node.name}-v4" = {

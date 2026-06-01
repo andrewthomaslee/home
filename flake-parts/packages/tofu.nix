@@ -20,15 +20,6 @@
         '';
       };
 
-      cloudflare-source-dir = stdenv.mkDerivation {
-        name = "cloudflare-source-dir";
-        dontUnpack = true;
-        installPhase = ''
-          mkdir -p $out
-          cp ${self'.packages.cloudflare.config} $out/config.tf.json
-        '';
-      };
-
       tfRunnerBase = dockerTools.pullImage {
         imageName = "ghcr.io/flux-iac/tf-runner";
         imageDigest = "sha256:b5e52b3262efda1a0fa4819c8f3fdfdaa533e50c5f31da476a7932f4e7567c26";
@@ -52,22 +43,6 @@
           name = "home/flux-iac/tf-runner/tofu";
           fromImage = tfRunnerBase;
           contents = [self'.packages.tofu.terraform];
-          config.User = "65532:65532";
-        };
-
-        # Cloudflare source only containing the config
-        oci-cloudflare-source = dockerTools.buildImage {
-          name = "home/flux-iac/tf-source/cloudflare";
-          extraCommands = ''
-            cp -a ${cloudflare-source-dir}/. .
-          '';
-        };
-
-        # Cloudflare runner
-        oci-cloudflare-runner = dockerTools.buildLayeredImage {
-          name = "home/flux-iac/tf-runner/cloudflare";
-          fromImage = tfRunnerBase;
-          contents = [self'.packages.cloudflare.terraform];
           config.User = "65532:65532";
         };
       };

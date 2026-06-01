@@ -25,11 +25,7 @@ in {
   config = lib.mkMerge [
     # --- Cloudflare --- #
     {
-      terraform.required_providers.cloudflare.source = "cloudflare/cloudflare";
-      provider.cloudflare = {};
-      variable.cloudflare_account_id.sensitive = true;
-
-      data.cloudflare_zone = lib.mkMerge (map (domain: {
+      data.cloudflare_zones = lib.mkMerge (map (domain: {
           "${safeDomain domain}" = {
             name = domain;
           };
@@ -37,7 +33,7 @@ in {
         uniqueDomains);
 
       resource.cloudflare_dns_record = lib.mkMerge (map (machine: let
-          zone_id = "\${data.cloudflare_zone.${safeDomain machine.domain}.id}";
+          zone_id = "\${data.cloudflare_zones.${safeDomain machine.domain}.result[0].id}";
           name = "${machine.name}.${machine.domain}";
           ttl = 1;
         in {
@@ -53,6 +49,19 @@ in {
           };
         })
         cfg.machines);
+    }
+    # --- Hcloud --- #
+    {
+      resource.hcloud_firewall.clan_firewall = {
+        rule = [
+          {
+            direction = "in";
+            protocol = "udp";
+            port = "51820";
+            source_ips = map (machine: "${machine.network.ipv6}/128") cfg.machines;
+          }
+        ];
+      };
     }
   ];
 }

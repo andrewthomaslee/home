@@ -54,14 +54,6 @@
       deploy.targetHost = "root@hel-3.andrewlee.cloud";
       tags = ["vms"];
     };
-    fsn-1 = {
-      deploy.targetHost = "root@fsn-1.andrewlee.cloud";
-      tags = ["vms"];
-    };
-    nbg-1 = {
-      deploy.targetHost = "root@nbg-1.andrewlee.cloud";
-      tags = ["vms"];
-    };
   };
 
   # --- Clan Services --- #
@@ -169,8 +161,7 @@
         master.machines.kamrui-p1.settings = {
           domain = "andrewlee.fun";
           distro = "k3s";
-          cilium.clustermesh.enable = false;
-          traefik.enable = true;
+          cilium.id = 1;
           wireguard.ipv4 = "172.16.0.1";
         };
         worker.machines = {
@@ -194,19 +185,12 @@
         master.machines.hel-1.settings = {
           domain = "andrewlee.cloud";
           distro = "rke2";
-          cilium = {
-            id = 2;
-            clustermesh.enable = false;
-          };
+          cilium.id = 2;
           wireguard.ipv4 = "172.16.1.1";
         };
         manager.machines = {
           hel-2.settings.wireguard.ipv4 = "172.16.1.2";
           hel-3.settings.wireguard.ipv4 = "172.16.1.3";
-        };
-        worker.machines = {
-          fsn-1.settings.wireguard.ipv4 = "172.16.1.4";
-          nbg-1.settings.wireguard.ipv4 = "172.16.1.5";
         };
       };
     };

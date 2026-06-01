@@ -26,22 +26,7 @@
                     }
                 }
             ],
-            "workers": [
-                {
-                    "name": "nbg-1",
-                    "cloud": {
-                        "region": "nbg1",
-                        "server_type": "cpx22"
-                    }
-                },
-                {
-                    "name": "fsn-1",
-                    "cloud": {
-                        "region": "fsn1",
-                        "server_type": "cpx22"
-                    }
-                }
-            ]
+            "workers": []
         }
     ]
 }

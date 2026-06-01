@@ -39,7 +39,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        machine: [nixos, ghost, kamrui-p1, inuc-celeron, inuc-i5, hp-notebook, hel-1, hel-2, hel-3, nbg-1, fsn-1]
+        machine: [nixos, ghost, kamrui-p1, inuc-celeron, inuc-i5, hp-notebook, hel-1, hel-2, hel-3]
     runs-on: ubuntu-latest
     permissions:
       id-token: write
@@ -85,19 +85,13 @@ jobs:
       matrix:
         include:
           - package: oci-base
-            image: home/oci/packages/base
-          - package: oci-cloudflared
-            image: home/oci/packages/cloudflared
+            image: home/infra/packages/base
           - package: oci-whoami
-            image: home/oci/packages/whoami
+            image: home/infra/packages/whoami
           - package: oci-tofu-source
             image: home/flux-iac/tf-source/tofu
           - package: oci-tofu-runner
             image: home/flux-iac/tf-runner/tofu
-          - package: oci-cloudflare-source
-            image: home/flux-iac/tf-source/cloudflare
-          - package: oci-cloudflare-runner
-            image: home/flux-iac/tf-runner/cloudflare
     runs-on: ubuntu-latest
     permissions:
       id-token: write
@@ -210,19 +204,13 @@ jobs:
       matrix:
         include:
           - package: oci-base
-            image: home/oci/packages/base
-          - package: oci-cloudflared
-            image: home/oci/packages/cloudflared
+            image: home/infra/packages/base
           - package: oci-whoami
-            image: home/oci/packages/whoami
+            image: home/infra/packages/whoami
           - package: oci-tofu-source
             image: home/flux-iac/tf-source/tofu
           - package: oci-tofu-runner
             image: home/flux-iac/tf-runner/tofu
-          - package: oci-cloudflare-source
-            image: home/flux-iac/tf-source/cloudflare
-          - package: oci-cloudflare-runner
-            image: home/flux-iac/tf-runner/cloudflare
     runs-on: ubuntu-latest
     permissions:
       id-token: write
