@@ -27,7 +27,8 @@
         hostname = config.networking.hostName;
         net = (lib.findFirst (m: m.name == hostname) null cfg.machines).network;
       in {
-        networkmanager.enable = true;
+        networkmanager.enable = net.type != "lan";
+        networkmanager.unmanaged = lib.mkIf (net.type != "lan") [net.interface];
         useDHCP = false;
         interfaces.${net.interface} = {
           useDHCP = false;
