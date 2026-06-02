@@ -163,7 +163,7 @@
           distro = "k3s";
           cilium.id = 1;
           wireguard = {
-            enpoint = "[2600:1700:5e40:c2e0::11]";
+            endpoint = "[2600:1700:5e40:c2e0::11]";
             ipv4 = "172.16.0.1";
           };
         };
@@ -171,13 +171,13 @@
           inuc-celeron.settings = {
             web = false;
             wireguard = {
-              enpoint = "[2600:1700:5e40:c2e0::12]";
+              endpoint = "[2600:1700:5e40:c2e0::12]";
               ipv4 = "172.16.0.2";
             };
           };
           inuc-i5.settings = {
             wireguard = {
-              enpoint = "[2600:1700:5e40:c2e0::13]";
+              endpoint = "[2600:1700:5e40:c2e0::13]";
               ipv4 = "172.16.0.3";
             };
           };
