@@ -36,7 +36,7 @@
       tags = ["server"];
     };
     inuc-i5 = {
-      deploy.targetHost = "root@inuc-i5.armadillo-frog.ts.net";
+      deploy.targetHost = "root@2600:1700:5e40:c2e0::47";
       tags = ["server"];
     };
 

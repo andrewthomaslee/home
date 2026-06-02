@@ -1,9 +1,9 @@
-{lib, ...}: {
-  disko.devices = lib.mkForce {
+{
+  disko.devices = {
     disk = {
       main = {
         type = "disk";
-        device = "/dev/disk/by-id/ata-SanDisk_SD8SBAT256G1122_161808400633";
+        device = "/dev/disk/by-id/ata-WDC_WDBNCE0010PNC_184898801017";
         content = {
           type = "gpt";
           partitions = {

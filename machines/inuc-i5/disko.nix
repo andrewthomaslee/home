@@ -1,9 +1,9 @@
-{lib, ...}: {
-  disko.devices = lib.mkForce {
+{
+  disko.devices = {
     disk = {
       main = {
         type = "disk";
-        device = "/dev/disk/by-id/ata-WDC_WDBNCE0010PNC_184898801017";
+        device = "/dev/nvme0n1";
         content = {
           type = "gpt";
           partitions = {
@@ -13,7 +13,7 @@
               priority = 1;
             };
             ESP = {
-              size = "3G";
+              size = "5G";
               type = "EF00";
               priority = 2;
               content = {

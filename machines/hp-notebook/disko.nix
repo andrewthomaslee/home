@@ -1,5 +1,5 @@
-{lib, ...}: {
-  disko.devices = lib.mkForce {
+{
+  disko.devices = {
     disk = {
       main = {
         name = "main-edf12d4fc0244694be3be21771ca6f14";

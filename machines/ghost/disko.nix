@@ -1,5 +1,5 @@
-{lib, ...}: {
-  disko.devices = lib.mkForce {
+{
+  disko.devices = {
     disk = {
       nvme1n1 = {
         name = "main";
@@ -15,7 +15,7 @@
             };
             ESP = {
               type = "EF00";
-              size = "1G";
+              size = "4G";
               priority = 2;
               content = {
                 type = "filesystem";
@@ -42,15 +42,11 @@
         type = "disk";
         content = {
           type = "gpt";
-          partitions = {
-            k3s = {
-              size = "100%";
-              content = {
-                type = "filesystem";
-                format = "ext4";
-                mountpoint = "/var/lib/rancher/k3s";
-                mountOptions = ["noatime"];
-              };
+          partitions.swap = {
+            size = "100%";
+            content = {
+              type = "swap";
+              mountOptions = ["noatime" "nofail"];
             };
           };
         };
