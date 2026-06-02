@@ -1,3 +1,6 @@
 {...}: {
-  hostSpec.services.intel.enable = true;
+  hostSpec.services = {
+    motd.sshMotd = builtins.readFile ./sshMotd.sh;
+    intel.enable = true;
+  };
 }

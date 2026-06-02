@@ -36,7 +36,7 @@
       tags = ["server"];
     };
     inuc-i5 = {
-      deploy.targetHost = "root@[2600:1700:5e40:c2e0::47]";
+      deploy.targetHost = "root@inuc-i5.armadillo-frog.ts.net";
       tags = ["server"];
     };
 
@@ -162,15 +162,24 @@
           domain = "andrewlee.fun";
           distro = "k3s";
           cilium.id = 1;
-          wireguard.ipv4 = "172.16.0.1";
+          wireguard = {
+            enpoint = "[2600:1700:5e40:c2e0::11]";
+            ipv4 = "172.16.0.1";
+          };
         };
         worker.machines = {
           inuc-celeron.settings = {
             web = false;
-            wireguard.ipv4 = "172.16.0.2";
+            wireguard = {
+              enpoint = "[2600:1700:5e40:c2e0::12]";
+              ipv4 = "172.16.0.2";
+            };
           };
           inuc-i5.settings = {
-            wireguard.ipv4 = "172.16.0.3";
+            wireguard = {
+              enpoint = "[2600:1700:5e40:c2e0::13]";
+              ipv4 = "172.16.0.3";
+            };
           };
         };
       };

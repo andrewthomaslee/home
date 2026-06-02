@@ -15,7 +15,6 @@
   home-manager.users.root.homeSpec.programs.k9s.enable = true;
 
   hostSpec.services = {
-    motd.sshMotd = builtins.readFile ./sshMotd.sh;
     minecraft = {
       enable = true;
       # --- Fabric Versions --- #
