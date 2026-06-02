@@ -1,0 +1,28 @@
+---
+apiVersion: infra.contrib.fluxcd.io/v1alpha2
+kind: Terraform
+metadata:
+  name: tofu
+  namespace: tofu
+spec:
+  path: ./
+  approvePlan: auto
+  destroyResourcesOnDeletion: true
+  interval: 5h
+  remediation:
+    retries: 1
+  sourceRef:
+    kind: OCIRepository
+    name: home-oci-tofu-source
+  writeOutputsToSecret:
+    name: tofu-output
+    namespace: tofu
+  fileMappings:
+    - secretRef:
+        name: tofu-env-secret
+        key: env-file-content
+      location: workspace
+      path: .env
+  runnerPodTemplate:
+    spec:
+      image: ghcr.io/andrewthomaslee/home/flux-iac/tf-runner/tofu:latest

@@ -1,0 +1,5 @@
+resources:
+  - namespace.yaml
+  - env-secret.yaml
+  - oci-repository.yaml
+  - terraform.yaml
