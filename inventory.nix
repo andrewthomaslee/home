@@ -208,6 +208,8 @@
         manager.machines = {
           hel-2.settings.wireguard.ipv4 = "172.16.1.2";
           hel-3.settings.wireguard.ipv4 = "172.16.1.3";
+          hel-4.settings.wireguard.ipv4 = "172.16.1.4";
+          hel-5.settings.wireguard.ipv4 = "172.16.1.5";
         };
       };
     };
