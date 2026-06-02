@@ -54,6 +54,14 @@
       deploy.targetHost = "root@hel-3.andrewlee.cloud";
       tags = ["vms"];
     };
+    hel-4 = {
+      deploy.targetHost = "root@hel-4.andrewlee.cloud";
+      tags = ["vms"];
+    };
+    hel-5 = {
+      deploy.targetHost = "root@hel-5.andrewlee.cloud";
+      tags = ["vms"];
+    };
   };
 
   # --- Clan Services --- #

@@ -39,7 +39,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        machine: [nixos, ghost, kamrui-p1, inuc-celeron, inuc-i5, hp-notebook, hel-1, hel-2, hel-3]
+        machine: [nixos, ghost, kamrui-p1, inuc-celeron, inuc-i5, hp-notebook, hel-1, hel-2, hel-3, hel-4, hel-5]
     runs-on: ubuntu-latest
     permissions:
       id-token: write

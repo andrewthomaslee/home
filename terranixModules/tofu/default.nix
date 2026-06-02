@@ -12,7 +12,7 @@
     options = {
       domain = lib.mkOption {
         type = lib.types.str;
-        default = "andrewlee.fun";
+        default = "andrewlee.cloud";
       };
     };
   });
@@ -42,7 +42,7 @@
       };
       web = lib.mkOption {
         type = lib.types.enum ["true" "false"];
-        default = "false";
+        default = "true";
       };
       cloud = lib.mkOption {
         type = cloudSubmodule;
@@ -147,9 +147,7 @@ in {
 
       variable.cloudflare_account_id.sensitive = true;
 
-      data.cloudflare_zones.cluster_domain = {
-        name = cfg.meta.domain;
-      };
+      data.cloudflare_zones.cluster_domain.name = cfg.meta.domain;
     }
     # --- Hcloud --- #
     {
