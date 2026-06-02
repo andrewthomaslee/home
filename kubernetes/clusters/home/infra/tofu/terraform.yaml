@@ -16,7 +16,6 @@ spec:
     name: home-oci-tofu-source
   writeOutputsToSecret:
     name: tofu-output
-    namespace: tofu
   fileMappings:
     - secretRef:
         name: tofu-env-secret
