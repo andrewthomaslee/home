@@ -23,8 +23,8 @@
     },
     "bluetooth": [
       {
-        "index": 26,
-        "attached_to": 27,
+        "index": 30,
+        "attached_to": 32,
         "class_list": [
           "usb",
           "bluetooth"
@@ -107,8 +107,8 @@
         "module_alias": "usb:v8087p0A2Bd0001dcE0dsc01dp01icE0isc01ip01in00"
       },
       {
-        "index": 28,
-        "attached_to": 27,
+        "index": 34,
+        "attached_to": 32,
         "class_list": [
           "usb",
           "bluetooth"
@@ -623,7 +623,7 @@
         "fpu_exception": false,
         "cpuid_level": 22,
         "write_protect": false,
-        "tlb_size": 32765,
+        "tlb_size": 32766,
         "clflush_size": 64,
         "cache_alignment": 64,
         "address_sizes": {
@@ -689,7 +689,6 @@
           "/dev/disk/by-path/pci-0000:02:00.0-nvme-1",
           "/dev/nvme0n1"
         ],
-        "rom_id": "0x80",
         "resources": [
           {
             "type": "disk_geo",
@@ -714,6 +713,176 @@
         "driver_modules": [
           "nvme"
         ]
+      },
+      {
+        "index": 26,
+        "attached_to": 23,
+        "class_list": [
+          "disk",
+          "usb",
+          "scsi",
+          "block_device"
+        ],
+        "bus_type": {
+          "hex": "0084",
+          "name": "SCSI",
+          "value": 132
+        },
+        "slot": {
+          "bus": 2,
+          "number": 0
+        },
+        "base_class": {
+          "hex": "0106",
+          "name": "Mass Storage Device",
+          "value": 262
+        },
+        "sub_class": {
+          "hex": "0000",
+          "name": "Disk",
+          "value": 0
+        },
+        "vendor": {
+          "hex": "0578",
+          "name": "ST2000DX",
+          "value": 1400
+        },
+        "device": {
+          "hex": "0578",
+          "name": "001-1NS164",
+          "value": 1400
+        },
+        "revision": {
+          "hex": "0000",
+          "name": "7101",
+          "value": 0
+        },
+        "serial": "DD564198838DA",
+        "model": "ST2000DX 001-1NS164",
+        "sysfs_id": "/class/block/sdb",
+        "sysfs_bus_id": "2:0:0:0",
+        "sysfs_device_link": "/devices/pci0000:00/0000:00:14.0/usb2/2-3/2-3.4/2-3.4:1.0/host2/target2:0:0/2:0:0:0",
+        "unix_device_names": [
+          "/dev/disk/by-id/ata-ST2000DX001-1NS164_Z4Z5RFRN",
+          "/dev/disk/by-id/usb-ST2000DX_001-1NS164_DD564198838DA-0:0",
+          "/dev/disk/by-id/wwn-0x5000c50091afe777",
+          "/dev/disk/by-path/pci-0000:00:14.0-usb-0:3.4:1.0-scsi-0:0:0:0",
+          "/dev/disk/by-path/pci-0000:00:14.0-usbv3-0:3.4:1.0-scsi-0:0:0:0",
+          "/dev/sdb"
+        ],
+        "unix_device_name2": "/dev/sg1",
+        "resources": [
+          {
+            "type": "disk_geo",
+            "cylinders": 243201,
+            "heads": 255,
+            "sectors": 63,
+            "size": "0x0",
+            "geo_type": "logical"
+          },
+          {
+            "type": "size",
+            "unit": "sectors",
+            "value_1": 3907029168,
+            "value_2": 512
+          }
+        ],
+        "driver": "uas",
+        "driver_module": "uas",
+        "drivers": [
+          "sd",
+          "uas"
+        ],
+        "driver_modules": [
+          "sd_mod",
+          "uas"
+        ],
+        "module_alias": "usb:v0578p0578d7101dc00dsc00dp00ic08isc06ip62in00"
+      },
+      {
+        "index": 27,
+        "attached_to": 23,
+        "class_list": [
+          "disk",
+          "usb",
+          "scsi",
+          "block_device"
+        ],
+        "bus_type": {
+          "hex": "0084",
+          "name": "SCSI",
+          "value": 132
+        },
+        "slot": {
+          "bus": 1,
+          "number": 0
+        },
+        "base_class": {
+          "hex": "0106",
+          "name": "Mass Storage Device",
+          "value": 262
+        },
+        "sub_class": {
+          "hex": "0000",
+          "name": "Disk",
+          "value": 0
+        },
+        "vendor": {
+          "hex": "0578",
+          "name": "ST1000DM",
+          "value": 1400
+        },
+        "device": {
+          "hex": "0578",
+          "name": "003-1SB102",
+          "value": 1400
+        },
+        "revision": {
+          "hex": "0000",
+          "name": "7101",
+          "value": 0
+        },
+        "serial": "DD564198838DA",
+        "model": "ST1000DM 003-1SB102",
+        "sysfs_id": "/class/block/sda",
+        "sysfs_bus_id": "1:0:0:0",
+        "sysfs_device_link": "/devices/pci0000:00/0000:00:14.0/usb2/2-3/2-3.1/2-3.1:1.0/host1/target1:0:0/1:0:0:0",
+        "unix_device_names": [
+          "/dev/disk/by-id/ata-ST1000DM003-1SB102_Z9APETJA",
+          "/dev/disk/by-id/usb-ST1000DM_003-1SB102_DD564198838DA-0:0",
+          "/dev/disk/by-id/wwn-0x5000c500afdf0ef6",
+          "/dev/disk/by-path/pci-0000:00:14.0-usb-0:3.1:1.0-scsi-0:0:0:0",
+          "/dev/disk/by-path/pci-0000:00:14.0-usbv3-0:3.1:1.0-scsi-0:0:0:0",
+          "/dev/sda"
+        ],
+        "unix_device_name2": "/dev/sg0",
+        "resources": [
+          {
+            "type": "disk_geo",
+            "cylinders": 121601,
+            "heads": 255,
+            "sectors": 63,
+            "size": "0x0",
+            "geo_type": "logical"
+          },
+          {
+            "type": "size",
+            "unit": "sectors",
+            "value_1": 1953525168,
+            "value_2": 512
+          }
+        ],
+        "driver": "uas",
+        "driver_module": "uas",
+        "drivers": [
+          "sd",
+          "uas"
+        ],
+        "driver_modules": [
+          "sd_mod",
+          "uas"
+        ],
+        "module_alias": "usb:v0578p0578d7101dc00dsc00dp00ic08isc06ip62in00"
       }
     ],
     "graphics_card": [
@@ -803,7 +972,94 @@
     ],
     "hub": [
       {
-        "index": 27,
+        "index": 29,
+        "attached_to": 32,
+        "class_list": [
+          "usb",
+          "hub"
+        ],
+        "bus_type": {
+          "hex": "0086",
+          "name": "USB",
+          "value": 134
+        },
+        "slot": {
+          "bus": 0,
+          "number": 0
+        },
+        "base_class": {
+          "hex": "010a",
+          "name": "Hub",
+          "value": 266
+        },
+        "vendor": {
+          "hex": "2109",
+          "name": "VIA Labs, Inc.",
+          "value": 8457
+        },
+        "device": {
+          "hex": "2817",
+          "name": "USB2.0 Hub",
+          "value": 10263
+        },
+        "revision": {
+          "hex": "0000",
+          "name": "90.13",
+          "value": 0
+        },
+        "serial": "000000000",
+        "model": "VIA USB2.0 Hub",
+        "sysfs_id": "/devices/pci0000:00/0000:00:14.0/usb1/1-3/1-3:1.0",
+        "sysfs_bus_id": "1-3:1.0",
+        "resources": [
+          {
+            "type": "baud",
+            "speed": 480000000,
+            "bits": 0,
+            "stop_bits": 0,
+            "parity": 0,
+            "handshake": 0
+          }
+        ],
+        "detail": {
+          "device_class": {
+            "hex": "0009",
+            "name": "hub",
+            "value": 9
+          },
+          "device_subclass": {
+            "hex": "0000",
+            "name": "per_interface",
+            "value": 0
+          },
+          "device_protocol": 2,
+          "interface_class": {
+            "hex": "0009",
+            "name": "hub",
+            "value": 9
+          },
+          "interface_subclass": {
+            "hex": "0000",
+            "name": "per_interface",
+            "value": 0
+          },
+          "interface_protocol": 2,
+          "interface_number": 0,
+          "interface_alternate_setting": 1
+        },
+        "hotplug": "usb",
+        "driver": "hub",
+        "driver_module": "usbcore",
+        "drivers": [
+          "hub"
+        ],
+        "driver_modules": [
+          "usbcore"
+        ],
+        "module_alias": "usb:v2109p2817d9013dc09dsc00dp02ic09isc00ip02in00"
+      },
+      {
+        "index": 32,
         "attached_to": 23,
         "class_list": [
           "usb",
@@ -890,7 +1146,84 @@
         "module_alias": "usb:v1D6Bp0002d0612dc09dsc00dp01ic09isc00ip00in00"
       },
       {
-        "index": 29,
+        "index": 33,
+        "attached_to": 35,
+        "class_list": [
+          "usb",
+          "hub"
+        ],
+        "bus_type": {
+          "hex": "0086",
+          "name": "USB",
+          "value": 134
+        },
+        "slot": {
+          "bus": 0,
+          "number": 0
+        },
+        "base_class": {
+          "hex": "010a",
+          "name": "Hub",
+          "value": 266
+        },
+        "vendor": {
+          "hex": "2109",
+          "name": "VIA Labs, Inc.",
+          "value": 8457
+        },
+        "device": {
+          "hex": "0817",
+          "name": "USB3.0 Hub",
+          "value": 2071
+        },
+        "revision": {
+          "hex": "0000",
+          "name": "90.13",
+          "value": 0
+        },
+        "serial": "000000000",
+        "model": "VIA USB3.0 Hub",
+        "sysfs_id": "/devices/pci0000:00/0000:00:14.0/usb2/2-3/2-3:1.0",
+        "sysfs_bus_id": "2-3:1.0",
+        "detail": {
+          "device_class": {
+            "hex": "0009",
+            "name": "hub",
+            "value": 9
+          },
+          "device_subclass": {
+            "hex": "0000",
+            "name": "per_interface",
+            "value": 0
+          },
+          "device_protocol": 3,
+          "interface_class": {
+            "hex": "0009",
+            "name": "hub",
+            "value": 9
+          },
+          "interface_subclass": {
+            "hex": "0000",
+            "name": "per_interface",
+            "value": 0
+          },
+          "interface_protocol": 0,
+          "interface_number": 0,
+          "interface_alternate_setting": 0
+        },
+        "hotplug": "usb",
+        "driver": "hub",
+        "driver_module": "usbcore",
+        "drivers": [
+          "hub"
+        ],
+        "driver_modules": [
+          "usbcore"
+        ],
+        "module_alias": "usb:v2109p0817d9013dc09dsc00dp03ic09isc00ip00in00"
+      },
+      {
+        "index": 35,
         "attached_to": 23,
         "class_list": [
           "usb",
@@ -1244,7 +1577,7 @@
     ],
     "network_interface": [
       {
-        "index": 31,
+        "index": 37,
         "attached_to": 21,
         "class_list": [
           "network_interface"
@@ -1285,7 +1618,7 @@
         ]
       },
       {
-        "index": 32,
+        "index": 38,
         "attached_to": 0,
         "class_list": [
           "network_interface"
@@ -1307,7 +1640,7 @@
         ]
       },
       {
-        "index": 33,
+        "index": 39,
         "attached_to": 15,
         "class_list": [
           "network_interface"
@@ -2057,7 +2390,7 @@
         "sysfs_bus_id": "0000:00:14.0",
         "detail": {
           "function": 0,
-          "command": 1026,
+          "command": 1030,
           "header_type": 0,
           "secondary_bus": 0,
           "prog_if": 48
