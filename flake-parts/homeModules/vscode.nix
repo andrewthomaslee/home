@@ -147,15 +147,17 @@
               roo-cline = {
                 debug = false;
                 allowedCommands = [
+                  "git status"
                   "git log"
                   "git diff"
                   "git show"
-                  "nix flake check --all-systems --show-trace"
+                  "nix flake check"
                   "nix eval"
                   "nix flake show"
                   "nix build"
                   "nix flake check"
                   "clan show"
+                  "clan vars list"
                   "yq"
                   "jq"
                   "kubectl get"

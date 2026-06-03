@@ -3,7 +3,7 @@ apiVersion: infra.contrib.fluxcd.io/v1alpha2
 kind: Terraform
 metadata:
   name: tofu
-  namespace: tofu
+  namespace: flux-system
 spec:
   path: ./
   approvePlan: auto
