@@ -43,7 +43,18 @@
           name = "home/flux-iac/tf-runner/tofu";
           fromImage = tfRunnerBase;
           contents = [self'.packages.tofu.terraform];
-          config.User = "65532:65532";
+          config = {
+            User = "65532:65532";
+            Entrypoint = [
+              "/sbin/tini"
+              "--"
+              "tf-runner"
+            ];
+            Env = [
+              "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+              "GNUPGHOME=/tmp"
+            ];
+          };
         };
       };
     };
