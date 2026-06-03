@@ -8,9 +8,7 @@ spec:
   path: ./
   approvePlan: auto
   destroyResourcesOnDeletion: true
-  interval: 5h
-  remediation:
-    retries: 1
+  interval: 1h
   sourceRef:
     kind: OCIRepository
     name: home-oci-tofu-source
