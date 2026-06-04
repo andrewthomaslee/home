@@ -1,0 +1,38 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: longhorn
+  namespace: flux-system
+spec:
+  interval: 1h
+  chart:
+    spec:
+      chart: longhorn
+      version: "1.12.x"
+      sourceRef:
+        kind: HelmRepository
+        name: longhorn
+        namespace: flux-system
+  install:
+    crds: CreateReplace
+    remediation:
+      retries: 3
+  upgrade:
+    crds: CreateReplace
+    remediation:
+      retries: 3
+  targetNamespace: longhorn-system
+  values:
+    defaultSettings:
+      backupCompressionMethod: gzip
+      systemManagedComponentsNodeSelector: "storage:longhorn"
+    longhornManager:
+      nodeSelector:
+        storage: longhorn
+    longhornDriver:
+      nodeSelector:
+        storage: longhorn
+    persistence:
+      defaultNodeSelector:
+        storage: longhorn

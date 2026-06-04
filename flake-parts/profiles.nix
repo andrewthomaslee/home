@@ -67,6 +67,7 @@
               motd.enable = true;
               openssh.enable = true;
               storagebox.enable = false;
+              longhorn.enable = true;
             };
           };
           # Home Profile
@@ -94,6 +95,7 @@
               motd.enable = true;
               openssh.enable = true;
               storagebox.enable = false;
+              longhorn.enable = true;
             };
           };
           # Home Profile
