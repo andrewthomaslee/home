@@ -6,7 +6,7 @@
 
 <p align="center">
   <a href="https://github.com/andrewthomaslee/home/releases"><img src="https://img.shields.io/github/v/release/andrewthomaslee/home?include_prereleases&style=for-the-badge" alt="Latest Release"></a>
-  <a href="https://github.com/andrewthomaslee/home/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/andrewthomaslee/home/ci.yml?style=for-the-badge" alt="CI Status"></a>
+  <a href="https://github.com/andrewthomaslee/home/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/andrewthomaslee/home/ci.yml?style=for-the-badge" alt="CI"></a>
   <a href="https://github.com/andrewthomaslee/home/blob/main/LICENSE"><img src="https://img.shields.io/github/license/andrewthomaslee/home?style=for-the-badge&color=blue" alt="License"></a>
 </p>
 

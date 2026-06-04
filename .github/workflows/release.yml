@@ -1,0 +1,37 @@
+name: Release
+
+on:
+  workflow_dispatch:
+
+jobs:
+  flake-check:
+    uses: ./.github/workflows/_flake-check.yml
+
+  build-machines:
+    needs: flake-check
+    uses: ./.github/workflows/_build-machines.yml
+
+  build-artifacts:
+    needs: flake-check
+    uses: ./.github/workflows/_build-artifacts.yml
+
+  build-oci:
+    needs: flake-check
+    uses: ./.github/workflows/_oci.yml
+
+  publish:
+    needs: [build-machines, build-artifacts, build-oci, flake-check]
+    uses: ./.github/workflows/_publish.yml
+
+  release:
+    needs: publish
+    uses: ./.github/workflows/_release.yml
+    secrets: inherit
+
+  push-oci:
+    needs: release
+    uses: ./.github/workflows/_oci.yml
+    with:
+      push: true
+      tag: ${{ needs.release.outputs.tag }}
+    secrets: inherit

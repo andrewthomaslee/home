@@ -1,0 +1,23 @@
+name: Reusable Build Machines
+on: workflow_call
+jobs:
+  build-machines:
+    strategy:
+      fail-fast: false
+      matrix:
+        machine: [nixos, ghost, kamrui-p1, inuc-celeron, inuc-i5, hp-notebook, hel-1, hel-2, hel-3, hel-4, hel-5]
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6.0.2
+        with:
+          persist-credentials: true
+
+      - name: Setup Nix
+        uses: ./.github/actions/setup-nix
+
+      - name: Build Machine ${{ matrix.machine }}
+        run: nix build .#nixosConfigurations.${{ matrix.machine }}.config.system.build.toplevel
