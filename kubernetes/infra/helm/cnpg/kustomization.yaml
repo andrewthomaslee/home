@@ -1,0 +1,4 @@
+resources:
+- source-helm-cnpg.yaml
+- helmrelease-cnpg.yaml
+- namespace.yaml
