@@ -7,4 +7,4 @@ metadata:
 spec:
   interval: 12h
   type: oci
-  url: oci://registry-1.docker.io/bitnamicharts
+  url: oci://ghcr.io/andrewthomaslee/home/oci/helm/cnpg
