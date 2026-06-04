@@ -92,6 +92,8 @@ jobs:
             image: home/flux-iac/tf-source/tofu
           - package: oci-tofu-runner
             image: home/flux-iac/tf-runner/tofu
+          - package: oci-cnpg
+            image: home/oci/helm/cnpg
     runs-on: ubuntu-latest
     permissions:
       id-token: write
@@ -211,6 +213,8 @@ jobs:
             image: home/flux-iac/tf-source/tofu
           - package: oci-tofu-runner
             image: home/flux-iac/tf-runner/tofu
+          - package: oci-cnpg
+            image: home/oci/helm/cnpg
     runs-on: ubuntu-latest
     permissions:
       id-token: write
