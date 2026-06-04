@@ -24,17 +24,32 @@ spec:
       retries: 3
   targetNamespace: longhorn-system
   values:
+    networkPolicies:
+      enabled: true
+      type: k3s
+    csi:
+      attacherReplicaCount: 1
+      provisionerReplicaCount: 1
+      resizerReplicaCount: 1
+      snapshotterReplicaCount: 1
     defaultSettings:
       backupCompressionMethod: gzip
       systemManagedComponentsNodeSelector: "storage:longhorn"
+      defaultReplicaCount: 2
+      guaranteedInstanceManagerCPU: 5
+    longhornUI:
+      replicas: 1
+      nodeSelector.web: "true"
     longhornManager:
-      nodeSelector:
-        storage: longhorn
+      log.format: json
+      nodeSelector.storage: longhorn
     longhornDriver:
-      nodeSelector:
-        storage: longhorn
+      log.format: json
+      nodeSelector.storage: longhorn
     persistence:
       defaultClassReplicaCount: 2
       defaultDataLocality: best-effort
-      defaultNodeSelector:
-        storage: longhorn
+      reclaimPolicy: Keep
+      volumeBindingMode: WaitForFirstConsumer
+      migratable: true
+      defaultNodeSelector.storage: longhorn
