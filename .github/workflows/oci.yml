@@ -1,4 +1,8 @@
 name: OCI
+permissions:
+  id-token: write
+  packages: write
+  contents: read
 
 on:
   workflow_dispatch:
