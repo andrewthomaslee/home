@@ -34,5 +34,7 @@ spec:
       nodeSelector:
         storage: longhorn
     persistence:
+      defaultClassReplicaCount: 2
+      defaultDataLocality: best-effort
       defaultNodeSelector:
         storage: longhorn
