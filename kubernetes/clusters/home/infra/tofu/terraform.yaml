@@ -12,7 +12,10 @@ spec:
   alwaysCleanupRunnerPod: false
   remediation:
     retries: -1
-  interval: 15m
+  interval: 10m
+  retryInterval: 5m
+  retryStrategy: StaticInterval
+  refreshBeforeApply: true
   sourceRef:
     kind: OCIRepository
     name: home-oci-tofu-source
