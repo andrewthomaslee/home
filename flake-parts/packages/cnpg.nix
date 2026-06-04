@@ -18,6 +18,7 @@
       packages.oci-cnpg = dockerTools.buildImage {
         name = "home/oci/helm/cnpg";
         copyToRoot = [source];
+        config.Labels."org.opencontainers.image.description" = "cloudnative-pg operator helm chart";
       };
     };
 }

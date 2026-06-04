@@ -52,6 +52,7 @@
         oci = pkgs.dockerTools.buildImage {
           name = "home/infra/packages/${name}";
           copyToRoot = [manifests];
+          config.Labels."org.opencontainers.image.description" = "pre-packaged ${name} manifests";
         };
       in [
         {

@@ -36,6 +36,7 @@
           extraCommands = ''
             cp -a ${tofu-source-dir}/. .
           '';
+          config.Labels."org.opencontainers.image.description" = "flux-iac/tf-source for fluxcd tf controller, contains config.tf.json and repo source code";
         };
 
         # The custom runner image for tf-controller containing tofu and dependencies
@@ -54,6 +55,7 @@
               "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
               "GNUPGHOME=/tmp"
             ];
+            Labels."org.opencontainers.image.description" = "flux-iac/tf-runner for fluxcd tf controller, contains opentofu and dependencies";
           };
         };
       };
