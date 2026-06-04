@@ -18,6 +18,7 @@
             clan-cli
             vcluster
             playit
+            tfctl
           ]
           ++ (with pkgs.unstable; [
             bash
