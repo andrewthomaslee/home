@@ -1,5 +1,3 @@
-apiVersion: kustomize.config.k8s.io/v1beta1
-kind: Kustomization
 resources:
   - ../../../../../infra/helm/cloudflared
 patches:
@@ -18,6 +16,8 @@ patches:
           tunnelConfig:
             name: andrewlee.fun
           ingress:
+            - hostname: "longhorn.andrewlee.fun"
+              service: http://longhorn-frontend.longhorn-system.svc.cluster.local:80
             - hostname: "whoami.andrewlee.fun"
               service: http://whoami.whoami.svc.cluster.local:80
             - hostname: "hubble.andrewlee.fun"

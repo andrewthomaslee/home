@@ -49,6 +49,7 @@ in {
       imports =
         [
           inputs.home-manager.nixosModules.home-manager
+          self.nixosModules.fh
         ]
         # Import all NixOS Modules from `flake-parts/nixosModules`
         # Filter out profile modules and clan modules
