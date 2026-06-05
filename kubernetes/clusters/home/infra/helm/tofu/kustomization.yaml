@@ -1,2 +1,2 @@
 resources:
-- ../../../../../infra/helm/tofu
+  - ../../../../../infra/helm/tofu
