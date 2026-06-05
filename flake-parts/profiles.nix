@@ -66,8 +66,6 @@
             services = {
               motd.enable = true;
               openssh.enable = true;
-              longhorn.enable = true;
-              rancher.enable = true;
             };
           };
           # Home Profile
@@ -94,8 +92,6 @@
             services = {
               motd.enable = true;
               openssh.enable = true;
-              longhorn.enable = true;
-              rancher.enable = true;
             };
           };
           # Home Profile

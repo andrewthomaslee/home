@@ -177,7 +177,7 @@
         };
         worker.machines = {
           inuc-celeron.settings = {
-            web = false;
+            services.web = false;
             wireguard = {
               endpoint = "[2600:1700:5e40:c2e0::12]";
               ipv4 = "172.16.0.2";
