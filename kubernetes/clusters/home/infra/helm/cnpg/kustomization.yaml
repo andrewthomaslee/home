@@ -1,2 +1,2 @@
 resources:
-- ../../../../../infra/helm/cnpg
+  - ../../../../../infra/helm/cnpg
