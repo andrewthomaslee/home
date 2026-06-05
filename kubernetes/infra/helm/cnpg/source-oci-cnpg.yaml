@@ -1,11 +1,10 @@
 ---
 apiVersion: source.toolkit.fluxcd.io/v1beta2
-kind: OCIRepository
+kind: HelmRepository
 metadata:
   name: cnpg
   namespace: flux-system
 spec:
   interval: 12h
-  url: oci://ghcr.io/andrewthomaslee/home/oci/helm/cnpg
-  ref:
-    tag: latest
+  type: oci
+  url: oci://ghcr.io/cloudnative-pg/charts/cloudnative-pg
