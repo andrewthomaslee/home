@@ -1,4 +1,4 @@
 resources:
-- namespace.yaml
-- source-helm-longhorn.yaml
-- helmrelease-longhorn.yaml
+  - namespace.yaml
+  - source-helm-longhorn.yaml
+  - helmrelease-longhorn.yaml

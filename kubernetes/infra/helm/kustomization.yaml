@@ -1,6 +1,0 @@
-resources:
-- cloudflared
-- capacitor
-- tofu
-- longhorn
-- cnpg

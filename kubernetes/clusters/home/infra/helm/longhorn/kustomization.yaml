@@ -1,2 +1,2 @@
 resources:
-- ../../../../../infra/helm/longhorn
+  - ../../../../../infra/helm/longhorn
