@@ -1,4 +1,4 @@
 resources:
-- source-helm-cnpg.yaml
+- source-oci-cnpg.yaml
 - helmrelease-cnpg.yaml
 - namespace.yaml
