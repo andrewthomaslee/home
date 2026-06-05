@@ -8,10 +8,9 @@ spec:
   interval: 1h
   chart:
     spec:
-      chart: cloudnative-pg
-      version: "0.28.x"
+      chart: ./
       sourceRef:
-        kind: HelmRepository
+        kind: OCIRepository
         name: cnpg
         namespace: flux-system
   install:
