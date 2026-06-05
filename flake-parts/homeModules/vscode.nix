@@ -14,8 +14,8 @@
   in {
     options.homeSpec.programs.vscode.enable = lib.mkEnableOption "default vscode configuration";
     config = lib.mkIf (cfg.enable && config.home.username != "root") {
-      # VSCode
-      programs.vscode = {
+      # vscodium
+      programs.vscodium = {
         enable = true;
         package = pkgs.unstable.vscodium;
         mutableExtensionsDir = true;

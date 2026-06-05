@@ -10,7 +10,10 @@
   in {
     options.homeSpec.programs.firefox.enable = lib.mkEnableOption "default firefox configuration";
     config = lib.mkIf cfg.enable {
-      programs.firefox.enable = true;
+      programs.firefox = {
+        enable = true;
+        configPath = "${config.xdg.configHome}/mozilla/firefox";
+      };
     };
   };
 }
