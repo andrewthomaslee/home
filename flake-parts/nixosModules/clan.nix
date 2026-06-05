@@ -15,8 +15,10 @@
         # Require explicit updates
         deployment.requireExplicitUpdate = lib.mkDefault true;
         # Enable state versioning
-        settings.state-version.enable = true;
+        settings.state-version.enable = lib.mkForce false;
       };
+
+      system.stateVersion = "26.05"; # TODO: update stateVersion when 26.11 is considered stable
     };
   };
 }

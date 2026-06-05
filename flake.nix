@@ -38,13 +38,13 @@
 
     # Home-manager
     home-manager = {
-      url = "github:nix-community/home-manager";
+      url = "github:nix-community/home-manager/release-26.05";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
     # Utility Flakes
     flake-parts.follows = "clan-core/flake-parts";
-    import-tree.url = "github:vic/import-tree";
+    import-tree.follows = "packer/import-tree";
     flake-schemas.url = "https://flakehub.com/f/DeterminateSystems/flake-schemas/0";
 
     # ------ Packages ------ #
