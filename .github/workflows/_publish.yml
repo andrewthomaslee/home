@@ -41,4 +41,4 @@ jobs:
           name: andrewthomaslee/home
           include-output-paths: true
           rolling: true
-          rolling-minor: ${{ github.run_number }}
+          rolling-minor: 3
