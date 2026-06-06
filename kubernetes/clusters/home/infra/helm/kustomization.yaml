@@ -1,5 +1,4 @@
 resources:
   - cloudflared
-  - longhorn
   - cnpg
   - tofu
