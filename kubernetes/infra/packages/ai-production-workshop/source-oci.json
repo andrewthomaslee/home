@@ -11,6 +11,6 @@
     "ref": {
       "tag": "latest"
     },
-    "url": "oci://ghcr.io/andrewthomaslee/ai-production-workshop/agent:latest"
+    "url": "oci://ghcr.io/andrewthomaslee/ai-production-workshop/manifests:latest"
   }
 }

@@ -9,6 +9,7 @@
     "interval": "5m0s",
     "path": "./",
     "prune": true,
+    "targetNamespace": "ai-production-workshop",
     "sourceRef": {
       "kind": "OCIRepository",
       "name": "ai-production-workshop"
