@@ -1,0 +1,3 @@
+resources:
+  - source.json
+  - kustomization.json
