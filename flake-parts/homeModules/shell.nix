@@ -61,6 +61,7 @@
               then osConfig.networking.hostName
               else "default"
             }";
+            fh-apply = "fh apply nixos \"https://flakehub.com/f/andrewthomaslee/home/*\"";
             # nixos-rebuild tests
             nixos-current-system = "readlink -f /nix/var/nix/profiles/system && readlink -f /run/current-system";
             # misc
@@ -73,7 +74,7 @@
             fabric-backup-local = "rsync -av --progress --delete /srv/minecraft/fabric/world/ /mnt/storagebox/Backups/fabric/world/";
             obsidian-pull = "rsync -avz -e 'ssh -p 23' u488514@u488514.your-storagebox.de:/home/PRIVATE/OBSIDIAN/Main/ ~/Desktop/Main/";
             # k3s
-            k3s-wipe = "systemctl stop k3s.service && rm -fr /var/lib/rancher/ && rm -fr /etc/rancher/ && k3s-killall.sh && ip link delete cilium_host && ip link delete cilium_vxlan && iptables-save | grep -iv cilium | iptables-restore && ip6tables-save | grep -iv cilium | ip6tables-restore";
+            k3s-wipe = "systemctl stop k3s.service && k3s-killall.sh && rm -fr /var/lib/rancher/ && rm -fr /etc/rancher/ &&  ip link delete cilium_host && ip link delete cilium_vxlan && iptables-save | grep -iv cilium | iptables-restore && ip6tables-save | grep -iv cilium | ip6tables-restore";
             kubefetch-latest = ''nix run "https://flakehub.com/f/andrewthomaslee/kubefetch/*"'';
           };
           # bashrcExtra = ''
