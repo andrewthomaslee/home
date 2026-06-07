@@ -56,18 +56,7 @@
               --dry-run=client -o yaml | \
               kubeseal --format=yaml > "$DEST_DIR/sealed-cloudflared-credentials.yaml"
 
-            # Update kustomization.yaml
-            KUSTOMIZATION="$DEST_DIR/kustomization.yaml"
-            if [ -f "$KUSTOMIZATION" ]; then
-              if ! grep -q "sealed-cloudflared-cert.yaml" "$KUSTOMIZATION"; then
-                echo "  - sealed-cloudflared-cert.yaml" >> "$KUSTOMIZATION"
-              fi
-              if ! grep -q "sealed-cloudflared-credentials.yaml" "$KUSTOMIZATION"; then
-                echo "  - sealed-cloudflared-credentials.yaml" >> "$KUSTOMIZATION"
-              fi
-            fi
-
-            echo "✅ Done! Sealed secrets written to $DEST_DIR and added to kustomization.yaml"
+            echo "✅ Done! Sealed secrets written to $DEST_DIR"
           '';
         });
       };
