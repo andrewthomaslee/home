@@ -1,0 +1,13 @@
+---
+apiVersion: bitnami.com/v1alpha1
+kind: SealedSecret
+metadata:
+  name: agent-secrets
+  namespace: ai-production-workshop
+spec:
+  encryptedData:
+    OPENAI_API_KEY: AgChhhYy2pMA+ZjCBHA9yafqr/4XfnNMbTq03sjdimefRRSd6t0yiU50u0EnISDrRdFW6O862iHseuilGIJL7XLbSB+0EE2q/BSO7JX6gzAxe5I47TFZpyrBtgNDjehcV/DTvNhMeKVEBGbf2jUrXY7E+VMiA2skGJW8fVGDoDG9pLrpPxMNbYr4WK598OBOHNzW0SxFTEkvf9wS2SER/TQDjOgppOFmdZfAQ8a2YrPU9DjarTCC0Y04bQAgDlEDUAv96yVDoCSrySgEHXtI1dbyAFAPNG3Trp80uu/DkQc8oVv5WOmWdiE8vfUn/rPl4CvaCo2Y5LrmZ2nbSk1dOEbS1fvJL9J18Cgvd9sMwm3orcTvckQnJ7jlISbs6iDQYx6jmqo+ygo9qt5rwYglGpyy8cpM31cMBf8k0gGAvnHys2jPi7/KqXn9uAkTtP92oYR/DQSHnievP1aLfqLfL99y+tCMsVVRFkvuUDepTF24XeXx9+ja8lVdN+ZlScFepaMhpotbMQAQ39TceSnEc/8mZkDX8XUGCNeE6sZycNYR2sBdhkNqFdH8B2mGXV7hM9PJlj1/oTaje9AONEW1rhfnkgdRhXb9O291E7/gkwlj99iclKPujjj6UcVQUFmCsjrwbUJxKQ/up1NFRQ0/bEPZJibrmP8NfQYGuN/PbWKoY+pI4TfFcg6JXLb/yqRaB8npGG0rRIEmRsFJktnvVbBtkVrR7egjeAD7zAg13v6r/pYoIvY5SLeFYnBSiKvlHV3ZCaxIgD7+X7MEvpGBPZ+33uykD5d0p3Li4n3o47eVVRFsanHiIPmFaNQyVxkRtQtk/3BROUpgMX1nV8/phW/C5YSz4cGlzzuw6OBJqugc5u5p2BvgKrAEKTTIb6LF1ZPsJiI/O0Yj+K7JOOK5Uv4pu87cIB+K
+  template:
+    metadata:
+      name: agent-secrets
+      namespace: ai-production-workshop

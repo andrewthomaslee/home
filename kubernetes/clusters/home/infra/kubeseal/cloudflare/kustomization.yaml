@@ -1,0 +1,3 @@
+resources:
+  - sealed-cloudflared-cert.yaml
+  - sealed-cloudflared-credentials.yaml
