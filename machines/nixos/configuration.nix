@@ -26,7 +26,7 @@
     modesetting.enable = true;
     open = false;
     powerManagement.enable = true;
-    branch = "legacy_580";
+    branch = "latest";
   };
   boot.initrd.kernelModules = [
     "nvidia"
