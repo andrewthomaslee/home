@@ -5,7 +5,7 @@
       motd.sshMotd = builtins.readFile ./sshMotd.sh;
       ollama = {
         enable = true;
-        package = pkgs.unstable.ollama-cuda;
+        package = pkgs.unstable.ollama;
         loadModels = [
           "gemma4:e4b"
           "gemma4:e2b"
@@ -41,6 +41,7 @@
   ];
 
   environment.systemPackages = with pkgs.unstable; [
+    nvtopPackages.full
     nvitop
     glmark2
     llmfit
