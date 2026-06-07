@@ -1,6 +1,23 @@
-{config, ...}: {
+{pkgs, ...}: {
   hostSpec = {
-    services.motd.sshMotd = builtins.readFile ./sshMotd.sh;
+    hardware.intel.enable = true;
+    services = {
+      motd.sshMotd = builtins.readFile ./sshMotd.sh;
+      ollama = {
+        enable = true;
+        package = pkgs.ollama-cuda;
+        loadModels = [
+          "gemma4:e4b"
+          "gemma4:e2b"
+          "qwen3.5:4b"
+          "deepseek-v2:16b-lite-chat-q2_K"
+          "codellama:7b-instruct"
+          "codellama:7b-python"
+          "codegemma:7b-instruct-q4_K_M"
+          "codegemma:7b-code-q4_K_M"
+        ];
+      };
+    };
   };
 
   # Load nvidia driver for Xorg and Wayland
@@ -9,7 +26,7 @@
     modesetting.enable = true;
     open = false;
     powerManagement.enable = true;
-    package = config.boot.kernelPackages.nvidiaPackages.production;
+    branch = "legacy_580";
   };
   boot.initrd.kernelModules = [
     "nvidia"

@@ -1,18 +1,14 @@
-{
-  # inputs,
-  # self,
-  lib,
-  ...
-}: {
+{...}: {
   # ------ NixOS Modules ------ #
   flake.nixosModules.intel = {
     config,
     pkgs,
+    lib,
     ...
   }: let
-    cfg = config.hostSpec.services.intel;
+    cfg = config.hostSpec.hardware.intel;
   in {
-    options.hostSpec.services.intel.enable = lib.mkEnableOption "default intel configuration";
+    options.hostSpec.hardware.intel.enable = lib.mkEnableOption "default intel configuration";
 
     config = lib.mkIf cfg.enable {
       hardware.graphics = {

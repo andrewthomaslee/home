@@ -1,3 +1,3 @@
 {...}: {
-  hostSpec.services.intel.enable = true;
+  hostSpec.hardware.intel.enable = true;
 }
