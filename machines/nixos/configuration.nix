@@ -16,12 +16,14 @@
           "codegemma:7b-instruct-q4_K_M"
           "codegemma:7b-code-q4_K_M"
           "phi4-mini:3.8b-q4_K_M"
-          "gemma4:e2b-it-qat"
-          "gemma4:e4b-it-qat"
+          # "gemma4:e2b-it-qat"
+          # "gemma4:e4b-it-qat"
         ];
       };
     };
   };
+
+  nixpkgs.config.cudaSupport = true;
 
   # Load nvidia driver for Xorg and Wayland
   services.xserver.videoDrivers = ["nvidia"];

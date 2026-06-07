@@ -12,6 +12,8 @@
     ];
   };
 
+  nixpkgs.config.rocmSupport = true;
+
   home-manager.users.root.homeSpec.programs.k9s.enable = true;
 
   hostSpec.services = {
