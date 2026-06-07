@@ -7,7 +7,7 @@
 
     # Nixpkgs
     nixpkgs.url = "https://flakehub.com/f/NixOS/nixpkgs/0";
-    nixpkgs-unstable.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
+    nixpkgs-unstable.url = "https://flakehub.com/f/NixOS/nixpkgs/*";
 
     # Clan.lol
     clan-core = {
