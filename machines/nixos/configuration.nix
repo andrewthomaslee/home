@@ -5,7 +5,7 @@
       motd.sshMotd = builtins.readFile ./sshMotd.sh;
       ollama = {
         enable = true;
-        package = pkgs.ollama-cuda;
+        package = pkgs.unstable.ollama-cuda;
         loadModels = [
           "gemma4:e4b"
           "gemma4:e2b"
