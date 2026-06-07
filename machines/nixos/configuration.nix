@@ -15,6 +15,7 @@
           "codellama:7b-python"
           "codegemma:7b-instruct-q4_K_M"
           "codegemma:7b-code-q4_K_M"
+          "phi4-mini:3.8b-q4_K_M"
         ];
       };
     };
@@ -33,6 +34,12 @@
     "nvidia_modeset"
     "nvidiafb"
     "nvidia_drm"
+  ];
+
+  environment.systemPackages = with pkgs.unstable; [
+    nvitop
+    glmark2
+    llmfit
   ];
 
   fileSystems."/mnt/bazzite" = {
