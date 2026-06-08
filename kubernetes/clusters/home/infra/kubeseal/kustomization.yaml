@@ -1,3 +1,4 @@
 resources:
   - cloudflare
   - openai
+  - webhooks
