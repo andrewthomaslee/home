@@ -1,0 +1,15 @@
+# provider-discord.yaml
+# Configures Flux to send notifications to a Discord channel
+apiVersion: notification.toolkit.fluxcd.io/v1beta3
+kind: Provider
+metadata:
+  name: discord-provider
+  namespace: flux-system
+spec:
+  # Use "discord" as the provider type
+  type: discord
+  # Channel is determined by the webhook URL, so no channel field is needed
+  # Reference to the secret containing the webhook URL
+  username: home
+  secretRef:
+    name: discord-webhook-url

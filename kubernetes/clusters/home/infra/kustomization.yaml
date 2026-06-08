@@ -3,3 +3,4 @@ resources:
   - helm
   - kubeseal
   - longhorn
+  - notifications

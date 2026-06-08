@@ -1,0 +1,3 @@
+resources:
+  - provider-discord.yaml
+  - alert-discord.yaml
