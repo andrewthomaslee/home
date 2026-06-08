@@ -23,15 +23,25 @@
     };
   };
 
-  nixpkgs.config.cudaSupport = true;
+  virtualisation = {
+    docker.enable = true;
+    podman.enable = true;
+  };
+  nixpkgs.config = {
+    cudaSupport = true;
+    cudaCapabilities = ["6.1"];
+  };
 
   # Load nvidia driver for Xorg and Wayland
   services.xserver.videoDrivers = ["nvidia"];
-  hardware.nvidia = {
-    modesetting.enable = true;
-    open = false;
-    powerManagement.enable = true;
-    branch = "legacy_580";
+  hardware = {
+    nvidia-container-toolkit.enable = true;
+    nvidia = {
+      modesetting.enable = true;
+      open = false;
+      powerManagement.enable = true;
+      branch = "legacy_580";
+    };
   };
   boot.initrd.kernelModules = [
     "nvidia"
