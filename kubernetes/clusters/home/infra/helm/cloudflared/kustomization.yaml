@@ -16,6 +16,8 @@ patches:
           tunnelConfig:
             name: andrewlee.fun
           ingress:
+            - hostname: "ai.andrewlee.fun"
+              service: http://agent.ai-production-workshop.svc.cluster.local:8000
             - hostname: "longhorn.andrewlee.fun"
               service: http://longhorn-frontend.longhorn-system.svc.cluster.local:80
             - hostname: "whoami.andrewlee.fun"
