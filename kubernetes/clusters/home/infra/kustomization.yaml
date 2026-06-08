@@ -2,3 +2,4 @@ resources:
   - packages
   - helm
   - kubeseal
+  - longhorn
