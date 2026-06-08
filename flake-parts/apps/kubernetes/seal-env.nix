@@ -10,10 +10,9 @@
         type = "app";
         program = lib.getExe (pkgs.writeShellApplication {
           name = "seal-env";
-          runtimeInputs = with pkgs; [
+          runtimeInputs = with pkgs.unstable; [
             kubeseal
             kubectl
-            coreutils
           ];
           text = ''
             if [ "$#" -ne 4 ]; then
