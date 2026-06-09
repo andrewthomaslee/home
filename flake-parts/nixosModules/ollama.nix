@@ -27,12 +27,16 @@
     config = lib.mkIf cfg.enable {
       services.ollama = {
         enable = true;
+        user = "ollama";
+        group = "ollama";
         package = cfg.package;
         openFirewall = true;
         syncModels = true;
         port = cfg.port;
         loadModels = cfg.loadModels;
       };
+
+      users.users.ollama.extraGroups = ["video"];
     };
   };
 }

@@ -169,7 +169,18 @@
         master.machines.kamrui-p1.settings = {
           domain = "andrewlee.fun";
           distro = "k3s";
-          cilium.id = 1;
+          cilium.helmValues.ingressController.enabled = false;
+          traefik.enable = false;
+          longhorn.helmValues = {
+            defaultSettings.guaranteedInstanceManagerCPU = 6;
+            longhornUI.replicas = 1;
+            csi = {
+              attacherReplicaCount = 1;
+              provisionerReplicaCount = 1;
+              resizerReplicaCount = 1;
+              snapshotterReplicaCount = 1;
+            };
+          };
           wireguard = {
             endpoint = "[2600:1700:5e40:c2e0::11]";
             ipv4 = "172.16.0.1";
