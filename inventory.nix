@@ -2,7 +2,19 @@
   self,
   inputs,
   customLib,
-}: {
+}: let
+  extraGroups = [
+    "docker"
+    "wheel"
+    "networkmanager"
+    "audio"
+    "libvirtd"
+    "tty"
+    "dialout"
+    "video"
+    "storage-users"
+  ];
+in {
   meta = {
     name = "home";
     description = "monorepo";
@@ -11,6 +23,10 @@
 
   machines = {
     # Andrew's PCs
+    kamrui-h1 = {
+      deploy.targetHost = "root@kamrui-h1.armadillo-frog.ts.net";
+      tags = ["developer" "wife"];
+    };
     nixos = {
       deploy.targetHost = "root@nixos.armadillo-frog.ts.net";
       tags = ["developer"];
@@ -23,14 +39,10 @@
     # Other's PCs
     hp-notebook = {
       deploy.targetHost = "root@hp-notebook.armadillo-frog.ts.net";
-      tags = ["normal"];
+      tags = ["normal" "wife"];
     };
 
     # Home Servers
-    kamrui-h1 = {
-      deploy.targetHost = "root@kamrui-h1.armadillo-frog.ts.net";
-      tags = ["server"];
-    };
     inuc-celeron = {
       deploy.targetHost = "root@inuc-celeron.armadillo-frog.ts.net";
       tags = ["server"];
@@ -127,17 +139,30 @@
               isNormalUser = true;
               home = "/home/netsa";
               description = "andrewthomaslee";
-              extraGroups = [
-                "docker"
-                "wheel"
-                "networkmanager"
-                "audio"
-                "libvirtd"
-                "tty"
-                "dialout"
-                "video"
-                "storage-users"
-              ];
+              inherit extraGroups;
+            };
+          }
+        ];
+      };
+    };
+
+    # Default Wife
+    wife = {
+      module.name = "users";
+      roles.default = {
+        tags = ["wife"];
+        settings = {
+          user = "wife";
+          share = true;
+        };
+        extraModules = [
+          {
+            home-manager.wife = self.homeModules.profile-normal;
+            users.users.wife = {
+              isNormalUser = true;
+              home = "/home/wife";
+              description = "wife";
+              inherit extraGroups;
             };
           }
         ];
