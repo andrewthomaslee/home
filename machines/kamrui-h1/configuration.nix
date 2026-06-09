@@ -1,6 +1,7 @@
 {
   pkgs,
   inputs,
+  lib,
   ...
 }: {
   imports = [
@@ -70,7 +71,7 @@
       };
     };
   };
-  networking.networkmanager.enable = true; # Steam UI needs networkmanager
+  networking.networkmanager.enable = lib.mkForce true; # Steam UI needs networkmanager
 
   hostSpec.services = {
     ollama = {
