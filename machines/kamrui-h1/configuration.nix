@@ -28,18 +28,27 @@
         rocmPackages.clr.icd
       ];
     };
+    amdgpu.initrd.enable = true;
   };
-  boot.kernelParams = ["amd_pstate=active"];
 
-  jovian.hardware.has.amd.gpu = true;
-  jovian.steam.enable = true;
+  systemd.tmpfiles.rules = let
+    rocmEnv = pkgs.symlinkJoin {
+      name = "rocm-combined";
+      paths = with pkgs.rocmPackages; [
+        rocblas
+        hipblas
+        clr
+      ];
+    };
+  in [
+    "L+    /opt/rocm   -    -    -     -    ${rocmEnv}"
+  ];
 
-  # SDDM
-  #
-  services.displayManager.sddm.settings = {
-    Autologin = {
-      Session = "gamescope-wayland.desktop";
-      User = "netsa";
+  jovian = {
+    hardware.has.amd.gpu = true;
+    steam = {
+      enable = true;
+      desktopSession = "gamescope-wayland.desktop";
     };
   };
 
@@ -53,22 +62,19 @@
   #   It's a modest tweak that may not be needed. Jovian is optimized for
   #   high performance by default.
   programs = {
-    steam = {
-      enable = true;
-      localNetworkGameTransfers.openFirewall = true;
-    };
+    steam.enable = true;
     gamemode = {
       enable = true;
-      settings = {
-        general = {
-          renice = 10;
-        };
-        gpu = {
-          apply_gpu_optimisations = "accept-responsibility"; # For systems with AMD GPUs
-          gpu_device = 0;
-          amd_performance_level = "high";
-        };
-      };
+      # settings = {
+      #   general = {
+      #     renice = 10;
+      #   };
+      #   gpu = {
+      #     apply_gpu_optimisations = "accept-responsibility"; # For systems with AMD GPUs
+      #     gpu_device = 0;
+      #     amd_performance_level = "high";
+      #   };
+      # };
     };
   };
   networking.networkmanager.enable = lib.mkForce true; # Steam UI needs networkmanager
