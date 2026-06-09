@@ -63,6 +63,9 @@
     # neofetch for kube
     kubefetch.url = "https://flakehub.com/f/andrewthomaslee/kubefetch/*";
 
+    # Jovian NixOS
+    jovian.url = "github:Jovian-Experiments/Jovian-NixOS";
+
     # --- Minecraft --- #
     nix-minecraft = {
       url = "github:Infinidoge/nix-minecraft";
