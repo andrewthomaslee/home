@@ -157,7 +157,7 @@ in {
         };
         extraModules = [
           {
-            home-manager.wife = self.homeModules.profile-normal;
+            home-manager.users.wife = self.homeModules.profile-normal;
             users.users.wife = {
               isNormalUser = true;
               home = "/home/wife";

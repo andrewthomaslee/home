@@ -70,6 +70,7 @@
       };
     };
   };
+  networking.networkmanager.enable = true; # Steam UI needs networkmanager
 
   hostSpec.services = {
     ollama = {
