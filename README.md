@@ -105,7 +105,7 @@ $ nix flake show
 │   ├───ghost: NixOS configuration
 │   ├───hel-1: NixOS configuration
 │   ├───hp-notebook: NixOS configuration
-│   ├───kamrui-p1: NixOS configuration
+│   ├───kamrui-h1: NixOS configuration
 │   └───nixos: NixOS configuration
 ├───nixosModules
 │   ├───bluetooth: NixOS module
@@ -113,7 +113,7 @@ $ nix flake show
 │   ├───clan-machine-ghost: NixOS module
 │   ├───clan-machine-hel-1: NixOS module
 │   ├───clan-machine-hp-notebook: NixOS module
-│   ├───clan-machine-kamrui-p1: NixOS module
+│   ├───clan-machine-kamrui-h1: NixOS module
 │   ├───clan-machine-nixos: NixOS module
 │   ├───default: NixOS module
 │   ├───docker: NixOS module

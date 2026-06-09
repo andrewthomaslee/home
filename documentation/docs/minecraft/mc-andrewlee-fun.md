@@ -17,7 +17,7 @@ Whitelist is invite only.
 
 ## Join the Server
 
-`mc.andrewlee.fun` is a Minecraft server running on the machine [`kamrui-p1`](https://github.com/andrewthomaslee/home/blob/main/machines/kamrui-p1/configuration.nix){:target="_blank"} and accessible via the [playit.gg](https://playit.gg){:target="_blank"} proxy with the raw url: `wide-sell.gl.joinmc.link`.
+`mc.andrewlee.fun` is a Minecraft server running on the machine [`kamrui-h1`](https://github.com/andrewthomaslee/home/blob/main/machines/kamrui-h1/configuration.nix){:target="_blank"} and accessible via the [playit.gg](https://playit.gg){:target="_blank"} proxy with the raw url: `wide-sell.gl.joinmc.link`.
 
 
 Some mods are required to join the server.

@@ -27,8 +27,8 @@
     };
 
     # Home Servers
-    kamrui-p1 = {
-      deploy.targetHost = "root@kamrui-p1.armadillo-frog.ts.net";
+    kamrui-h1 = {
+      deploy.targetHost = "root@kamrui-h1.armadillo-frog.ts.net";
       tags = ["server"];
     };
     inuc-celeron = {
@@ -166,7 +166,7 @@
         input = "clan-community";
       };
       roles = {
-        master.machines.kamrui-p1.settings = {
+        master.machines.kamrui-h1.settings = {
           domain = "andrewlee.fun";
           distro = "k3s";
           cilium.helmValues.ingressController.enabled = false;

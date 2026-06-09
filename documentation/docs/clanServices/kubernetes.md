@@ -18,7 +18,7 @@ instances = {
     home = {
         module.name = "@andrewthomaslee/kubernetes";
         module.input = "andrewthomaslee";
-        roles.init.machines.kamrui-p1.settings = {
+        roles.init.machines.kamrui-h1.settings = {
             clusterCidr = "10.42.0.0/16,fd42::/56";
             serviceCidr = "10.43.0.0/16,fd43::/112";
         };
