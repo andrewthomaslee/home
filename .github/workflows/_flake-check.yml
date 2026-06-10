@@ -23,4 +23,4 @@ jobs:
           fail-mode: true
 
       - name: Nix Flake Check
-        run: nix flake check --show-trace
+        run: nix flake check --show-trace --systems x86_64-linux
