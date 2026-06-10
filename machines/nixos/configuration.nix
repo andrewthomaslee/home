@@ -23,10 +23,6 @@
     };
   };
 
-  virtualisation = {
-    docker.enable = true;
-    podman.enable = true;
-  };
   nixpkgs.config = {
     cudaSupport = true;
     cudaCapabilities = ["6.1"];

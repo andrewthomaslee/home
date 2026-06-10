@@ -13,6 +13,7 @@
     config = lib.mkIf cfg.enable {
       virtualisation = {
         oci-containers.backend = "docker";
+        podman.enable = true;
         docker = {
           enable = true;
           logDriver = "json-file";
