@@ -6,7 +6,7 @@
     determinate.url = "https://flakehub.com/f/DeterminateSystems/determinate/*";
 
     # Nixpkgs
-    nixpkgs.url = "https://flakehub.com/f/NixOS/nixpkgs/0";
+    nixpkgs.follows = "jovian/nixpkgs";
     nixpkgs-unstable.url = "https://flakehub.com/f/NixOS/nixpkgs/*";
 
     # Clan.lol
@@ -38,7 +38,7 @@
 
     # Home-manager
     home-manager = {
-      url = "github:nix-community/home-manager/release-26.05";
+      url = "github:nix-community/home-manager";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 

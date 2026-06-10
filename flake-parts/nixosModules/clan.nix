@@ -1,9 +1,4 @@
-{
-  # inputs,
-  # self,
-  lib,
-  ...
-}: {
+{lib, ...}: {
   # ------ NixOS Modules ------ #
   flake.nixosModules.clan = {config, ...}: let
     cfg = config.hostSpec.clan;
@@ -18,7 +13,7 @@
         settings.state-version.enable = lib.mkForce false;
       };
 
-      system.stateVersion = "26.05"; # TODO: update stateVersion when 26.11 is considered stable
+      system.stateVersion = "26.11";
     };
   };
 }
