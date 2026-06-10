@@ -212,9 +212,9 @@
           };
         };
       };
-      # --- Normal --- #
-      # For Other's PCs
-      profile-normal = {
+      # --- Wife --- #
+      # For Wife's PCs
+      profile-wife = {pkgs, ...}: {
         imports = [self.homeModules.default];
         config = {
           # homeSpec options
@@ -225,6 +225,18 @@
               media.enable = true;
             };
           };
+
+          # Home Options
+          home.packages = with pkgs; [
+            zen-browser
+            heroic
+            flatpak
+            gnome-software
+            discord
+            spotify
+            prismlauncher
+            wineWow64Packages.waylandFull # native wayland support (unstable)
+          ];
         };
       };
     };

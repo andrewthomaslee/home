@@ -138,7 +138,7 @@ in {
             users.users.netsa = {
               isNormalUser = true;
               home = "/home/netsa";
-              description = "andrewthomaslee";
+              description = "husband";
               inherit extraGroups;
             };
           }
@@ -157,7 +157,7 @@ in {
         };
         extraModules = [
           {
-            home-manager.users.wife = self.homeModules.profile-normal;
+            home-manager.users.wife = self.homeModules.profile-wife;
             users.users.wife = {
               isNormalUser = true;
               home = "/home/wife";

@@ -48,9 +48,9 @@
     hardware.has.amd.gpu = true;
     steam = {
       enable = true;
-      # user = "wife";
-      # autoStart = true;
-      # desktopSession = "plasma";
+      user = "wife";
+      autoStart = true;
+      desktopSession = "plasma";
     };
   };
 
@@ -64,7 +64,11 @@
   #   It's a modest tweak that may not be needed. Jovian is optimized for
   #   high performance by default.
   programs = {
-    steam.enable = true;
+    steam = {
+      enable = true;
+      remotePlay.openFirewall = true;
+      dedicatedServer.openFirewall = true;
+    };
     gamemode = {
       enable = true;
       settings = {

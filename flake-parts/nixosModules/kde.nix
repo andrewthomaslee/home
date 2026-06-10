@@ -28,7 +28,7 @@
         };
 
         xserver = {
-          enable = true;
+          enable = false;
           excludePackages = [pkgs.xterm]; # remove xterm
           xkb = {
             layout = "us";
@@ -36,6 +36,8 @@
           };
         };
       };
+
+      programs.xwayland.enable = true;
 
       environment.systemPackages = with pkgs; [
         # KDE

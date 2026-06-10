@@ -65,7 +65,9 @@ in {
       # nix-ld
       programs.nix-ld = {
         enable = true;
-        libraries = [pkgs.stdenv.cc.cc];
+        libraries = with pkgs; [
+          stdenv.cc.cc
+        ];
       };
 
       # acme
