@@ -239,6 +239,25 @@
           ];
         };
       };
+      # --- Normal --- #
+      # For Other's PCs
+      profile-normal = {pkgs, ...}: {
+        imports = [self.homeModules.default];
+        config = {
+          # homeSpec options
+          homeSpec = {
+            xdg.enable = true;
+            programs = {
+              firefox.enable = true;
+              media.enable = true;
+            };
+          };
+          # Home Options
+          home.packages = with pkgs; [
+            zen-browser
+          ];
+        };
+      };
     };
   };
 }

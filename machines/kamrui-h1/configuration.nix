@@ -50,7 +50,7 @@
       enable = true;
       user = "wife";
       autoStart = true;
-      desktopSession = "plasma";
+      desktopSession = "wayland";
     };
   };
 
@@ -68,6 +68,7 @@
       enable = true;
       remotePlay.openFirewall = true;
       dedicatedServer.openFirewall = true;
+      localNetworkGameTransfers.openFirewall = true;
     };
     gamemode = {
       enable = true;
@@ -85,12 +86,31 @@
   };
   networking.networkmanager.enable = lib.mkForce true; # Steam UI needs networkmanager
 
-  boot.kernelParams = [
-    # specified as 4KiB pages: 24 GB GTT (Max limit)
-    "ttm.pages_limit=6291456"
-    # specified as 4KiB pages: 12 GB pre-allocated (Improves model load times)
-    # "ttm.page_pool_size=3145728"
-  ];
+  boot = {
+    consoleLogLevel = 0;
+    initrd.verbose = false;
+    kernelPackages = pkgs.linuxPackages_latest;
+    # Quiet, graphical boot
+    kernelParams = [
+      "quiet"
+      "loglevel=3"
+      "rd.systemd.show_status=false"
+      "rd.udev.log_level=3"
+      "udev.log_priority=3"
+      # specified as 4KiB pages: 24 GB GTT (Max limit)
+      "ttm.pages_limit=6291456"
+    ];
+
+    loader = {
+      efi.canTouchEfiVariables = true;
+      systemd-boot = {
+        configurationLimit = 10;
+        enable = true;
+      };
+      timeout = 5;
+    };
+    plymouth.enable = true; # Splash screen
+  };
 
   hostSpec.services = {
     ollama = {
