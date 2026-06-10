@@ -2,6 +2,9 @@
   "machines": {
     "inuc-i5": {
       "installedAt": 1780974418
+    },
+    "kamrui-h1": {
+      "installedAt": 1781064437
     }
   }
 }
