@@ -32,7 +32,7 @@
           download-buffer-size = 524288000; # 500MB
           auto-optimise-store = true;
           trusted-users = ["root" "netsa"];
-          allowed-users = ["root" "netsa"];
+          allowed-users = ["@wheel" "root" "netsa" "wife"];
 
           auto-allocate-uids = true;
           system-features = ["uid-range"];
