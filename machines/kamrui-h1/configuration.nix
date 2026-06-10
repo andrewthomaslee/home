@@ -81,6 +81,13 @@
   };
   networking.networkmanager.enable = lib.mkForce true; # Steam UI needs networkmanager
 
+  boot.kernelParams = [
+    # specified as 4KiB pages: 24 GB GTT (Max limit)
+    "ttm.pages_limit=6291456"
+    # specified as 4KiB pages: 12 GB pre-allocated (Improves model load times)
+    # "ttm.page_pool_size=3145728"
+  ];
+
   hostSpec.services = {
     ollama = {
       enable = true;
