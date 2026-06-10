@@ -8,16 +8,7 @@
     inputs.jovian.nixosModules.default
   ];
 
-  nixpkgs.pkgs = lib.mkOverride 10 (import inputs.jovian.inputs.nixpkgs {
-    system = "x86_64-linux";
-    config = {
-      allowUnfree = true;
-      rocmSupport = true;
-    };
-    overlays = [inputs.self.overlays.default];
-  });
-
-  nixpkgs.config = lib.mkForce {};
+  nixpkgs.config.rocmSupport = true;
 
   environment.systemPackages = with pkgs.unstable; [
     nvtopPackages.full # GPU monitoring
