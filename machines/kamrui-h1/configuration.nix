@@ -8,7 +8,7 @@
     inputs.jovian.nixosModules.default
   ];
 
-  nixpkgs.pkgs = lib.mkForce (import inputs.jovian.inputs.nixpkgs {
+  nixpkgs.pkgs = lib.mkOverride 10 (import inputs.jovian.inputs.nixpkgs {
     system = "x86_64-linux";
     config = {
       allowUnfree = true;
@@ -16,6 +16,8 @@
     };
     overlays = [inputs.self.overlays.default];
   });
+
+  nixpkgs.config = lib.mkForce {};
 
   environment.systemPackages = with pkgs.unstable; [
     nvtopPackages.full # GPU monitoring
