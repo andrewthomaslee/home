@@ -48,9 +48,9 @@
     hardware.has.amd.gpu = true;
     steam = {
       enable = true;
-      user = "wife";
-      autoStart = true;
-      desktopSession = "gamescope-wayland";
+      # user = "wife";
+      # autoStart = true;
+      # desktopSession = "gamescope-wayland";
     };
   };
 
