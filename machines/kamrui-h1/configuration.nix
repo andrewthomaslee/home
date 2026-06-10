@@ -48,7 +48,7 @@
     hardware.has.amd.gpu = true;
     steam = {
       enable = true;
-      desktopSession = "gamescope-wayland.desktop";
+      desktopSession = "plasma";
     };
   };
 
