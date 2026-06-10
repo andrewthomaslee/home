@@ -47,10 +47,10 @@
   jovian = {
     hardware.has.amd.gpu = true;
     steam = {
-      user = "wife";
       enable = true;
-      autoStart = true;
-      desktopSession = "plasma";
+      # user = "wife";
+      # autoStart = true;
+      # desktopSession = "plasma";
     };
   };
 
