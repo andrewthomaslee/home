@@ -50,7 +50,7 @@
       enable = true;
       user = "wife";
       autoStart = true;
-      desktopSession = "wayland";
+      desktopSession = "gamescope-wayland";
     };
   };
 
@@ -87,8 +87,6 @@
   networking.networkmanager.enable = lib.mkForce true; # Steam UI needs networkmanager
 
   boot = {
-    consoleLogLevel = 0;
-    initrd.verbose = false;
     kernelPackages = pkgs.linuxPackages_latest;
     # Quiet, graphical boot
     kernelParams = [
@@ -100,15 +98,6 @@
       # specified as 4KiB pages: 24 GB GTT (Max limit)
       "ttm.pages_limit=6291456"
     ];
-
-    loader = {
-      efi.canTouchEfiVariables = true;
-      systemd-boot = {
-        configurationLimit = 10;
-        enable = true;
-      };
-      timeout = 5;
-    };
     plymouth.enable = true; # Splash screen
   };
 
