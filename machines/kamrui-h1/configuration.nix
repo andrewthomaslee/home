@@ -11,9 +11,7 @@
   nixpkgs.config.rocmSupport = true;
 
   environment.systemPackages = with pkgs.unstable; [
-    nvtopPackages.full # GPU monitoring
     amdgpu_top # GPU monitoring
-    glmark2 # GPU benchmarking
     llmfit # LLM system benchmarking
     cmake # Cross-platform, open-source build system generator
     steam-rom-manager # App for adding 3rd party games/ROMs as Steam launch items
@@ -21,14 +19,13 @@
 
   # Enable GPU acceleration
   hardware = {
-    xone.enable = true;
+    amdgpu.initrd.enable = true;
     graphics = {
       enable = true;
       extraPackages = with pkgs; [
         rocmPackages.clr.icd
       ];
     };
-    amdgpu.initrd.enable = true;
   };
 
   systemd.tmpfiles.rules = let
@@ -46,12 +43,7 @@
 
   jovian = {
     hardware.has.amd.gpu = true;
-    steam = {
-      enable = true;
-      # user = "wife";
-      # autoStart = true;
-      # desktopSession = "gamescope-wayland";
-    };
+    steam.enable = true;
   };
 
   services.orca.enable = false; # Disable screen reader
@@ -73,9 +65,7 @@
     gamemode = {
       enable = true;
       settings = {
-        general = {
-          renice = 10;
-        };
+        general.renice = 10;
         gpu = {
           apply_gpu_optimisations = "accept-responsibility"; # For systems with AMD GPUs
           gpu_device = 0;
@@ -85,21 +75,6 @@
     };
   };
   networking.networkmanager.enable = lib.mkForce true; # Steam UI needs networkmanager
-
-  boot = {
-    kernelPackages = pkgs.linuxPackages_latest;
-    # Quiet, graphical boot
-    kernelParams = [
-      "quiet"
-      "loglevel=3"
-      "rd.systemd.show_status=false"
-      "rd.udev.log_level=3"
-      "udev.log_priority=3"
-      # specified as 4KiB pages: 24 GB GTT (Max limit)
-      "ttm.pages_limit=6291456"
-    ];
-    plymouth.enable = true; # Splash screen
-  };
 
   hostSpec.services = {
     ollama = {
