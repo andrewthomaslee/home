@@ -64,7 +64,10 @@
     kubefetch.url = "https://flakehub.com/f/andrewthomaslee/kubefetch/*";
 
     # Jovian NixOS
-    jovian.url = "github:Jovian-Experiments/Jovian-NixOS";
+    jovian = {
+      url = "github:Jovian-Experiments/Jovian-NixOS";
+      inputs.nixpkgs.follows = "nixpkgs-unstable";
+    };
 
     # --- Minecraft --- #
     nix-minecraft = {
