@@ -230,12 +230,10 @@
           home.packages = with pkgs; [
             zen-browser
             heroic
-            flatpak
             gnome-software
             discord
             spotify
             prismlauncher
-            wineWow64Packages.waylandFull # native wayland support (unstable)
           ];
         };
       };
