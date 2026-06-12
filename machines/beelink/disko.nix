@@ -3,7 +3,7 @@
     disk = {
       main = {
         type = "disk";
-        device = "/dev/nvme0n1";
+        device = "/dev/disk/by-id/nvme-512GB_SSD_MQ22W02008419";
         content = {
           type = "gpt";
           partitions = {
@@ -21,6 +21,7 @@
                 format = "vfat";
                 mountpoint = "/boot";
                 mountOptions = ["umask=0077"];
+                extraArgs = ["-L" "ESP"];
               };
             };
             nixos = {
@@ -30,6 +31,7 @@
                 format = "ext4";
                 mountpoint = "/";
                 mountOptions = ["noatime"];
+                extraArgs = ["-L" "nixos"];
               };
             };
           };
