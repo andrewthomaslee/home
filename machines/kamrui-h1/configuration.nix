@@ -15,6 +15,7 @@
     llmfit # LLM system benchmarking
     cmake # Cross-platform, open-source build system generator
     steam-rom-manager # App for adding 3rd party games/ROMs as Steam launch items
+    gnome-software # for flatpaks
   ];
 
   # Enable GPU acceleration

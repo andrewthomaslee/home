@@ -229,8 +229,6 @@
           # Home Options
           home.packages = with pkgs; [
             zen-browser
-            heroic
-            gnome-software
             discord
             spotify
             prismlauncher
