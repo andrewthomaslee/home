@@ -51,6 +51,10 @@ in {
       deploy.targetHost = "root@inuc-i5.armadillo-frog.ts.net";
       tags = ["server"];
     };
+    beelink = {
+      deploy.targetHost = "root@beelink.armadillo-frog.ts.net";
+      tags = ["server"];
+    };
 
     # Cloud VMs
     # eu
