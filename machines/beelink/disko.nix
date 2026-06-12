@@ -21,7 +21,6 @@
                 format = "vfat";
                 mountpoint = "/boot";
                 mountOptions = ["umask=0077"];
-                extraArgs = ["-L" "ESP"];
               };
             };
             nixos = {
