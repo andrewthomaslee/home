@@ -24,7 +24,6 @@
             extensions = with pkgs.unstable.vscode-extensions; [
               kamadorueda.alejandra
               jnoortheen.nix-ide
-              supermaven.supermaven
               bradlc.vscode-tailwindcss
               redhat.vscode-yaml
               redhat.vscode-xml

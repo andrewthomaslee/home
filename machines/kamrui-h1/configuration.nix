@@ -15,7 +15,6 @@
     llmfit # LLM system benchmarking
     cmake # Cross-platform, open-source build system generator
     steam-rom-manager # App for adding 3rd party games/ROMs as Steam launch items
-    wine-wayland
   ];
 
   # Enable GPU acceleration
@@ -44,7 +43,7 @@
 
   jovian = {
     hardware.has.amd.gpu = true;
-    steam.enable = true;
+    steam.enable = false;
   };
 
   services.orca.enable = false; # Disable screen reader
