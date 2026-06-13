@@ -26,8 +26,9 @@
             echo "EA App not found. Initializing a clean Wine prefix..."
             mkdir -p "$WINEPREFIX"
 
-            # Properly initialize the prefix first so Wine Mono and Gecko are installed automatically
-            wineboot -u
+            # Properly initialize the prefix first so Wine Mono and Gecko are installed automatically.
+            # Using 'wine cmd.exe /c exit' is safer than 'wineboot -u' on NixOS to avoid read-only permission issues.
+            wine cmd.exe /c exit
             wineserver -w
 
             # Install prerequisites silently (-q)
