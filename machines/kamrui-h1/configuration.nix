@@ -25,7 +25,7 @@
     # vulkan-tools
     (let
       # Define the Wine package we want to bundle with the wrapper
-      wineRunner = pkgs.wineWowPackages.waylandFull;
+      wineRunner = pkgs.wineWow64Packages.waylandFull;
 
       # 1. Create a script that handles runtime checks and execution
       launcherScript = pkgs.writeShellScriptBin "ea-app" ''
