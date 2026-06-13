@@ -22,6 +22,7 @@
       environment.systemPackages = with pkgs; [
         cmake # Cross-platform, open-source build system generator
         steam-rom-manager # App for adding 3rd party games/ROMs as Steam launch items
+        steam-run
       ];
 
       # Steam
@@ -37,6 +38,24 @@
           remotePlay.openFirewall = true;
           dedicatedServer.openFirewall = true;
           localNetworkGameTransfers.openFirewall = true;
+          extraCompatPackages = with pkgs; [
+            proton-ge-bin
+          ];
+          package = pkgs.steam.override {
+            extraPkgs = pkgs':
+              with pkgs'; [
+                stdenv.cc.cc.lib # Provides libstdc++.so.6
+                libXcursor
+                libXi
+                libXinerama
+                libXScrnSaver
+                libpng
+                libpulseaudio
+                libvorbis
+                libkrb5
+                keyutils
+              ];
+          };
         };
         gamemode = {
           enable = true;

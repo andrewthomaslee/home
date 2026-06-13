@@ -23,13 +23,9 @@ in {
 
   machines = {
     # Andrew's PCs
-    kamrui-h1 = {
-      deploy.targetHost = "root@kamrui-h1.armadillo-frog.ts.net";
-      tags = ["developer" "wife"];
-    };
     nixos = {
       deploy.targetHost = "root@nixos.armadillo-frog.ts.net";
-      tags = ["developer"];
+      tags = ["developer" "wife"];
     };
     ghost = {
       deploy.targetHost = "root@ghost.armadillo-frog.ts.net";
@@ -53,6 +49,10 @@ in {
     };
     beelink = {
       deploy.targetHost = "root@beelink.armadillo-frog.ts.net";
+      tags = ["server"];
+    };
+    kamrui-h1 = {
+      deploy.targetHost = "root@kamrui-h1.armadillo-frog.ts.net";
       tags = ["server"];
     };
 
