@@ -21,5 +21,6 @@
 
   vcluster = self.packages.${final.stdenv.hostPlatform.system}.vcluster;
   tfctl = self.packages.${final.stdenv.hostPlatform.system}.tfctl;
+  ea-app = self.packages.${final.stdenv.hostPlatform.system}.ea-app;
   apply-and-reboot = self.packages.${final.stdenv.hostPlatform.system}.apply-and-reboot;
 }

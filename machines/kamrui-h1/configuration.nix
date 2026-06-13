@@ -23,59 +23,7 @@
     # cabextract
     # gnutls
     # vulkan-tools
-    (let
-      # Define the Wine package we want to bundle with the wrapper
-      wineRunner = pkgs.wineWow64Packages.waylandFull;
-
-      # 1. Create a script that handles runtime checks and execution
-      launcherScript = pkgs.writeShellScriptBin "ea-app" ''
-        # Ensure Wine, Winetricks, and utilities are available in the wrapper path
-        export PATH="${pkgs.lib.makeBinPath [wineRunner pkgs.winetricks pkgs.cabextract]}:$PATH"
-        export WINEPREFIX="$HOME/.ea-app"
-
-        EXE_PATH="$WINEPREFIX/drive_c/Program Files/Electronic Arts/EA Desktop/EA Desktop/EADesktop.exe"
-
-        # Check if EA App exists. If not, download and install it.
-        if [ ! -f "$EXE_PATH" ]; then
-          echo "EA App not found. Initializing a clean Wine prefix..."
-          mkdir -p "$WINEPREFIX"
-
-          # Install prerequisites silently (-q)
-          echo "Installing core fonts and DXVK translation layers..."
-          winetricks -q corefonts dxvk vkd3d d3dcompiler_47
-
-          INSTALLER="${inputs.ea}"
-
-          echo "Launching the EA installer. Please complete the setup steps..."
-          wine "$INSTALLER"
-        fi
-
-        # Launch the application from its execution directory if it installed successfully
-        if [ -f "$EXE_PATH" ]; then
-          echo "Launching the EA App..."
-          cd "$(dirname "$EXE_PATH")" || exit 1
-          exec wine EADesktop.exe
-        else
-          echo "Error: EA App is still not installed."
-          exit 1
-        fi
-      '';
-
-      # 2. Automatically generate the system .desktop shortcut pointing to the script
-      desktopItem = pkgs.makeDesktopItem {
-        name = "ea-app";
-        exec = "${launcherScript}/bin/ea-app";
-        icon = "wine";
-        comment = "EA App via declarative Wine prefix wrapper";
-        desktopName = "EA App";
-        categories = ["Game"];
-      };
-    in
-      # 3. Combine both the script and the shortcut into a single package
-      pkgs.symlinkJoin {
-        name = "ea-app-wrapped";
-        paths = [launcherScript desktopItem];
-      })
+    pkgs.ea-app
   ];
 
   # Enable GPU acceleration
