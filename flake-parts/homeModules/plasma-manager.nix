@@ -10,6 +10,11 @@
   in {
     options.homeSpec.programs.plasma-manager.enable = lib.mkEnableOption "default plasma-manager configuration";
     config = lib.mkIf cfg.enable {
+      home.packages = with pkgs; [
+        bibata-cursors
+        bibata-cursors-translucent
+      ];
+
       programs.plasma = lib.optionalAttrs osConfig.services.desktopManager.plasma6.enable {
         enable = true;
         workspace = {
