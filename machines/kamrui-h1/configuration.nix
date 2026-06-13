@@ -6,12 +6,11 @@
   networking.networkmanager.enable = lib.mkForce true;
 
   hostSpec = {
-    hardware.amd.enable = true;
-    # config.jovian = {
-    #   enable = true;
-    #   steamui = false;
-    #   amd = true;
-    # };
+    programs.steam.enable = true;
+    hardware = {
+      amd.enable = true;
+      jovian.enable = true;
+    };
     services = {
       flatpak.enable = true;
       ollama = {
