@@ -835,6 +835,18 @@
         "type": "github"
       }
     },
+    "ea": {
+      "flake": false,
+      "locked": {
+        "narHash": "sha256-e5icLKzD7Q6uaFMEwn7VtJEtdlhFe8dWPBgmEL4ayf8=",
+        "type": "file",
+        "url": "https://origin-a.akamaihd.net/EA-Desktop-Client-Download/installer-releases/EAappInstaller.exe"
+      },
+      "original": {
+        "type": "file",
+        "url": "https://origin-a.akamaihd.net/EA-Desktop-Client-Download/installer-releases/EAappInstaller.exe"
+      }
+    },
     "flake-compat": {
       "flake": false,
       "locked": {
@@ -2065,6 +2077,7 @@
         "clan-community": "clan-community",
         "clan-core": "clan-core",
         "determinate": "determinate",
+        "ea": "ea",
         "flake-parts": [
           "clan-core",
           "flake-parts"

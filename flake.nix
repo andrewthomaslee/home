@@ -66,6 +66,12 @@
     # Jovian NixOS
     jovian.url = "github:Jovian-Experiments/Jovian-NixOS";
 
+    # EA App
+    ea = {
+      url = "https://origin-a.akamaihd.net/EA-Desktop-Client-Download/installer-releases/EAappInstaller.exe";
+      flake = false;
+    };
+
     # --- Minecraft --- #
     nix-minecraft = {
       url = "github:Infinidoge/nix-minecraft";
