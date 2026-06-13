@@ -2,6 +2,9 @@
   "machines": {
     "beelink": {
       "installedAt": 1781235000
+    },
+    "nixos": {
+      "installedAt": 1781374526
     }
   }
 }
