@@ -26,6 +26,10 @@
             echo "EA App not found. Initializing a clean Wine prefix..."
             mkdir -p "$WINEPREFIX"
 
+            # Properly initialize the prefix first so Wine Mono and Gecko are installed automatically
+            wineboot -u
+            wineserver -w
+
             # Install prerequisites silently (-q)
             echo "Installing core fonts and DXVK translation layers..."
             winetricks -q corefonts dxvk vkd3d d3dcompiler_47
