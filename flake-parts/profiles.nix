@@ -143,12 +143,16 @@
       # --- Developer --- #
       # For Andrew's PCs
       profile-developer = {pkgs, ...}: {
-        imports = [self.homeModules.default];
+        imports = [
+          self.homeModules.default
+          inputs.plasma-manager.homeModules.plasma-manager
+        ];
         config = {
           # homeSpec options
           homeSpec = {
             xdg.enable = true;
             programs = {
+              plasma-manager.enable = true;
               tmux.enable = true;
               bun.enable = true;
               direnv.enable = true;
@@ -215,12 +219,16 @@
       # --- Wife --- #
       # For Wife's PCs
       profile-wife = {pkgs, ...}: {
-        imports = [self.homeModules.default];
+        imports = [
+          self.homeModules.default
+          inputs.plasma-manager.homeModules.plasma-manager
+        ];
         config = {
           # homeSpec options
           homeSpec = {
             xdg.enable = true;
             programs = {
+              plasma-manager.enable = true;
               firefox.enable = true;
               media.enable = true;
             };
@@ -238,12 +246,16 @@
       # --- Normal --- #
       # For Other's PCs
       profile-normal = {pkgs, ...}: {
-        imports = [self.homeModules.default];
+        imports = [
+          self.homeModules.default
+          inputs.plasma-manager.homeModules.plasma-manager
+        ];
         config = {
           # homeSpec options
           homeSpec = {
             xdg.enable = true;
             programs = {
+              plasma-manager.enable = true;
               firefox.enable = true;
               media.enable = true;
             };

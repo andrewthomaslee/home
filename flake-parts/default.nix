@@ -87,6 +87,7 @@ in {
         useUserPackages = true;
         backupFileExtension = "hm-backup";
         extraSpecialArgs = {inherit customLib;};
+        sharedModules = [inputs.plasma-manager.homeModules.plasma-manager];
       };
 
       # localization

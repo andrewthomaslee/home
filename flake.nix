@@ -41,6 +41,12 @@
       url = "github:nix-community/home-manager/release-26.05";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    # KDE
+    plasma-manager = {
+      url = "github:nix-community/plasma-manager";
+      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.home-manager.follows = "home-manager";
+    };
 
     # Utility Flakes
     flake-parts.follows = "clan-core/flake-parts";
@@ -65,12 +71,6 @@
 
     # Jovian NixOS
     jovian.url = "github:Jovian-Experiments/Jovian-NixOS";
-
-    # EA App
-    ea = {
-      url = "https://origin-a.akamaihd.net/EA-Desktop-Client-Download/installer-releases/EAappInstaller.exe";
-      flake = false;
-    };
 
     # --- Minecraft --- #
     nix-minecraft = {

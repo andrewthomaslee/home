@@ -835,18 +835,6 @@
         "type": "github"
       }
     },
-    "ea": {
-      "flake": false,
-      "locked": {
-        "narHash": "sha256-e5icLKzD7Q6uaFMEwn7VtJEtdlhFe8dWPBgmEL4ayf8=",
-        "type": "file",
-        "url": "https://origin-a.akamaihd.net/EA-Desktop-Client-Download/installer-releases/EAappInstaller.exe"
-      },
-      "original": {
-        "type": "file",
-        "url": "https://origin-a.akamaihd.net/EA-Desktop-Client-Download/installer-releases/EAappInstaller.exe"
-      }
-    },
     "flake-compat": {
       "flake": false,
       "locked": {
@@ -1837,6 +1825,29 @@
         "url": "https://flakehub.com/f/andrewthomaslee/packer/%2A"
       }
     },
+    "plasma-manager": {
+      "inputs": {
+        "home-manager": [
+          "home-manager"
+        ],
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1775856943,
+        "narHash": "sha256-b7Mp7P+q2Md5AGt4rjHfMcBykzMumFTen10ST++AuTU=",
+        "owner": "nix-community",
+        "repo": "plasma-manager",
+        "rev": "a524a6160e6df89f7673ba293cf7d78b559eb1a5",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nix-community",
+        "repo": "plasma-manager",
+        "type": "github"
+      }
+    },
     "poetry2nix": {
       "inputs": {
         "flake-utils": "flake-utils",
@@ -2092,7 +2103,6 @@
         "clan-community": "clan-community",
         "clan-core": "clan-core",
         "determinate": "determinate",
-        "ea": "ea",
         "flake-parts": [
           "clan-core",
           "flake-parts"
@@ -2112,6 +2122,7 @@
         "nixpkgs": "nixpkgs_6",
         "nixpkgs-unstable": "nixpkgs-unstable",
         "packer": "packer",
+        "plasma-manager": "plasma-manager",
         "terranix": "terranix",
         "zen-browser": "zen-browser"
       }
