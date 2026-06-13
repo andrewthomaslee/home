@@ -1,4 +1,10 @@
-{pkgs, ...}: {
+{
+  pkgs,
+  lib,
+  ...
+}: {
+  networking.networkmanager.enable = lib.mkForce true;
+
   hostSpec = {
     hardware.amd.enable = true;
     # config.jovian = {
