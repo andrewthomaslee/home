@@ -32,7 +32,6 @@
             cloudflared
             dive
             kustomize
-            opencode
             vcluster
           ]);
         shellHook = ''

@@ -48,6 +48,7 @@
           httpie
           mediawriter
           fastfetch
+          opencode
         ]);
     };
   };
