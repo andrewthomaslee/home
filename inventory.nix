@@ -3,17 +3,7 @@
   inputs,
   customLib,
 }: let
-  extraGroups = [
-    "docker"
-    "wheel"
-    "networkmanager"
-    "audio"
-    "libvirtd"
-    "tty"
-    "dialout"
-    "video"
-    "storage-users"
-  ];
+  inherit (customLib.custom) relativeToRoot;
 in {
   meta = {
     name = "home";
@@ -25,94 +15,79 @@ in {
     # Andrew's PCs
     nixos = {
       deploy.targetHost = "root@nixos.armadillo-frog.ts.net";
-      tags = ["developer" "wife"];
+      tags = ["pc" "intel" "dev" "netsa" "wife"];
     };
     ghost = {
       deploy.targetHost = "root@ghost.armadillo-frog.ts.net";
-      tags = ["developer"];
+      tags = ["pc" "intel" "dev" "netsa"];
     };
 
     # Other's PCs
     hp-notebook = {
       deploy.targetHost = "root@hp-notebook.armadillo-frog.ts.net";
-      tags = ["normal" "wife"];
+      tags = ["pc" "wife"];
     };
 
     # Home Servers
     inuc-celeron = {
       deploy.targetHost = "root@inuc-celeron.armadillo-frog.ts.net";
-      tags = ["server"];
+      tags = ["m" "intel"];
     };
     inuc-i5 = {
       deploy.targetHost = "root@inuc-i5.armadillo-frog.ts.net";
-      tags = ["server"];
+      tags = ["m" "intel"];
     };
     beelink = {
       deploy.targetHost = "root@beelink.armadillo-frog.ts.net";
-      tags = ["server"];
+      tags = ["m" "amd"];
     };
     kamrui-h1 = {
       deploy.targetHost = "root@kamrui-h1.armadillo-frog.ts.net";
-      tags = ["server"];
+      tags = ["m" "amd"];
     };
 
     # Cloud VMs
-    # eu
     hel-1 = {
       deploy.targetHost = "root@hel-1.andrewlee.cloud";
-      tags = ["vms"];
+      tags = ["vm"];
     };
     hel-2 = {
       deploy.targetHost = "root@hel-2.andrewlee.cloud";
-      tags = ["vms"];
+      tags = ["vm"];
     };
     hel-3 = {
       deploy.targetHost = "root@hel-3.andrewlee.cloud";
-      tags = ["vms"];
+      tags = ["vm"];
     };
     hel-4 = {
       deploy.targetHost = "root@hel-4.andrewlee.cloud";
-      tags = ["vms"];
+      tags = ["vm"];
     };
     hel-5 = {
       deploy.targetHost = "root@hel-5.andrewlee.cloud";
-      tags = ["vms"];
+      tags = ["vm"];
     };
   };
 
   # --- Clan Services --- #
   instances = {
-    # --- Profiles --- #
-    # For Andrew's PCs
-    developer = {
-      module.name = "importer";
-      roles.default = {
-        tags = ["developer"];
-        extraModules = [self.nixosModules.profile-developer];
+    machine-type = {
+      module.input = "self";
+      module.name = "@andrewthomaslee/machine-type";
+      roles = {
+        pc.tags.pc = {};
+        m.tags.m = {};
+        vm.tags.vm = {};
       };
     };
-    # For Headless Servers
-    server = {
-      module.name = "importer";
-      roles.default = {
-        tags = ["server"];
-        extraModules = [self.nixosModules.profile-server];
-      };
-    };
-    # For Other's PCs
-    normal = {
-      module.name = "importer";
-      roles.default = {
-        tags = ["normal"];
-        extraModules = [self.nixosModules.profile-normal];
-      };
-    };
-    # For Cloud VMs
-    vms = {
-      module.name = "importer";
-      roles.default = {
-        tags = ["vms"];
-        extraModules = [self.nixosModules.profile-vms];
+
+    tags = {
+      module.input = "self";
+      module.name = "@andrewthomaslee/tags";
+      roles = {
+        dev.tags.dev = {};
+        amd.tags.amd = {};
+        intel.tags.intel = {};
       };
     };
 
@@ -121,32 +96,25 @@ in {
     root = {
       module.name = "users";
       roles.default = {
-        tags = ["all"];
         settings = {
           user = "root";
           share = true;
         };
+        tags = ["all"];
+        extraModules = [(relativeToRoot "users/root")];
       };
     };
+
     # Default User
     netsa = {
       module.name = "users";
       roles.default = {
-        tags = ["all"];
         settings = {
           user = "netsa";
           share = true;
         };
-        extraModules = [
-          {
-            users.users.netsa = {
-              isNormalUser = true;
-              home = "/home/netsa";
-              description = "husband";
-              inherit extraGroups;
-            };
-          }
-        ];
+        tags = ["netsa"];
+        extraModules = [(relativeToRoot "users/netsa")];
       };
     };
 
@@ -154,22 +122,12 @@ in {
     wife = {
       module.name = "users";
       roles.default = {
-        tags = ["wife"];
         settings = {
           user = "wife";
           share = true;
         };
-        extraModules = [
-          {
-            home-manager.users.wife = self.homeModules.profile-wife;
-            users.users.wife = {
-              isNormalUser = true;
-              home = "/home/wife";
-              description = "wife";
-              inherit extraGroups;
-            };
-          }
-        ];
+        tags = ["wife"];
+        extraModules = [(relativeToRoot "users/wife")];
       };
     };
 

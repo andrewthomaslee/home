@@ -3,7 +3,6 @@
   flake.homeModules.plasma-manager = {
     pkgs,
     config,
-    osConfig,
     ...
   }: let
     cfg = config.homeSpec.programs.plasma-manager;
@@ -15,7 +14,7 @@
         bibata-cursors-translucent
       ];
 
-      programs.plasma = lib.optionalAttrs osConfig.services.desktopManager.plasma6.enable {
+      programs.plasma = {
         enable = true;
         workspace = {
           lookAndFeel = "org.kde.breezedark.desktop";

@@ -1,9 +1,6 @@
 {pkgs, ...}: {
   hostSpec = {
-    hardware = {
-      intel.enable = true;
-      jovian.enable = true;
-    };
+    hardware.jovian.enable = true;
     services = {
       motd.sshMotd = builtins.readFile ./sshMotd.sh;
       flatpak.enable = true;
@@ -27,12 +24,6 @@
       branch = "legacy_580";
     };
   };
-  # boot.initrd.kernelModules = [
-  #   "nvidia"
-  #   "nvidia_modeset"
-  #   "nvidiafb"
-  #   "nvidia_drm"
-  # ];
 
   environment.systemPackages = with pkgs; [
     nvtopPackages.full
