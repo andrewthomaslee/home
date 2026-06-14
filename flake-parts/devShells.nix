@@ -13,14 +13,13 @@
       devShells.default = mkShell {
         packages =
           [
-            inputs'.kubefetch.packages.default
+            kubefetch
             k3s
             clan-cli
-            vcluster
             playit
             tfctl
           ]
-          ++ (with pkgs.unstable; [
+          ++ (with unstable; [
             bash
             bun
             k9s
@@ -33,6 +32,8 @@
             cloudflared
             dive
             kustomize
+            opencode
+            vcluster
           ]);
         shellHook = ''
           export REPO_ROOT

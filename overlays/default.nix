@@ -19,7 +19,6 @@
   k3s = inputs.nixpkgs-unstable.legacyPackages.${final.stdenv.hostPlatform.system}.k3s_1_35;
   rke2 = inputs.nixpkgs-unstable.legacyPackages.${final.stdenv.hostPlatform.system}.rke2_1_35;
 
-  vcluster = self.packages.${final.stdenv.hostPlatform.system}.vcluster;
   tfctl = self.packages.${final.stdenv.hostPlatform.system}.tfctl;
   apply-and-reboot = self.packages.${final.stdenv.hostPlatform.system}.apply-and-reboot;
 }
