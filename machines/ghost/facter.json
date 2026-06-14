@@ -107,7 +107,7 @@
         "module_alias": "usb:v8087p0026d0002dcE0dsc01dp01icE0isc01ip01in00"
       },
       {
-        "index": 46,
+        "index": 45,
         "attached_to": 39,
         "class_list": [
           "usb",
@@ -631,7 +631,7 @@
         "module_alias": "usb:v0BDAp5538d8179dcEFdsc02dp01ic0Eisc02ip00in01"
       },
       {
-        "index": 48,
+        "index": 46,
         "attached_to": 39,
         "class_list": [
           "camera",
@@ -916,7 +916,7 @@
         "fpu_exception": false,
         "cpuid_level": 27,
         "write_protect": false,
-        "tlb_size": 32534,
+        "tlb_size": 32767,
         "clflush_size": 64,
         "cache_alignment": 64,
         "address_sizes": {
@@ -928,7 +928,7 @@
     "disk": [
       {
         "index": 35,
-        "attached_to": 23,
+        "attached_to": 27,
         "class_list": [
           "disk",
           "block_device",
@@ -965,29 +965,29 @@
         },
         "device": {
           "hex": "09ad",
-          "name": "H20 HBRPEKNL0202AO NVMe INTEL 32GB",
+          "name": "H20 HBRPEKNL0202A NVMe INTEL 512GB",
           "value": 2477
         },
         "sub_device": {
-          "hex": "8510",
-          "value": 34064
+          "hex": "8410",
+          "value": 33808
         },
-        "serial": "BTPG13030070512A-2",
-        "model": "Intel H20 HBRPEKNL0202AO NVMe INTEL 32GB",
+        "serial": "BTPG13030070512A-1",
+        "model": "Intel H20 HBRPEKNL0202A NVMe INTEL 512GB",
         "sysfs_id": "/class/block/nvme0n1",
         "sysfs_bus_id": "nvme0",
-        "sysfs_device_link": "/devices/pci0000:00/0000:00:1d.2/0000:2c:00.0/nvme/nvme0",
+        "sysfs_device_link": "/devices/pci0000:00/0000:00:1d.0/0000:2b:00.0/nvme/nvme0",
         "unix_device_names": [
-          "/dev/disk/by-id/nvme-H20_HBRPEKNL0202AO_NVMe_INTEL_32GB_BTPG13030070512A-2",
-          "/dev/disk/by-id/nvme-H20_HBRPEKNL0202AO_NVMe_INTEL_32GB_BTPG13030070512A-2_1",
-          "/dev/disk/by-id/nvme-eui.5cd2e475228a0100",
-          "/dev/disk/by-path/pci-0000:2c:00.0-nvme-1",
+          "/dev/disk/by-id/nvme-H20_HBRPEKNL0202A_NVMe_INTEL_512GB_BTPG13030070512A-1",
+          "/dev/disk/by-id/nvme-H20_HBRPEKNL0202A_NVMe_INTEL_512GB_BTPG13030070512A-1_1",
+          "/dev/disk/by-id/nvme-eui.5cd2e47911b0139e",
+          "/dev/disk/by-path/pci-0000:2b:00.0-nvme-1",
           "/dev/nvme0n1"
         ],
         "resources": [
           {
             "type": "disk_geo",
-            "cylinders": 27905,
+            "cylinders": 488386,
             "heads": 64,
             "sectors": 32,
             "size": "0x0",
@@ -996,7 +996,7 @@
           {
             "type": "size",
             "unit": "sectors",
-            "value_1": 57149440,
+            "value_1": 1000215216,
             "value_2": 512
           }
         ],
@@ -1011,7 +1011,7 @@
       },
       {
         "index": 36,
-        "attached_to": 27,
+        "attached_to": 23,
         "class_list": [
           "disk",
           "block_device",
@@ -1048,29 +1048,29 @@
         },
         "device": {
           "hex": "09ad",
-          "name": "H20 HBRPEKNL0202A NVMe INTEL 512GB",
+          "name": "H20 HBRPEKNL0202AO NVMe INTEL 32GB",
           "value": 2477
         },
         "sub_device": {
-          "hex": "8410",
-          "value": 33808
+          "hex": "8510",
+          "value": 34064
         },
-        "serial": "BTPG13030070512A-1",
-        "model": "Intel H20 HBRPEKNL0202A NVMe INTEL 512GB",
+        "serial": "BTPG13030070512A-2",
+        "model": "Intel H20 HBRPEKNL0202AO NVMe INTEL 32GB",
         "sysfs_id": "/class/block/nvme1n1",
         "sysfs_bus_id": "nvme1",
-        "sysfs_device_link": "/devices/pci0000:00/0000:00:1d.0/0000:2b:00.0/nvme/nvme1",
+        "sysfs_device_link": "/devices/pci0000:00/0000:00:1d.2/0000:2c:00.0/nvme/nvme1",
         "unix_device_names": [
-          "/dev/disk/by-id/nvme-H20_HBRPEKNL0202A_NVMe_INTEL_512GB_BTPG13030070512A-1",
-          "/dev/disk/by-id/nvme-H20_HBRPEKNL0202A_NVMe_INTEL_512GB_BTPG13030070512A-1_1",
-          "/dev/disk/by-id/nvme-eui.5cd2e47911b0139e",
-          "/dev/disk/by-path/pci-0000:2b:00.0-nvme-1",
+          "/dev/disk/by-id/nvme-H20_HBRPEKNL0202AO_NVMe_INTEL_32GB_BTPG13030070512A-2",
+          "/dev/disk/by-id/nvme-H20_HBRPEKNL0202AO_NVMe_INTEL_32GB_BTPG13030070512A-2_1",
+          "/dev/disk/by-id/nvme-eui.5cd2e475228a0100",
+          "/dev/disk/by-path/pci-0000:2c:00.0-nvme-1",
           "/dev/nvme1n1"
         ],
         "resources": [
           {
             "type": "disk_geo",
-            "cylinders": 488386,
+            "cylinders": 27905,
             "heads": 64,
             "sectors": 32,
             "size": "0x0",
@@ -1079,7 +1079,7 @@
           {
             "type": "size",
             "unit": "sectors",
-            "value_1": 1000215216,
+            "value_1": 57149440,
             "value_2": 512
           }
         ],
@@ -1121,53 +1121,44 @@
           "value": 0
         },
         "vendor": {
-          "hex": "2022",
-          "name": "TONPHA",
-          "value": 8226
+          "hex": "13fe",
+          "value": 5118
         },
         "device": {
-          "hex": "0414",
-          "name": "USB 2.0 Classic",
-          "value": 1044
+          "hex": "6300",
+          "name": "USB DISK 3.0",
+          "value": 25344
         },
         "revision": {
           "hex": "0000",
-          "name": "5.00",
+          "name": "PMAP",
           "value": 0
         },
-        "serial": "52312",
-        "model": "TONPHA USB 2.0 Classic",
+        "serial": "077103820070",
+        "model": "USB DISK 3.0",
         "sysfs_id": "/class/block/sda",
         "sysfs_bus_id": "0:0:0:0",
-        "sysfs_device_link": "/devices/pci0000:00/0000:00:14.0/usb3/3-1/3-1:1.0/host0/target0:0:0/0:0:0:0",
+        "sysfs_device_link": "/devices/pci0000:00/0000:00:14.0/usb4/4-2/4-2:1.0/host0/target0:0:0/0:0:0:0",
         "unix_device_names": [
-          "/dev/disk/by-id/usb-TONPHA_USB_2.0_Classic_52312-0:0",
-          "/dev/disk/by-path/pci-0000:00:14.0-usb-0:1:1.0-scsi-0:0:0:0",
-          "/dev/disk/by-path/pci-0000:00:14.0-usbv2-0:1:1.0-scsi-0:0:0:0",
+          "/dev/disk/by-id/usb-_USB_DISK_3.0_070807029C907132-0:0",
+          "/dev/disk/by-path/pci-0000:00:14.0-usb-0:2:1.0-scsi-0:0:0:0",
+          "/dev/disk/by-path/pci-0000:00:14.0-usbv3-0:2:1.0-scsi-0:0:0:0",
           "/dev/sda"
         ],
         "unix_device_name2": "/dev/sg0",
         "resources": [
           {
-            "type": "baud",
-            "speed": 480000000,
-            "bits": 0,
-            "stop_bits": 0,
-            "parity": 0,
-            "handshake": 0
-          },
-          {
             "type": "disk_geo",
-            "cylinders": 1022,
-            "heads": 124,
-            "sectors": 62,
+            "cylinders": 59153,
+            "heads": 64,
+            "sectors": 32,
             "size": "0x0",
             "geo_type": "logical"
           },
           {
             "type": "size",
             "unit": "sectors",
-            "value_1": 7864320,
+            "value_1": 121145344,
             "value_2": 512
           }
         ],
@@ -1181,7 +1172,7 @@
           "sd_mod",
           "usb_storage"
         ],
-        "module_alias": "usb:v2022p0414d0100dc00dsc00dp00ic08isc06ip50in00"
+        "module_alias": "usb:v13FEp6300d0100dc00dsc00dp00ic08isc06ip50in00"
       }
     ],
     "graphics_card": [
@@ -1292,7 +1283,7 @@
         },
         "vendor": {
           "hex": "1d6b",
-          "name": "Linux 6.18.2 xhci-hcd",
+          "name": "Linux 7.0.9 xhci-hcd",
           "value": 7531
         },
         "device": {
@@ -1302,11 +1293,11 @@
         },
         "revision": {
           "hex": "0000",
-          "name": "6.18",
+          "name": "7.00",
           "value": 0
         },
         "serial": "0000:00:14.0",
-        "model": "Linux 6.18.2 xhci-hcd xHCI Host Controller",
+        "model": "Linux 7.0.9 xhci-hcd xHCI Host Controller",
         "sysfs_id": "/devices/pci0000:00/0000:00:14.0/usb3/3-0:1.0",
         "sysfs_bus_id": "3-0:1.0",
         "resources": [
@@ -1354,10 +1345,10 @@
         "driver_modules": [
           "usbcore"
         ],
-        "module_alias": "usb:v1D6Bp0002d0618dc09dsc00dp01ic09isc00ip00in00"
+        "module_alias": "usb:v1D6Bp0002d0700dc09dsc00dp01ic09isc00ip00in00"
       },
       {
-        "index": 43,
+        "index": 42,
         "attached_to": 30,
         "class_list": [
           "usb",
@@ -1379,7 +1370,7 @@
         },
         "vendor": {
           "hex": "1d6b",
-          "name": "Linux 6.18.2 xhci-hcd",
+          "name": "Linux 7.0.9 xhci-hcd",
           "value": 7531
         },
         "device": {
@@ -1389,11 +1380,11 @@
         },
         "revision": {
           "hex": "0000",
-          "name": "6.18",
+          "name": "7.00",
           "value": 0
         },
         "serial": "0000:00:14.0",
-        "model": "Linux 6.18.2 xhci-hcd xHCI Host Controller",
+        "model": "Linux 7.0.9 xhci-hcd xHCI Host Controller",
         "sysfs_id": "/devices/pci0000:00/0000:00:14.0/usb4/4-0:1.0",
         "sysfs_bus_id": "4-0:1.0",
         "detail": {
@@ -1431,10 +1422,10 @@
         "driver_modules": [
           "usbcore"
         ],
-        "module_alias": "usb:v1D6Bp0003d0618dc09dsc00dp03ic09isc00ip00in00"
+        "module_alias": "usb:v1D6Bp0003d0700dc09dsc00dp03ic09isc00ip00in00"
       },
       {
-        "index": 45,
+        "index": 44,
         "attached_to": 12,
         "class_list": [
           "usb",
@@ -1456,7 +1447,7 @@
         },
         "vendor": {
           "hex": "1d6b",
-          "name": "Linux 6.18.2 xhci-hcd",
+          "name": "Linux 7.0.9 xhci-hcd",
           "value": 7531
         },
         "device": {
@@ -1466,11 +1457,11 @@
         },
         "revision": {
           "hex": "0000",
-          "name": "6.18",
+          "name": "7.00",
           "value": 0
         },
         "serial": "0000:00:0d.0",
-        "model": "Linux 6.18.2 xhci-hcd xHCI Host Controller",
+        "model": "Linux 7.0.9 xhci-hcd xHCI Host Controller",
         "sysfs_id": "/devices/pci0000:00/0000:00:0d.0/usb1/1-0:1.0",
         "sysfs_bus_id": "1-0:1.0",
         "resources": [
@@ -1518,10 +1509,10 @@
         "driver_modules": [
           "usbcore"
         ],
-        "module_alias": "usb:v1D6Bp0002d0618dc09dsc00dp01ic09isc00ip00in00"
+        "module_alias": "usb:v1D6Bp0002d0700dc09dsc00dp01ic09isc00ip00in00"
       },
       {
-        "index": 49,
+        "index": 47,
         "attached_to": 12,
         "class_list": [
           "usb",
@@ -1543,7 +1534,7 @@
         },
         "vendor": {
           "hex": "1d6b",
-          "name": "Linux 6.18.2 xhci-hcd",
+          "name": "Linux 7.0.9 xhci-hcd",
           "value": 7531
         },
         "device": {
@@ -1553,11 +1544,11 @@
         },
         "revision": {
           "hex": "0000",
-          "name": "6.18",
+          "name": "7.00",
           "value": 0
         },
         "serial": "0000:00:0d.0",
-        "model": "Linux 6.18.2 xhci-hcd xHCI Host Controller",
+        "model": "Linux 7.0.9 xhci-hcd xHCI Host Controller",
         "sysfs_id": "/devices/pci0000:00/0000:00:0d.0/usb2/2-0:1.0",
         "sysfs_bus_id": "2-0:1.0",
         "detail": {
@@ -1595,105 +1586,7 @@
         "driver_modules": [
           "usbcore"
         ],
-        "module_alias": "usb:v1D6Bp0003d0618dc09dsc00dp03ic09isc00ip00in00"
-      }
-    ],
-    "keyboard": [
-      {
-        "index": 47,
-        "attached_to": 39,
-        "class_list": [
-          "keyboard",
-          "usb"
-        ],
-        "bus_type": {
-          "hex": "0086",
-          "name": "USB",
-          "value": 134
-        },
-        "slot": {
-          "bus": 0,
-          "number": 0
-        },
-        "base_class": {
-          "hex": "0108",
-          "name": "Keyboard",
-          "value": 264
-        },
-        "sub_class": {
-          "hex": "0000",
-          "name": "Keyboard",
-          "value": 0
-        },
-        "vendor": {
-          "hex": "046d",
-          "name": "Logitech Inc.",
-          "value": 1133
-        },
-        "device": {
-          "hex": "c534",
-          "name": "USB Receiver",
-          "value": 50484
-        },
-        "revision": {
-          "hex": "0000",
-          "name": "29.01",
-          "value": 0
-        },
-        "model": "Logitech USB Receiver",
-        "sysfs_id": "/devices/pci0000:00/0000:00:14.0/usb3/3-2/3-2:1.0",
-        "sysfs_bus_id": "3-2:1.0",
-        "resources": [
-          {
-            "type": "baud",
-            "speed": 12000000,
-            "bits": 0,
-            "stop_bits": 0,
-            "parity": 0,
-            "handshake": 0
-          }
-        ],
-        "detail": {
-          "device_class": {
-            "hex": "0000",
-            "name": "per_interface",
-            "value": 0
-          },
-          "device_subclass": {
-            "hex": "0000",
-            "name": "per_interface",
-            "value": 0
-          },
-          "device_protocol": 0,
-          "interface_class": {
-            "hex": "0003",
-            "name": "hid",
-            "value": 3
-          },
-          "interface_subclass": {
-            "hex": "0001",
-            "name": "audio",
-            "value": 1
-          },
-          "interface_protocol": 1,
-          "interface_number": 0,
-          "interface_alternate_setting": 0
-        },
-        "hotplug": "usb",
-        "driver": "usbhid",
-        "driver_module": "usbhid",
-        "drivers": [
-          "usbhid"
-        ],
-        "driver_modules": [
-          "usbhid"
-        ],
-        "driver_info": {
-          "type": "keyboard",
-          "xkb_rules": "xfree86",
-          "xkb_model": "pc104"
-        },
-        "module_alias": "usb:v046DpC534d2901dc00dsc00dp00ic03isc01ip01in00"
+        "module_alias": "usb:v1D6Bp0003d0700dc09dsc00dp03ic09isc00ip00in00"
       }
     ],
     "memory": [
@@ -1802,111 +1695,7 @@
     ],
     "mouse": [
       {
-        "index": 38,
-        "attached_to": 39,
-        "class_list": [
-          "mouse",
-          "usb"
-        ],
-        "bus_type": {
-          "hex": "0086",
-          "name": "USB",
-          "value": 134
-        },
-        "slot": {
-          "bus": 0,
-          "number": 0
-        },
-        "base_class": {
-          "hex": "0105",
-          "name": "Mouse",
-          "value": 261
-        },
-        "sub_class": {
-          "hex": "0003",
-          "name": "USB Mouse",
-          "value": 3
-        },
-        "vendor": {
-          "hex": "046d",
-          "name": "Logitech Inc.",
-          "value": 1133
-        },
-        "device": {
-          "hex": "c534",
-          "name": "USB Receiver",
-          "value": 50484
-        },
-        "revision": {
-          "hex": "0000",
-          "name": "29.01",
-          "value": 0
-        },
-        "compat_vendor": "Unknown",
-        "compat_device": "Generic USB Mouse",
-        "model": "Logitech USB Receiver",
-        "sysfs_id": "/devices/pci0000:00/0000:00:14.0/usb3/3-2/3-2:1.1",
-        "sysfs_bus_id": "3-2:1.1",
-        "resources": [
-          {
-            "type": "baud",
-            "speed": 12000000,
-            "bits": 0,
-            "stop_bits": 0,
-            "parity": 0,
-            "handshake": 0
-          }
-        ],
-        "detail": {
-          "device_class": {
-            "hex": "0000",
-            "name": "per_interface",
-            "value": 0
-          },
-          "device_subclass": {
-            "hex": "0000",
-            "name": "per_interface",
-            "value": 0
-          },
-          "device_protocol": 0,
-          "interface_class": {
-            "hex": "0003",
-            "name": "hid",
-            "value": 3
-          },
-          "interface_subclass": {
-            "hex": "0001",
-            "name": "audio",
-            "value": 1
-          },
-          "interface_protocol": 2,
-          "interface_number": 1,
-          "interface_alternate_setting": 0
-        },
-        "hotplug": "usb",
-        "driver": "usbhid",
-        "driver_module": "usbhid",
-        "drivers": [
-          "usbhid"
-        ],
-        "driver_modules": [
-          "usbhid"
-        ],
-        "driver_info": {
-          "type": "mouse",
-          "db_entry_0": [
-            "explorerps/2",
-            "exps2"
-          ],
-          "xf86": "explorerps/2",
-          "gpm": "exps2",
-          "buttons": -1,
-          "wheels": -1
-        },
-        "module_alias": "usb:v046DpC534d2901dc00dsc00dp00ic03isc01ip02in01"
-      },
-      {
-        "index": 52,
+        "index": 50,
         "attached_to": 0,
         "bus_type": {
           "hex": "0081",
@@ -1931,9 +1720,9 @@
           "hex": "3147",
           "value": 12615
         },
-        "sysfs_id": "/devices/pci0000:00/0000:00:15.1/i2c_designware.1/i2c-1/i2c-DLL0945:00/0018:04F3:3147.0006/input/input42",
+        "sysfs_id": "/devices/pci0000:00/0000:00:15.1/i2c_designware.1/i2c-2/i2c-DLL0945:00/0018:04F3:3147.0002/input/input25",
         "unix_device_names": [
-          "/dev/input/event12",
+          "/dev/input/event13",
           "/dev/input/ + handler"
         ]
       }
@@ -2107,7 +1896,29 @@
     ],
     "network_interface": [
       {
-        "index": 50,
+        "index": 48,
+        "attached_to": 0,
+        "class_list": [
+          "network_interface"
+        ],
+        "base_class": {
+          "hex": "0107",
+          "name": "Network Interface",
+          "value": 263
+        },
+        "sub_class": {
+          "hex": "0000",
+          "name": "Loopback",
+          "value": 0
+        },
+        "model": "Loopback network interface",
+        "sysfs_id": "/class/net/lo",
+        "unix_device_names": [
+          "lo"
+        ]
+      },
+      {
+        "index": 49,
         "attached_to": 16,
         "class_list": [
           "network_interface"
@@ -2145,28 +1956,6 @@
         ],
         "driver_modules": [
           "iwlwifi"
-        ]
-      },
-      {
-        "index": 51,
-        "attached_to": 0,
-        "class_list": [
-          "network_interface"
-        ],
-        "base_class": {
-          "hex": "0107",
-          "name": "Network Interface",
-          "value": 263
-        },
-        "sub_class": {
-          "hex": "0000",
-          "name": "Loopback",
-          "value": 0
-        },
-        "model": "Loopback network interface",
-        "sysfs_id": "/class/net/lo",
-        "unix_device_names": [
-          "lo"
         ]
       }
     ],
@@ -2988,11 +2777,11 @@
       }
     ],
     "system": {
-      "form_factor": "laptop"
+      "form_factor": "desktop"
     },
     "usb": [
       {
-        "index": 44,
+        "index": 43,
         "attached_to": 39,
         "class_list": [
           "usb",
@@ -4074,9 +3863,9 @@
       "product": "Inspiron 7506 2n1",
       "version": "",
       "wake_up": {
-        "hex": "0006",
-        "name": "Power Switch",
-        "value": 6
+        "hex": "0001",
+        "name": "Other",
+        "value": 1
       }
     }
   }
