@@ -1,21 +1,21 @@
 {
   disko.devices = {
     disk = {
-      nvme1n1 = {
+      main = {
         name = "main";
         device = "/dev/disk/by-id/nvme-eui.5cd2e47911b0139e";
         type = "disk";
         content = {
           type = "gpt";
           partitions = {
-            "boot" = {
+            boot = {
               size = "1M";
               type = "EF02";
               priority = 1;
             };
             ESP = {
               type = "EF00";
-              size = "4G";
+              size = "5G";
               priority = 2;
               content = {
                 type = "filesystem";
@@ -31,12 +31,13 @@
                 format = "ext4";
                 mountpoint = "/";
                 mountOptions = ["noatime"];
+                extraArgs = ["-L" "nixos"];
               };
             };
           };
         };
       };
-      nvme0n1 = {
+      swap = {
         name = "swap";
         device = "/dev/disk/by-id/nvme-eui.5cd2e475228a0100";
         type = "disk";
