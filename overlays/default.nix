@@ -21,4 +21,5 @@
 
   tfctl = self.packages.${final.stdenv.hostPlatform.system}.tfctl;
   apply-and-reboot = self.packages.${final.stdenv.hostPlatform.system}.apply-and-reboot;
+  apply-to-reboot = self.packages.${final.stdenv.hostPlatform.system}.apply-to-reboot;
 }

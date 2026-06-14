@@ -80,6 +80,8 @@
         systemPackages = with pkgs; [
           rsync
           fh
+          apply-and-reboot
+          apply-to-boot
         ];
       };
     };
