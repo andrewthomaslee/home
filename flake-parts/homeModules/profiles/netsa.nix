@@ -26,6 +26,7 @@
           starship.enable = true;
           uv.enable = true;
           vscode.enable = true;
+          opencode.enable = true;
         };
       };
       # Home Options
@@ -48,7 +49,6 @@
           httpie
           mediawriter
           fastfetch
-          opencode
         ]);
     };
   };
