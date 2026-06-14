@@ -1,20 +1,19 @@
-name: Reusable Publish
+name: Reusable Docs
 on: workflow_call
 jobs:
-  publish:
+  deploy:
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     permissions:
-      id-token: write
       pages: write
       contents: read
     steps:
       - name: Checkout
         uses: actions/checkout@v6.0.2
         with:
-          persist-credentials: true
+          persist-credentials: false
 
       - name: Setup Nix
         uses: ./.github/actions/setup-nix
@@ -33,12 +32,3 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v5.0.0
-
-      - name: Publish to FlakeHub
-        uses: DeterminateSystems/flakehub-push@main
-        with:
-          visibility: public
-          name: andrewthomaslee/home
-          include-output-paths: true
-          rolling: true
-          rolling-minor: 3
