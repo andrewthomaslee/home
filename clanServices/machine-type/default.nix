@@ -34,7 +34,9 @@
     customLib,
     pkgs,
     ...
-  }: {
+  }: let
+    system = pkgs.stdenv.hostPlatform.system;
+  in {
     imports = [
       self.nixosModules.default
     ];
@@ -77,7 +79,8 @@
       environment = {
         enableAllTerminfo = true;
         localBinInPath = true;
-        systemPackages = with pkgs; [
+        systemPackages = with pkgs;
+        with self.packages.${system}; [
           rsync
           fh
           apply-and-reboot
