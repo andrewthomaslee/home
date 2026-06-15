@@ -16,7 +16,7 @@
       enable = lib.mkEnableOption "default storagebox configuration";
       mountOnAccess = lib.mkOption {
         type = lib.types.bool;
-        default = false;
+        default = true;
         description = "Whether to mount on access, instead of permanently";
         example = true;
       };
@@ -76,7 +76,8 @@
             "rw"
             "nofail"
             "_netdev"
-            "x-systemd.mount-timeout=120s"
+            "x-systemd.mount-timeout=360s"
+            "x-systemd.wants=network-online.target"
             "args2env"
             "config=/dev/null"
             "vfs_cache_mode=full"
@@ -90,9 +91,7 @@
             "sftp_host=${cfg.boxUser}.your-storagebox.de"
             "sftp_user=${cfg.boxUser}"
             "sftp_port=23"
-            "sftp_key_file=${
-              config.clan.core.vars.generators."storagebox-ssh-${cfg.boxUser}".files."ssh-private-key".path
-            }"
+            "sftp_key_file=${config.clan.core.vars.generators."storagebox-ssh-${cfg.boxUser}".files."ssh-private-key".path}"
             "vfs_cache_max_size=5G"
             "vfs_cache_max_age=10m"
             "vfs_read_ahead=256M"
@@ -104,7 +103,7 @@
           ++ lib.optionals cfg.mountOnAccess [
             "noauto"
             "x-systemd.automount"
-            "x-systemd.idle-timeout=600"
+            "x-systemd.idle-timeout=900s"
           ];
       };
     };
