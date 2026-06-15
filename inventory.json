@@ -5,6 +5,9 @@
     },
     "nixos": {
       "installedAt": 1781374526
+    },
+    "ghost": {
+      "installedAt": 1781481897
     }
   }
 }
