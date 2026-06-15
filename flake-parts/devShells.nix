@@ -18,6 +18,7 @@
             clan-cli
             playit
             tfctl
+            longhornctl
           ]
           ++ (with unstable; [
             bash

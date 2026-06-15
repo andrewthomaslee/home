@@ -20,6 +20,8 @@
   rke2 = inputs.nixpkgs-unstable.legacyPackages.${final.stdenv.hostPlatform.system}.rke2_1_35;
 
   tfctl = self.packages.${final.stdenv.hostPlatform.system}.tfctl;
+  longhornctl = self.packages.${final.stdenv.hostPlatform.system}.longhornctl;
+
   apply-and-reboot = self.packages.${final.stdenv.hostPlatform.system}.apply-and-reboot;
   apply-to-reboot = self.packages.${final.stdenv.hostPlatform.system}.apply-to-reboot;
 }
