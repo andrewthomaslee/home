@@ -28,6 +28,10 @@
           python3Minimal
           git
           httpie
+          helm-ls
+          terraform-ls
+          kubectl
+          kubernetes-helm
         ];
         tui.theme = "tokyonight";
         settings = {
