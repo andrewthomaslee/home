@@ -147,62 +147,87 @@ in {
     # https://clan.lol/docs/unstable/services/official/emergency-access
     emergency-access.roles.default.tags = ["all"];
 
-    # home = {
-    #   module = {
-    #     name = "rancher";
-    #     input = "clan-community";
-    #   };
-    #   roles = {
-    #     master.machines.kamrui-h1.settings = {
-    #       domain = "andrewlee.fun";
-    #       distro = "k3s";
-    #       cilium.helmValues.ingressController.enabled = false;
-    #       traefik.enable = false;
-    #       longhorn.helmValues = {
-    #         defaultSettings.guaranteedInstanceManagerCPU = 6;
-    #         longhornUI.replicas = 1;
-    #         csi = {
-    #           attacherReplicaCount = 1;
-    #           provisionerReplicaCount = 1;
-    #           resizerReplicaCount = 1;
-    #           snapshotterReplicaCount = 1;
-    #         };
-    #       };
-    #       wireguard = {
-    #         endpoint = "[2600:1700:5e40:c2e0::11]";
-    #         ipv4 = "172.16.0.1";
-    #       };
-    #     };
-    #     worker.machines = {
-    #       inuc-celeron.settings = {
-    #         services.web = false;
-    #         wireguard = {
-    #           endpoint = "[2600:1700:5e40:c2e0::12]";
-    #           ipv4 = "172.16.0.2";
-    #         };
-    #       };
-    #       inuc-i5.settings = {
-    #         wireguard = {
-    #           endpoint = "[2600:1700:5e40:c2e0::13]";
-    #           ipv4 = "172.16.0.3";
-    #         };
-    #       };
-    #     };
-    #   };
-    # };
+    # -------- ☸️   Kubernetes   ☸️ -------- #
 
+    # --- K3s Mini PC Cluster --- #
+    home = {
+      # Feature Branch of clan-community
+      # https://git.clan.lol/andrewthomaslee/clan-community/src/branch/feat/rancher/
+      module = {
+        name = "rancher";
+        input = "clan-community";
+      };
+      roles = {
+        # -------- Master Machine -------- #
+        master.machines.kamrui-h1.settings = {
+          # --- Cluster Level Settings --- #
+          domain = "andrewlee.fun";
+          distro = "k3s";
+          cilium.id = 1;
+          longhorn = {
+            v2 = {
+              enabled = true;
+              hugepages.enabled = true;
+            };
+            helmValues.csi = {
+              attacherReplicaCount = 1;
+              provisionerReplicaCount = 1;
+              resizerReplicaCount = 1;
+              snapshotterReplicaCount = 1;
+            };
+          };
+          # --- Node level settings --- #
+          services.longhorn.v2.enabled = true;
+          wireguard = {
+            endpoint = "[2600:1700:5e40:c2e0::11]";
+            ipv4 = "172.16.0.1";
+          };
+        };
+        # -------- Manager Nodes -------- #
+        manager.machines = {
+          beelink.settings = {
+            wireguard = {
+              endpoint = "[2600:1700:5e40:c2e0::16]";
+              ipv4 = "172.16.0.3";
+            };
+          };
+          inuc-i5.settings = {
+            wireguard = {
+              endpoint = "[2600:1700:5e40:c2e0::13]";
+              ipv4 = "172.16.0.4";
+            };
+          };
+        };
+        # -------- Worker Nodes -------- #
+        worker.machines = {
+          inuc-celeron.settings = {
+            services.web.enabled = false;
+            wireguard = {
+              endpoint = "[2600:1700:5e40:c2e0::12]";
+              ipv4 = "172.16.0.5";
+            };
+          };
+        };
+      };
+    };
+
+    # --- RKE2 Hetzner Cloud Cluster --- #
     hcloud = {
       module = {
         name = "rancher";
         input = "clan-community";
       };
       roles = {
+        # -------- Master Machine -------- #
         master.machines.hel-1.settings = {
+          # --- Cluster Level Settings --- #
           domain = "andrewlee.cloud";
           distro = "rke2";
           cilium.id = 2;
+          # --- Node level settings --- #
           wireguard.ipv4 = "172.16.1.1";
         };
+        # -------- Manager Nodes -------- #
         manager.machines = {
           hel-2.settings.wireguard.ipv4 = "172.16.1.2";
           hel-3.settings.wireguard.ipv4 = "172.16.1.3";
