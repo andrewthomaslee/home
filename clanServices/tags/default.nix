@@ -1,10 +1,4 @@
 {
-  # lib,
-  # config,
-  # clanLib,
-  # directory,
-  ...
-}: {
   _class = "clan.service";
   manifest = {
     name = "tags";
