@@ -554,11 +554,11 @@
         "treefmt-nix": "treefmt-nix"
       },
       "locked": {
-        "lastModified": 1781559507,
-        "narHash": "sha256-kIn3zVU83/lpb/yi7G7jOflnq6pxn0U+gyvG/aGkU+k=",
+        "lastModified": 1781559902,
+        "narHash": "sha256-7+h2cgN95BWE3gSI1zjNO2lyQe/3kSOIhY2XZ4BroYA=",
         "ref": "feat/rancher",
-        "rev": "44b33bf132338dbf75ea1220247ddc5d8e1d25d1",
-        "revCount": 93,
+        "rev": "d78e50272cc658f43b575de2b7737fe405e56f68",
+        "revCount": 94,
         "type": "git",
         "url": "https://git.clan.lol/andrewthomaslee/clan-community.git"
       },
