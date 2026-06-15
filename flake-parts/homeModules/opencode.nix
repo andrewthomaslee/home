@@ -14,13 +14,46 @@
   in {
     options.homeSpec.programs.opencode.enable = lib.mkEnableOption "default opencode configuration";
     config = lib.mkIf cfg.enable {
-      programs.opencode = {
+      programs.opencode = with pkgs.unstable; {
         enable = true;
-        package = pkgs.unstable.opencode;
-        extraPackages = with pkgs.unstable; [
+        package = opencode;
+        extraPackages = [
           uv
           nix
+          pyrefly
+          nil
+          alejandra
+          ruff
+          podman
+          python3Minimal
+          git
+          httpie
         ];
+        tui.theme = "tokyonight";
+        settings = {
+          model = "google/gemini-3.5-flash";
+          small_model = "google/gemini-1.5-flash";
+          compaction = {
+            auto = true;
+            tail_turns = 2;
+          };
+          lsp = {
+            python = {
+              command = ["${pyrefly}/bin/pyrefly"];
+              extensions = ["py"];
+            };
+          };
+          formatter = {
+            nix = {
+              command = ["alejandra"];
+              extensions = ["nix"];
+            };
+            python = {
+              command = ["ruff" "format" "-"];
+              extensions = ["py"];
+            };
+          };
+        };
       };
     };
   };
