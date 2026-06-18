@@ -15,35 +15,35 @@ in {
     # Andrew's PCs
     nixos = {
       deploy.targetHost = "root@nixos.armadillo-frog.ts.net";
-      tags = ["pc" "intel" "dev" "netsa" "wife"];
+      tags = ["pc" "intel" "lan" "dev" "netsa" "wife"];
     };
     ghost = {
       deploy.targetHost = "root@ghost.armadillo-frog.ts.net";
-      tags = ["pc" "intel" "dev" "netsa"];
+      tags = ["pc" "intel" "wan" "dev" "netsa"];
     };
 
     # Other's PCs
     hp-notebook = {
       deploy.targetHost = "root@hp-notebook.armadillo-frog.ts.net";
-      tags = ["pc" "wife"];
+      tags = ["pc" "wife" "wan"];
     };
 
     # Home Servers
     inuc-celeron = {
       deploy.targetHost = "root@inuc-celeron.armadillo-frog.ts.net";
-      tags = ["m" "intel"];
+      tags = ["intel" "m"];
     };
     inuc-i5 = {
       deploy.targetHost = "root@inuc-i5.armadillo-frog.ts.net";
-      tags = ["m" "intel"];
+      tags = ["intel" "m" "wan"];
     };
     beelink = {
       deploy.targetHost = "root@beelink.armadillo-frog.ts.net";
-      tags = ["m" "amd"];
+      tags = ["amd" "m" "wan"];
     };
     kamrui-h1 = {
       deploy.targetHost = "root@kamrui-h1.armadillo-frog.ts.net";
-      tags = ["m" "amd"];
+      tags = ["amd" "m" "kde" "wan" "netsa"];
     };
 
     # Cloud VMs
@@ -88,6 +88,9 @@ in {
         dev.tags.dev = {};
         amd.tags.amd = {};
         intel.tags.intel = {};
+        lan.tags.lan = {};
+        wan.tags.wan = {};
+        kde.tags.kde = {};
       };
     };
 

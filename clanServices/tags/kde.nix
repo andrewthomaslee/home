@@ -1,7 +1,5 @@
-{inputs, ...}: {
-  imports = [
-    inputs.determinate.nixosModules.default
-  ];
+{...}: {
+  imports = [];
   config = {
     # --- hostSpec options --- #
     hostSpec = {

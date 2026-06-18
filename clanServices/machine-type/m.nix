@@ -5,7 +5,7 @@
   config = {
     # hostSpec options
     hostSpec = {
-      networking.enable = true;
+      networking.lan.enabled = true;
       services.docker.enable = true;
     };
   };
