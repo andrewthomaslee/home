@@ -734,7 +734,7 @@
         "fpu_exception": false,
         "cpuid_level": 22,
         "write_protect": false,
-        "tlb_size": 30077,
+        "tlb_size": 32765,
         "clflush_size": 64,
         "cache_alignment": 64,
         "address_sizes": {
@@ -3472,7 +3472,7 @@
           "/dev/input/by-id/usb-Logitech_G535_Wireless_Gaming_Headset-event-if03",
           "/dev/input/by-path/pci-0000:00:14.0-usb-0:10:1.3-event",
           "/dev/input/by-path/pci-0000:00:14.0-usbv2-0:10:1.3-event",
-          "/dev/input/event19"
+          "/dev/input/event5"
         ],
         "resources": [
           {
