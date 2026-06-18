@@ -39,3 +39,7 @@ printf "%-18s: ${BOLD}${GREEN}%s${RESET}\n" "/" "$disk_root_usage"
 # Disk Usage /mnt/bazzite
 disk_bazzite_usage=$(df -h /mnt/bazzite | awk 'NR==2 {print $5 " of " $2}')
 printf "%-18s: ${BOLD}${GREEN}%s${RESET}\n" "/mnt/bazzite" "$disk_bazzite_usage"
+
+# Disk Usage /mnt/hdd
+disk_hdd_usage=$(df -h /mnt/hdd | awk 'NR==2 {print $5 " of " $2}')
+printf "%-18s: ${BOLD}${GREEN}%s${RESET}\n" "/mnt/hdd" "$disk_hdd_usage"
