@@ -2,6 +2,10 @@
   "version": 1,
   "system": "x86_64-linux",
   "virtualisation": "none",
+  "uefi": {
+    "supported": true,
+    "platform_size": 64
+  },
   "hardware": {
     "bios": {
       "apm_info": {
@@ -446,78 +450,6 @@
         },
         "slot": {
           "bus": 0,
-          "number": 29
-        },
-        "base_class": {
-          "hex": "0006",
-          "name": "Bridge",
-          "value": 6
-        },
-        "sub_class": {
-          "hex": "0004",
-          "name": "PCI bridge",
-          "value": 4
-        },
-        "pci_interface": {
-          "hex": "0000",
-          "name": "Normal decode",
-          "value": 0
-        },
-        "vendor": {
-          "hex": "8086",
-          "name": "Intel Corporation",
-          "value": 32902
-        },
-        "sub_vendor": {
-          "hex": "1462",
-          "value": 5218
-        },
-        "device": {
-          "hex": "a298",
-          "value": 41624
-        },
-        "sub_device": {
-          "hex": "7a57",
-          "value": 31319
-        },
-        "revision": {
-          "hex": "00f0",
-          "value": 240
-        },
-        "model": "Intel PCI bridge",
-        "sysfs_id": "/devices/pci0000:00/0000:00:1d.0",
-        "sysfs_bus_id": "0000:00:1d.0",
-        "detail": {
-          "function": 0,
-          "command": 1031,
-          "header_type": 1,
-          "secondary_bus": 7,
-          "prog_if": 0
-        },
-        "driver": "pcieport",
-        "driver_module": "pcieportdrv",
-        "drivers": [
-          "pcieport"
-        ],
-        "driver_modules": [
-          "pcieportdrv"
-        ],
-        "module_alias": "pci:v00008086d0000A298sv00001462sd00007A57bc06sc04i00"
-      },
-      {
-        "index": 28,
-        "attached_to": 0,
-        "class_list": [
-          "pci",
-          "bridge"
-        ],
-        "bus_type": {
-          "hex": "0004",
-          "name": "PCI",
-          "value": 4
-        },
-        "slot": {
-          "bus": 0,
           "number": 28
         },
         "base_class": {
@@ -577,7 +509,7 @@
         "module_alias": "pci:v00008086d0000A296sv00001462sd00007A57bc06sc04i00"
       },
       {
-        "index": 31,
+        "index": 30,
         "attached_to": 0,
         "class_list": [
           "pci",
@@ -722,6 +654,7 @@
           "x2apic",
           "movbe",
           "popcnt",
+          "tsc_deadline_timer",
           "aes",
           "xsave",
           "avx",
@@ -732,6 +665,10 @@
           "3dnowprefetch",
           "cpuid_fault",
           "pti",
+          "ssbd",
+          "ibrs",
+          "ibpb",
+          "stibp",
           "tpr_shadow",
           "flexpriority",
           "ept",
@@ -740,13 +677,11 @@
           "fsgsbase",
           "tsc_adjust",
           "bmi1",
-          "hle",
           "avx2",
           "smep",
           "bmi2",
           "erms",
           "invpcid",
-          "rtm",
           "mpx",
           "rdseed",
           "adx",
@@ -766,7 +701,10 @@
           "hwp_notify",
           "hwp_act_window",
           "hwp_epp",
-          "vnmi"
+          "vnmi",
+          "md_clear",
+          "flush_l1d",
+          "arch_capabilities"
         ],
         "bugs": [
           "cpu_meltdown",
@@ -783,7 +721,6 @@
           "retbleed",
           "gds",
           "spectre_v2_user",
-          "old_microcode",
           "vmscape"
         ],
         "power_management": [
@@ -800,7 +737,6 @@
         "fpu_exception": false,
         "cpuid_level": 22,
         "write_protect": false,
-        "tlb_size": 32765,
         "clflush_size": 64,
         "cache_alignment": 64,
         "address_sizes": {
@@ -811,7 +747,7 @@
     ],
     "disk": [
       {
-        "index": 37,
+        "index": 39,
         "attached_to": 17,
         "class_list": [
           "disk",
@@ -892,21 +828,20 @@
         ]
       },
       {
-        "index": 38,
-        "attached_to": 33,
+        "index": 40,
+        "attached_to": 12,
         "class_list": [
           "disk",
-          "usb",
-          "scsi",
+          "ide",
           "block_device"
         ],
         "bus_type": {
-          "hex": "0084",
-          "name": "SCSI",
-          "value": 132
+          "hex": "0085",
+          "name": "IDE",
+          "value": 133
         },
         "slot": {
-          "bus": 4,
+          "bus": 1,
           "number": 0
         },
         "base_class": {
@@ -919,62 +854,57 @@
           "name": "Disk",
           "value": 0
         },
-        "vendor": {
-          "hex": "13fe",
-          "value": 5118
-        },
         "device": {
-          "hex": "6300",
-          "name": "USB DISK 3.0",
-          "value": 25344
+          "hex": "0000",
+          "name": "ST2000DX001-1NS1",
+          "value": 0
         },
         "revision": {
           "hex": "0000",
-          "name": "PMAP",
+          "name": "CC41",
           "value": 0
         },
-        "serial": "077103820070",
-        "model": "USB DISK 3.0",
+        "serial": "Z4Z5RFRN",
+        "model": "ST2000DX001-1NS1",
         "sysfs_id": "/class/block/sdb",
-        "sysfs_bus_id": "4:0:0:0",
-        "sysfs_device_link": "/devices/pci0000:00/0000:00:14.0/usb2/2-2/2-2:1.0/host4/target4:0:0/4:0:0:0",
+        "sysfs_bus_id": "1:0:0:0",
+        "sysfs_device_link": "/devices/pci0000:00/0000:00:17.0/ata2/host1/target1:0:0/1:0:0:0",
         "unix_device_names": [
-          "/dev/disk/by-id/usb-_USB_DISK_3.0_070807029C907132-0:0",
-          "/dev/disk/by-path/pci-0000:00:14.0-usb-0:2:1.0-scsi-0:0:0:0",
-          "/dev/disk/by-path/pci-0000:00:14.0-usbv3-0:2:1.0-scsi-0:0:0:0",
+          "/dev/disk/by-id/ata-ST2000DX001-1NS164_Z4Z5RFRN",
+          "/dev/disk/by-id/wwn-0x5000c50091afe777",
+          "/dev/disk/by-path/pci-0000:00:17.0-ata-2",
+          "/dev/disk/by-path/pci-0000:00:17.0-ata-2.0",
           "/dev/sdb"
         ],
-        "unix_device_name2": "/dev/sg1",
         "resources": [
           {
             "type": "disk_geo",
-            "cylinders": 59153,
-            "heads": 64,
-            "sectors": 32,
+            "cylinders": 243201,
+            "heads": 255,
+            "sectors": 63,
             "size": "0x0",
             "geo_type": "logical"
           },
           {
             "type": "size",
             "unit": "sectors",
-            "value_1": 121145344,
+            "value_1": 3907029168,
             "value_2": 512
           }
         ],
-        "driver": "usb-storage",
-        "driver_module": "usb_storage",
+        "driver": "ahci",
+        "driver_module": "ahci",
         "drivers": [
-          "sd",
-          "usb-storage"
+          "ahci",
+          "sd"
         ],
         "driver_modules": [
-          "sd_mod",
-          "usb_storage"
-        ],
-        "module_alias": "usb:v13FEp6300d0100dc00dsc00dp00ic08isc06ip50in00"
+          "ahci",
+          "sd_mod"
+        ]
       },
       {
-        "index": 39,
+        "index": 41,
         "attached_to": 12,
         "class_list": [
           "disk",
@@ -1122,17 +1052,25 @@
         ],
         "detail": {
           "function": 0,
-          "command": 7,
+          "command": 1031,
           "header_type": 0,
           "secondary_bus": 0,
           "prog_if": 0
         },
+        "driver": "nvidia",
+        "driver_module": "nvidia",
+        "drivers": [
+          "nvidia"
+        ],
+        "driver_modules": [
+          "nvidia"
+        ],
         "module_alias": "pci:v000010DEd00001B82sv00001043sd0000861Dbc03sc00i00"
       }
     ],
     "hub": [
       {
-        "index": 41,
+        "index": 43,
         "attached_to": 25,
         "class_list": [
           "usb",
@@ -1154,7 +1092,7 @@
         },
         "vendor": {
           "hex": "1d6b",
-          "name": "Linux 7.0.9 xhci-hcd",
+          "name": "Linux 7.0.11 xhci-hcd",
           "value": 7531
         },
         "device": {
@@ -1168,7 +1106,7 @@
           "value": 0
         },
         "serial": "0000:06:00.0",
-        "model": "Linux 7.0.9 xhci-hcd xHCI Host Controller",
+        "model": "Linux 7.0.11 xhci-hcd xHCI Host Controller",
         "sysfs_id": "/devices/pci0000:00/0000:00:1c.6/0000:06:00.0/usb6/6-0:1.0",
         "sysfs_bus_id": "6-0:1.0",
         "detail": {
@@ -1209,7 +1147,7 @@
         "module_alias": "usb:v1D6Bp0003d0700dc09dsc00dp03ic09isc00ip00in00"
       },
       {
-        "index": 44,
+        "index": 48,
         "attached_to": 26,
         "class_list": [
           "usb",
@@ -1231,7 +1169,7 @@
         },
         "vendor": {
           "hex": "1d6b",
-          "name": "Linux 7.0.9 xhci-hcd",
+          "name": "Linux 7.0.11 xhci-hcd",
           "value": 7531
         },
         "device": {
@@ -1245,7 +1183,7 @@
           "value": 0
         },
         "serial": "0000:05:00.0",
-        "model": "Linux 7.0.9 xhci-hcd xHCI Host Controller",
+        "model": "Linux 7.0.11 xhci-hcd xHCI Host Controller",
         "sysfs_id": "/devices/pci0000:00/0000:00:1c.4/0000:05:00.0/usb3/3-0:1.0",
         "sysfs_bus_id": "3-0:1.0",
         "resources": [
@@ -1296,7 +1234,7 @@
         "module_alias": "usb:v1D6Bp0002d0700dc09dsc00dp01ic09isc00ip00in00"
       },
       {
-        "index": 46,
+        "index": 51,
         "attached_to": 26,
         "class_list": [
           "usb",
@@ -1318,7 +1256,7 @@
         },
         "vendor": {
           "hex": "1d6b",
-          "name": "Linux 7.0.9 xhci-hcd",
+          "name": "Linux 7.0.11 xhci-hcd",
           "value": 7531
         },
         "device": {
@@ -1332,7 +1270,7 @@
           "value": 0
         },
         "serial": "0000:05:00.0",
-        "model": "Linux 7.0.9 xhci-hcd xHCI Host Controller",
+        "model": "Linux 7.0.11 xhci-hcd xHCI Host Controller",
         "sysfs_id": "/devices/pci0000:00/0000:00:1c.4/0000:05:00.0/usb4/4-0:1.0",
         "sysfs_bus_id": "4-0:1.0",
         "detail": {
@@ -1373,8 +1311,8 @@
         "module_alias": "usb:v1D6Bp0003d0700dc09dsc00dp03ic09isc00ip00in00"
       },
       {
-        "index": 48,
-        "attached_to": 33,
+        "index": 54,
+        "attached_to": 32,
         "class_list": [
           "usb",
           "hub"
@@ -1395,7 +1333,7 @@
         },
         "vendor": {
           "hex": "1d6b",
-          "name": "Linux 7.0.9 xhci-hcd",
+          "name": "Linux 7.0.11 xhci-hcd",
           "value": 7531
         },
         "device": {
@@ -1409,7 +1347,7 @@
           "value": 0
         },
         "serial": "0000:00:14.0",
-        "model": "Linux 7.0.9 xhci-hcd xHCI Host Controller",
+        "model": "Linux 7.0.11 xhci-hcd xHCI Host Controller",
         "sysfs_id": "/devices/pci0000:00/0000:00:14.0/usb1/1-0:1.0",
         "sysfs_bus_id": "1-0:1.0",
         "resources": [
@@ -1460,7 +1398,7 @@
         "module_alias": "usb:v1D6Bp0002d0700dc09dsc00dp01ic09isc00ip00in00"
       },
       {
-        "index": 49,
+        "index": 56,
         "attached_to": 25,
         "class_list": [
           "usb",
@@ -1482,7 +1420,7 @@
         },
         "vendor": {
           "hex": "1d6b",
-          "name": "Linux 7.0.9 xhci-hcd",
+          "name": "Linux 7.0.11 xhci-hcd",
           "value": 7531
         },
         "device": {
@@ -1496,7 +1434,7 @@
           "value": 0
         },
         "serial": "0000:06:00.0",
-        "model": "Linux 7.0.9 xhci-hcd xHCI Host Controller",
+        "model": "Linux 7.0.11 xhci-hcd xHCI Host Controller",
         "sysfs_id": "/devices/pci0000:00/0000:00:1c.6/0000:06:00.0/usb5/5-0:1.0",
         "sysfs_bus_id": "5-0:1.0",
         "resources": [
@@ -1547,8 +1485,8 @@
         "module_alias": "usb:v1D6Bp0002d0700dc09dsc00dp01ic09isc00ip00in00"
       },
       {
-        "index": 50,
-        "attached_to": 33,
+        "index": 57,
+        "attached_to": 32,
         "class_list": [
           "usb",
           "hub"
@@ -1569,7 +1507,7 @@
         },
         "vendor": {
           "hex": "1d6b",
-          "name": "Linux 7.0.9 xhci-hcd",
+          "name": "Linux 7.0.11 xhci-hcd",
           "value": 7531
         },
         "device": {
@@ -1583,7 +1521,7 @@
           "value": 0
         },
         "serial": "0000:00:14.0",
-        "model": "Linux 7.0.9 xhci-hcd xHCI Host Controller",
+        "model": "Linux 7.0.11 xhci-hcd xHCI Host Controller",
         "sysfs_id": "/devices/pci0000:00/0000:00:14.0/usb2/2-0:1.0",
         "sysfs_bus_id": "2-0:1.0",
         "detail": {
@@ -1626,8 +1564,8 @@
     ],
     "keyboard": [
       {
-        "index": 42,
-        "attached_to": 48,
+        "index": 55,
+        "attached_to": 54,
         "class_list": [
           "keyboard",
           "usb"
@@ -1668,13 +1606,13 @@
         },
         "serial": "1381386C3137",
         "model": "Logitech Gaming Keyboard G213",
-        "sysfs_id": "/devices/pci0000:00/0000:00:14.0/usb1/1-10/1-10:1.0",
-        "sysfs_bus_id": "1-10:1.0",
+        "sysfs_id": "/devices/pci0000:00/0000:00:14.0/usb1/1-8/1-8:1.0",
+        "sysfs_bus_id": "1-8:1.0",
         "unix_device_names": [
           "/dev/input/by-id/usb-Logitech_Gaming_Keyboard_G213_1381386C3137-event-kbd",
-          "/dev/input/by-path/pci-0000:00:14.0-usb-0:10:1.0-event-kbd",
-          "/dev/input/by-path/pci-0000:00:14.0-usbv2-0:10:1.0-event-kbd",
-          "/dev/input/event3"
+          "/dev/input/by-path/pci-0000:00:14.0-usb-0:8:1.0-event-kbd",
+          "/dev/input/by-path/pci-0000:00:14.0-usbv2-0:8:1.0-event-kbd",
+          "/dev/input/event4"
         ],
         "resources": [
           {
@@ -1755,10 +1693,604 @@
         ]
       }
     ],
+    "monitor": [
+      {
+        "index": 34,
+        "attached_to": 20,
+        "class_list": [
+          "monitor"
+        ],
+        "base_class": {
+          "hex": "0100",
+          "name": "Monitor",
+          "value": 256
+        },
+        "sub_class": {
+          "hex": "0002",
+          "name": "LCD Monitor",
+          "value": 2
+        },
+        "vendor": {
+          "hex": "4e14",
+          "value": 19988
+        },
+        "device": {
+          "hex": "6c05",
+          "name": "Sceptre M27",
+          "value": 27653
+        },
+        "serial": "1",
+        "model": "Sceptre M27",
+        "resources": [
+          {
+            "type": "monitor",
+            "width": 1024,
+            "height": 768,
+            "vertical_frequency": 60,
+            "interlaced": false
+          },
+          {
+            "type": "monitor",
+            "width": 1024,
+            "height": 768,
+            "vertical_frequency": 70,
+            "interlaced": false
+          },
+          {
+            "type": "monitor",
+            "width": 1024,
+            "height": 768,
+            "vertical_frequency": 75,
+            "interlaced": false
+          },
+          {
+            "type": "monitor",
+            "width": 1280,
+            "height": 1024,
+            "vertical_frequency": 60,
+            "interlaced": false
+          },
+          {
+            "type": "monitor",
+            "width": 1280,
+            "height": 1024,
+            "vertical_frequency": 75,
+            "interlaced": false
+          },
+          {
+            "type": "monitor",
+            "width": 1280,
+            "height": 720,
+            "vertical_frequency": 60,
+            "interlaced": false
+          },
+          {
+            "type": "monitor",
+            "width": 1280,
+            "height": 960,
+            "vertical_frequency": 60,
+            "interlaced": false
+          },
+          {
+            "type": "monitor",
+            "width": 1920,
+            "height": 1080,
+            "vertical_frequency": 60,
+            "interlaced": false
+          },
+          {
+            "type": "monitor",
+            "width": 640,
+            "height": 480,
+            "vertical_frequency": 60,
+            "interlaced": false
+          },
+          {
+            "type": "monitor",
+            "width": 640,
+            "height": 480,
+            "vertical_frequency": 67,
+            "interlaced": false
+          },
+          {
+            "type": "monitor",
+            "width": 640,
+            "height": 480,
+            "vertical_frequency": 72,
+            "interlaced": false
+          },
+          {
+            "type": "monitor",
+            "width": 640,
+            "height": 480,
+            "vertical_frequency": 75,
+            "interlaced": false
+          },
+          {
+            "type": "monitor",
+            "width": 720,
+            "height": 400,
+            "vertical_frequency": 70,
+            "interlaced": false
+          },
+          {
+            "type": "monitor",
+            "width": 800,
+            "height": 600,
+            "vertical_frequency": 56,
+            "interlaced": false
+          },
+          {
+            "type": "monitor",
+            "width": 800,
+            "height": 600,
+            "vertical_frequency": 60,
+            "interlaced": false
+          },
+          {
+            "type": "monitor",
+            "width": 800,
+            "height": 600,
+            "vertical_frequency": 72,
+            "interlaced": false
+          },
+          {
+            "type": "monitor",
+            "width": 800,
+            "height": 600,
+            "vertical_frequency": 75,
+            "interlaced": false
+          },
+          {
+            "type": "monitor",
+            "width": 832,
+            "height": 624,
+            "vertical_frequency": 75,
+            "interlaced": false
+          },
+          {
+            "type": "size",
+            "unit": "mm",
+            "value_1": 598,
+            "value_2": 336
+          }
+        ],
+        "detail": {
+          "manufacture_year": 2021,
+          "manufacture_week": 33,
+          "vertical_sync": {
+            "min": 48,
+            "max": 144
+          },
+          "horizontal_sync": {
+            "min": 30,
+            "max": 160
+          },
+          "horizontal_sync_timings": {
+            "disp": 1920,
+            "sync_start": 1968,
+            "sync_end": 2000,
+            "total": 2080
+          },
+          "vertical_sync_timings": {
+            "disp": 1080,
+            "sync_start": 1083,
+            "sync_end": 1088,
+            "total": 1119
+          },
+          "clock": 174500,
+          "width": 1920,
+          "height": 1080,
+          "width_millimetres": 598,
+          "height_millimetres": 336,
+          "horizontal_flag": 0,
+          "vertical_flag": 0,
+          "vendor": "",
+          "name": "Sceptre M27"
+        },
+        "driver_info": {
+          "type": "display",
+          "width": 1920,
+          "height": 1080,
+          "vertical_sync": {
+            "min": 48,
+            "max": 144
+          },
+          "horizontal_sync": {
+            "min": 30,
+            "max": 160
+          },
+          "bandwidth": 0,
+          "horizontal_sync_timings": {
+            "disp": 1920,
+            "sync_start": 1968,
+            "sync_end": 2000,
+            "total": 2080
+          },
+          "vertical_sync_timings": {
+            "disp": 1080,
+            "sync_start": 1083,
+            "sync_end": 1088,
+            "total": 1119
+          },
+          "horizontal_flag": 0,
+          "vertical_flag": 0
+        }
+      },
+      {
+        "index": 35,
+        "attached_to": 20,
+        "class_list": [
+          "monitor"
+        ],
+        "base_class": {
+          "hex": "0100",
+          "name": "Monitor",
+          "value": 256
+        },
+        "sub_class": {
+          "hex": "0002",
+          "name": "LCD Monitor",
+          "value": 2
+        },
+        "vendor": {
+          "hex": "06b3",
+          "value": 1715
+        },
+        "device": {
+          "hex": "3435",
+          "name": "ASUS VG34V",
+          "value": 13365
+        },
+        "serial": "MBLMTF011166",
+        "model": "ASUS VG34V",
+        "resources": [
+          {
+            "type": "monitor",
+            "width": 1024,
+            "height": 768,
+            "vertical_frequency": 60,
+            "interlaced": false
+          },
+          {
+            "type": "monitor",
+            "width": 1024,
+            "height": 768,
+            "vertical_frequency": 70,
+            "interlaced": false
+          },
+          {
+            "type": "monitor",
+            "width": 1024,
+            "height": 768,
+            "vertical_frequency": 75,
+            "interlaced": false
+          },
+          {
+            "type": "monitor",
+            "width": 1152,
+            "height": 864,
+            "vertical_frequency": 75,
+            "interlaced": false
+          },
+          {
+            "type": "monitor",
+            "width": 1280,
+            "height": 1024,
+            "vertical_frequency": 60,
+            "interlaced": false
+          },
+          {
+            "type": "monitor",
+            "width": 1280,
+            "height": 1024,
+            "vertical_frequency": 75,
+            "interlaced": false
+          },
+          {
+            "type": "monitor",
+            "width": 1280,
+            "height": 960,
+            "vertical_frequency": 60,
+            "interlaced": false
+          },
+          {
+            "type": "monitor",
+            "width": 3440,
+            "height": 1440,
+            "vertical_frequency": 60,
+            "interlaced": false
+          },
+          {
+            "type": "monitor",
+            "width": 640,
+            "height": 480,
+            "vertical_frequency": 60,
+            "interlaced": false
+          },
+          {
+            "type": "monitor",
+            "width": 640,
+            "height": 480,
+            "vertical_frequency": 67,
+            "interlaced": false
+          },
+          {
+            "type": "monitor",
+            "width": 640,
+            "height": 480,
+            "vertical_frequency": 72,
+            "interlaced": false
+          },
+          {
+            "type": "monitor",
+            "width": 640,
+            "height": 480,
+            "vertical_frequency": 75,
+            "interlaced": false
+          },
+          {
+            "type": "monitor",
+            "width": 720,
+            "height": 400,
+            "vertical_frequency": 70,
+            "interlaced": false
+          },
+          {
+            "type": "monitor",
+            "width": 800,
+            "height": 600,
+            "vertical_frequency": 56,
+            "interlaced": false
+          },
+          {
+            "type": "monitor",
+            "width": 800,
+            "height": 600,
+            "vertical_frequency": 60,
+            "interlaced": false
+          },
+          {
+            "type": "monitor",
+            "width": 800,
+            "height": 600,
+            "vertical_frequency": 72,
+            "interlaced": false
+          },
+          {
+            "type": "monitor",
+            "width": 800,
+            "height": 600,
+            "vertical_frequency": 75,
+            "interlaced": false
+          },
+          {
+            "type": "size",
+            "unit": "mm",
+            "value_1": 797,
+            "value_2": 334
+          }
+        ],
+        "detail": {
+          "manufacture_year": 2021,
+          "manufacture_week": 44,
+          "vertical_sync": {
+            "min": 48,
+            "max": 165
+          },
+          "horizontal_sync": {
+            "min": 224,
+            "max": 224
+          },
+          "horizontal_sync_timings": {
+            "disp": 3440,
+            "sync_start": 3488,
+            "sync_end": 3520,
+            "total": 3600
+          },
+          "vertical_sync_timings": {
+            "disp": 1440,
+            "sync_start": 1443,
+            "sync_end": 1453,
+            "total": 1481
+          },
+          "clock": 319750,
+          "width": 3440,
+          "height": 1440,
+          "width_millimetres": 797,
+          "height_millimetres": 334,
+          "horizontal_flag": 45,
+          "vertical_flag": 43,
+          "vendor": "",
+          "name": "ASUS VG34V"
+        },
+        "driver_info": {
+          "type": "display",
+          "width": 3440,
+          "height": 1440,
+          "vertical_sync": {
+            "min": 48,
+            "max": 165
+          },
+          "horizontal_sync": {
+            "min": 224,
+            "max": 224
+          },
+          "bandwidth": 0,
+          "horizontal_sync_timings": {
+            "disp": 3440,
+            "sync_start": 3488,
+            "sync_end": 3520,
+            "total": 3600
+          },
+          "vertical_sync_timings": {
+            "disp": 1440,
+            "sync_start": 1443,
+            "sync_end": 1453,
+            "total": 1481
+          },
+          "horizontal_flag": 45,
+          "vertical_flag": 43
+        }
+      },
+      {
+        "index": 36,
+        "attached_to": 20,
+        "class_list": [
+          "monitor"
+        ],
+        "base_class": {
+          "hex": "0100",
+          "name": "Monitor",
+          "value": 256
+        },
+        "sub_class": {
+          "hex": "0002",
+          "name": "LCD Monitor",
+          "value": 2
+        },
+        "vendor": {
+          "hex": "20a3",
+          "value": 8355
+        },
+        "device": {
+          "hex": "0030",
+          "name": "HDMI",
+          "value": 48
+        },
+        "serial": "1",
+        "model": "HDMI",
+        "resources": [
+          {
+            "type": "monitor",
+            "width": 1024,
+            "height": 768,
+            "vertical_frequency": 60,
+            "interlaced": false
+          },
+          {
+            "type": "monitor",
+            "width": 1280,
+            "height": 1024,
+            "vertical_frequency": 60,
+            "interlaced": false
+          },
+          {
+            "type": "monitor",
+            "width": 1280,
+            "height": 720,
+            "vertical_frequency": 60,
+            "interlaced": false
+          },
+          {
+            "type": "monitor",
+            "width": 1280,
+            "height": 960,
+            "vertical_frequency": 60,
+            "interlaced": false
+          },
+          {
+            "type": "monitor",
+            "width": 1360,
+            "height": 768,
+            "vertical_frequency": 60,
+            "interlaced": false
+          },
+          {
+            "type": "monitor",
+            "width": 1920,
+            "height": 1080,
+            "vertical_frequency": 60,
+            "interlaced": false
+          },
+          {
+            "type": "monitor",
+            "width": 640,
+            "height": 480,
+            "vertical_frequency": 60,
+            "interlaced": false
+          },
+          {
+            "type": "monitor",
+            "width": 800,
+            "height": 600,
+            "vertical_frequency": 60,
+            "interlaced": false
+          },
+          {
+            "type": "size",
+            "unit": "mm",
+            "value_1": 580,
+            "value_2": 330
+          }
+        ],
+        "detail": {
+          "manufacture_year": 2010,
+          "manufacture_week": 35,
+          "vertical_sync": {
+            "min": 50,
+            "max": 75
+          },
+          "horizontal_sync": {
+            "min": 15,
+            "max": 69
+          },
+          "horizontal_sync_timings": {
+            "disp": 1920,
+            "sync_start": 2008,
+            "sync_end": 2052,
+            "total": 2200
+          },
+          "vertical_sync_timings": {
+            "disp": 1080,
+            "sync_start": 1084,
+            "sync_end": 1089,
+            "total": 1125
+          },
+          "clock": 148500,
+          "width": 1920,
+          "height": 1080,
+          "width_millimetres": 1152,
+          "height_millimetres": 648,
+          "horizontal_flag": 43,
+          "vertical_flag": 43,
+          "vendor": "",
+          "name": "HDMI"
+        },
+        "driver_info": {
+          "type": "display",
+          "width": 1920,
+          "height": 1080,
+          "vertical_sync": {
+            "min": 50,
+            "max": 75
+          },
+          "horizontal_sync": {
+            "min": 15,
+            "max": 69
+          },
+          "bandwidth": 0,
+          "horizontal_sync_timings": {
+            "disp": 1920,
+            "sync_start": 2008,
+            "sync_end": 2052,
+            "total": 2200
+          },
+          "vertical_sync_timings": {
+            "disp": 1080,
+            "sync_start": 1084,
+            "sync_end": 1089,
+            "total": 1125
+          },
+          "horizontal_flag": 43,
+          "vertical_flag": 43
+        }
+      }
+    ],
     "mouse": [
       {
-        "index": 40,
-        "attached_to": 48,
+        "index": 50,
+        "attached_to": 54,
         "class_list": [
           "mouse",
           "usb"
@@ -1798,8 +2330,8 @@
         "compat_vendor": "Unknown",
         "compat_device": "Generic USB Mouse",
         "model": "Generic USB Mouse USB Mouse",
-        "sysfs_id": "/devices/pci0000:00/0000:00:14.0/usb1/1-9/1-9:1.0",
-        "sysfs_bus_id": "1-9:1.0",
+        "sysfs_id": "/devices/pci0000:00/0000:00:14.0/usb1/1-7/1-7:1.0",
+        "sysfs_bus_id": "1-7:1.0",
         "unix_device_names": [
           "/dev/input/mice"
         ],
@@ -1865,7 +2397,7 @@
     ],
     "network_controller": [
       {
-        "index": 32,
+        "index": 31,
         "attached_to": 22,
         "class_list": [
           "network_controller",
@@ -1953,7 +2485,7 @@
     ],
     "network_interface": [
       {
-        "index": 51,
+        "index": 58,
         "attached_to": 0,
         "class_list": [
           "network_interface"
@@ -1975,8 +2507,8 @@
         ]
       },
       {
-        "index": 52,
-        "attached_to": 32,
+        "index": 59,
+        "attached_to": 31,
         "class_list": [
           "network_interface"
         ],
@@ -2065,7 +2597,7 @@
         "sysfs_bus_id": "0000:00:1f.2",
         "detail": {
           "function": 2,
-          "command": 6,
+          "command": 0,
           "header_type": 0,
           "secondary_bus": 0,
           "prog_if": 0
@@ -2120,7 +2652,7 @@
         "sysfs_bus_id": "0000:00:08.0",
         "detail": {
           "function": 0,
-          "command": 6,
+          "command": 0,
           "header_type": 0,
           "secondary_bus": 0,
           "prog_if": 0
@@ -2191,7 +2723,7 @@
         "module_alias": "pci:v00008086d0000A2BAsv00001462sd00007A57bc07sc80i00"
       },
       {
-        "index": 30,
+        "index": 29,
         "attached_to": 0,
         "class_list": [
           "pci",
@@ -2238,7 +2770,7 @@
         "sysfs_bus_id": "0000:00:14.2",
         "detail": {
           "function": 2,
-          "command": 6,
+          "command": 2,
           "header_type": 0,
           "secondary_bus": 0,
           "prog_if": 0
@@ -2246,7 +2778,7 @@
         "module_alias": "pci:v00008086d0000A2B1sv00001462sd00007A57bc11sc80i00"
       },
       {
-        "index": 34,
+        "index": 33,
         "attached_to": 0,
         "class_list": [
           "pci",
@@ -2382,7 +2914,7 @@
         "module_alias": "pci:v00008086d0000A2F0sv00001462sd0000DA57bc04sc03i00"
       },
       {
-        "index": 29,
+        "index": 28,
         "attached_to": 18,
         "class_list": [
           "sound",
@@ -2446,6 +2978,324 @@
           "snd_hda_intel"
         ],
         "module_alias": "pci:v000010DEd000010F0sv00001043sd0000861Dbc04sc03i00"
+      },
+      {
+        "index": 44,
+        "attached_to": 54,
+        "class_list": [
+          "sound",
+          "usb"
+        ],
+        "bus_type": {
+          "hex": "0086",
+          "name": "USB",
+          "value": 134
+        },
+        "slot": {
+          "bus": 0,
+          "number": 0
+        },
+        "base_class": {
+          "hex": "0004",
+          "name": "Multimedia controller",
+          "value": 4
+        },
+        "sub_class": {
+          "hex": "0001",
+          "name": "Multimedia audio controller",
+          "value": 1
+        },
+        "vendor": {
+          "hex": "046d",
+          "name": "Logitech Inc.",
+          "value": 1133
+        },
+        "device": {
+          "hex": "0ac4",
+          "name": "G535 Wireless Gaming Headset",
+          "value": 2756
+        },
+        "revision": {
+          "hex": "0000",
+          "name": "9.00",
+          "value": 0
+        },
+        "model": "Logitech G535 Wireless Gaming Headset",
+        "sysfs_id": "/devices/pci0000:00/0000:00:14.0/usb1/1-10/1-10:1.2",
+        "sysfs_bus_id": "1-10:1.2",
+        "resources": [
+          {
+            "type": "baud",
+            "speed": 12000000,
+            "bits": 0,
+            "stop_bits": 0,
+            "parity": 0,
+            "handshake": 0
+          }
+        ],
+        "detail": {
+          "device_class": {
+            "hex": "00ef",
+            "name": "miscellaneous",
+            "value": 239
+          },
+          "device_subclass": {
+            "hex": "0002",
+            "name": "comm",
+            "value": 2
+          },
+          "device_protocol": 1,
+          "interface_class": {
+            "hex": "0001",
+            "name": "audio",
+            "value": 1
+          },
+          "interface_subclass": {
+            "hex": "0002",
+            "name": "comm",
+            "value": 2
+          },
+          "interface_protocol": 0,
+          "interface_number": 2,
+          "interface_alternate_setting": 0,
+          "interface_association": {
+            "function_class": {
+              "hex": "0001",
+              "name": "audio",
+              "value": 1
+            },
+            "function_subclass": {
+              "hex": "0001",
+              "name": "audio",
+              "value": 1
+            },
+            "function_protocol": 0,
+            "interface_count": 3,
+            "first_interface": 0
+          }
+        },
+        "hotplug": "usb",
+        "driver": "snd-usb-audio",
+        "driver_module": "snd_usb_audio",
+        "drivers": [
+          "snd-usb-audio"
+        ],
+        "driver_modules": [
+          "snd_usb_audio"
+        ],
+        "module_alias": "usb:v046Dp0AC4d0900dcEFdsc02dp01ic01isc02ip00in02"
+      },
+      {
+        "index": 45,
+        "attached_to": 54,
+        "class_list": [
+          "sound",
+          "usb"
+        ],
+        "bus_type": {
+          "hex": "0086",
+          "name": "USB",
+          "value": 134
+        },
+        "slot": {
+          "bus": 0,
+          "number": 0
+        },
+        "base_class": {
+          "hex": "0004",
+          "name": "Multimedia controller",
+          "value": 4
+        },
+        "sub_class": {
+          "hex": "0001",
+          "name": "Multimedia audio controller",
+          "value": 1
+        },
+        "vendor": {
+          "hex": "046d",
+          "name": "Logitech Inc.",
+          "value": 1133
+        },
+        "device": {
+          "hex": "0ac4",
+          "name": "G535 Wireless Gaming Headset",
+          "value": 2756
+        },
+        "revision": {
+          "hex": "0000",
+          "name": "9.00",
+          "value": 0
+        },
+        "model": "Logitech G535 Wireless Gaming Headset",
+        "sysfs_id": "/devices/pci0000:00/0000:00:14.0/usb1/1-10/1-10:1.0",
+        "sysfs_bus_id": "1-10:1.0",
+        "resources": [
+          {
+            "type": "baud",
+            "speed": 12000000,
+            "bits": 0,
+            "stop_bits": 0,
+            "parity": 0,
+            "handshake": 0
+          }
+        ],
+        "detail": {
+          "device_class": {
+            "hex": "00ef",
+            "name": "miscellaneous",
+            "value": 239
+          },
+          "device_subclass": {
+            "hex": "0002",
+            "name": "comm",
+            "value": 2
+          },
+          "device_protocol": 1,
+          "interface_class": {
+            "hex": "0001",
+            "name": "audio",
+            "value": 1
+          },
+          "interface_subclass": {
+            "hex": "0001",
+            "name": "audio",
+            "value": 1
+          },
+          "interface_protocol": 0,
+          "interface_number": 0,
+          "interface_alternate_setting": 0,
+          "interface_association": {
+            "function_class": {
+              "hex": "0001",
+              "name": "audio",
+              "value": 1
+            },
+            "function_subclass": {
+              "hex": "0001",
+              "name": "audio",
+              "value": 1
+            },
+            "function_protocol": 0,
+            "interface_count": 3,
+            "first_interface": 0
+          }
+        },
+        "hotplug": "usb",
+        "driver": "snd-usb-audio",
+        "driver_module": "snd_usb_audio",
+        "drivers": [
+          "snd-usb-audio"
+        ],
+        "driver_modules": [
+          "snd_usb_audio"
+        ],
+        "module_alias": "usb:v046Dp0AC4d0900dcEFdsc02dp01ic01isc01ip00in00"
+      },
+      {
+        "index": 53,
+        "attached_to": 54,
+        "class_list": [
+          "sound",
+          "usb"
+        ],
+        "bus_type": {
+          "hex": "0086",
+          "name": "USB",
+          "value": 134
+        },
+        "slot": {
+          "bus": 0,
+          "number": 0
+        },
+        "base_class": {
+          "hex": "0004",
+          "name": "Multimedia controller",
+          "value": 4
+        },
+        "sub_class": {
+          "hex": "0001",
+          "name": "Multimedia audio controller",
+          "value": 1
+        },
+        "vendor": {
+          "hex": "046d",
+          "name": "Logitech Inc.",
+          "value": 1133
+        },
+        "device": {
+          "hex": "0ac4",
+          "name": "G535 Wireless Gaming Headset",
+          "value": 2756
+        },
+        "revision": {
+          "hex": "0000",
+          "name": "9.00",
+          "value": 0
+        },
+        "model": "Logitech G535 Wireless Gaming Headset",
+        "sysfs_id": "/devices/pci0000:00/0000:00:14.0/usb1/1-10/1-10:1.1",
+        "sysfs_bus_id": "1-10:1.1",
+        "resources": [
+          {
+            "type": "baud",
+            "speed": 12000000,
+            "bits": 0,
+            "stop_bits": 0,
+            "parity": 0,
+            "handshake": 0
+          }
+        ],
+        "detail": {
+          "device_class": {
+            "hex": "00ef",
+            "name": "miscellaneous",
+            "value": 239
+          },
+          "device_subclass": {
+            "hex": "0002",
+            "name": "comm",
+            "value": 2
+          },
+          "device_protocol": 1,
+          "interface_class": {
+            "hex": "0001",
+            "name": "audio",
+            "value": 1
+          },
+          "interface_subclass": {
+            "hex": "0002",
+            "name": "comm",
+            "value": 2
+          },
+          "interface_protocol": 0,
+          "interface_number": 1,
+          "interface_alternate_setting": 0,
+          "interface_association": {
+            "function_class": {
+              "hex": "0001",
+              "name": "audio",
+              "value": 1
+            },
+            "function_subclass": {
+              "hex": "0001",
+              "name": "audio",
+              "value": 1
+            },
+            "function_protocol": 0,
+            "interface_count": 3,
+            "first_interface": 0
+          }
+        },
+        "hotplug": "usb",
+        "driver": "snd-usb-audio",
+        "driver_module": "snd_usb_audio",
+        "drivers": [
+          "snd-usb-audio"
+        ],
+        "driver_modules": [
+          "snd_usb_audio"
+        ],
+        "module_alias": "usb:v046Dp0AC4d0900dcEFdsc02dp01ic01isc02ip00in01"
       }
     ],
     "storage_controller": [
@@ -2613,7 +3463,7 @@
     },
     "unknown": [
       {
-        "index": 35,
+        "index": 37,
         "attached_to": 0,
         "class_list": [
           "unknown"
@@ -2653,7 +3503,7 @@
         ]
       },
       {
-        "index": 36,
+        "index": 38,
         "attached_to": 0,
         "class_list": [
           "unknown"
@@ -2695,8 +3545,212 @@
     ],
     "usb": [
       {
-        "index": 43,
-        "attached_to": 48,
+        "index": 42,
+        "attached_to": 54,
+        "class_list": [
+          "usb",
+          "unknown"
+        ],
+        "bus_type": {
+          "hex": "0086",
+          "name": "USB",
+          "value": 134
+        },
+        "slot": {
+          "bus": 0,
+          "number": 0
+        },
+        "base_class": {
+          "hex": "0000",
+          "name": "Unclassified device",
+          "value": 0
+        },
+        "sub_class": {
+          "hex": "0000",
+          "name": "Unclassified device",
+          "value": 0
+        },
+        "vendor": {
+          "hex": "046d",
+          "name": "Logitech Inc.",
+          "value": 1133
+        },
+        "device": {
+          "hex": "0ac4",
+          "name": "G535 Wireless Gaming Headset",
+          "value": 2756
+        },
+        "revision": {
+          "hex": "0000",
+          "name": "9.00",
+          "value": 0
+        },
+        "model": "Logitech G535 Wireless Gaming Headset",
+        "sysfs_id": "/devices/pci0000:00/0000:00:14.0/usb1/1-10/1-10:1.4",
+        "sysfs_bus_id": "1-10:1.4",
+        "resources": [
+          {
+            "type": "baud",
+            "speed": 12000000,
+            "bits": 0,
+            "stop_bits": 0,
+            "parity": 0,
+            "handshake": 0
+          }
+        ],
+        "detail": {
+          "device_class": {
+            "hex": "00ef",
+            "name": "miscellaneous",
+            "value": 239
+          },
+          "device_subclass": {
+            "hex": "0002",
+            "name": "comm",
+            "value": 2
+          },
+          "device_protocol": 1,
+          "interface_class": {
+            "hex": "0002",
+            "name": "comm",
+            "value": 2
+          },
+          "interface_subclass": {
+            "hex": "0002",
+            "name": "comm",
+            "value": 2
+          },
+          "interface_protocol": 0,
+          "interface_number": 4,
+          "interface_alternate_setting": 0,
+          "interface_association": {
+            "function_class": {
+              "hex": "0002",
+              "name": "comm",
+              "value": 2
+            },
+            "function_subclass": {
+              "hex": "0002",
+              "name": "comm",
+              "value": 2
+            },
+            "function_protocol": 0,
+            "interface_count": 2,
+            "first_interface": 4
+          }
+        },
+        "hotplug": "usb",
+        "driver": "cdc_acm",
+        "driver_module": "cdc_acm",
+        "drivers": [
+          "cdc_acm"
+        ],
+        "driver_modules": [
+          "cdc_acm"
+        ],
+        "module_alias": "usb:v046Dp0AC4d0900dcEFdsc02dp01ic02isc02ip00in04"
+      },
+      {
+        "index": 46,
+        "attached_to": 54,
+        "class_list": [
+          "usb",
+          "unknown"
+        ],
+        "bus_type": {
+          "hex": "0086",
+          "name": "USB",
+          "value": 134
+        },
+        "slot": {
+          "bus": 0,
+          "number": 0
+        },
+        "base_class": {
+          "hex": "0000",
+          "name": "Unclassified device",
+          "value": 0
+        },
+        "sub_class": {
+          "hex": "0000",
+          "name": "Unclassified device",
+          "value": 0
+        },
+        "vendor": {
+          "hex": "046d",
+          "name": "Logitech Inc.",
+          "value": 1133
+        },
+        "device": {
+          "hex": "c336",
+          "name": "Gaming Keyboard G213",
+          "value": 49974
+        },
+        "revision": {
+          "hex": "0000",
+          "name": "9.00",
+          "value": 0
+        },
+        "serial": "1381386C3137",
+        "model": "Logitech Gaming Keyboard G213",
+        "sysfs_id": "/devices/pci0000:00/0000:00:14.0/usb1/1-8/1-8:1.1",
+        "sysfs_bus_id": "1-8:1.1",
+        "unix_device_names": [
+          "/dev/input/by-id/usb-Logitech_Gaming_Keyboard_G213_1381386C3137-if01-event-kbd",
+          "/dev/input/by-path/pci-0000:00:14.0-usb-0:8:1.1-event-kbd",
+          "/dev/input/by-path/pci-0000:00:14.0-usbv2-0:8:1.1-event-kbd",
+          "/dev/input/event6"
+        ],
+        "resources": [
+          {
+            "type": "baud",
+            "speed": 12000000,
+            "bits": 0,
+            "stop_bits": 0,
+            "parity": 0,
+            "handshake": 0
+          }
+        ],
+        "detail": {
+          "device_class": {
+            "hex": "0000",
+            "name": "per_interface",
+            "value": 0
+          },
+          "device_subclass": {
+            "hex": "0000",
+            "name": "per_interface",
+            "value": 0
+          },
+          "device_protocol": 0,
+          "interface_class": {
+            "hex": "0003",
+            "name": "hid",
+            "value": 3
+          },
+          "interface_subclass": {
+            "hex": "0000",
+            "name": "per_interface",
+            "value": 0
+          },
+          "interface_protocol": 0,
+          "interface_number": 1,
+          "interface_alternate_setting": 0
+        },
+        "hotplug": "usb",
+        "driver": "usbhid",
+        "driver_module": "usbhid",
+        "drivers": [
+          "usbhid"
+        ],
+        "driver_modules": [
+          "usbhid"
+        ],
+        "module_alias": "usb:v046DpC336d0900dc00dsc00dp00ic03isc00ip00in01"
+      },
+      {
+        "index": 47,
+        "attached_to": 54,
         "class_list": [
           "usb",
           "unknown"
@@ -2787,8 +3841,8 @@
         "module_alias": "usb:v1B1Cp0C1Ad0009dc00dsc00dp00ic03isc00ip00in00"
       },
       {
-        "index": 47,
-        "attached_to": 48,
+        "index": 49,
+        "attached_to": 54,
         "class_list": [
           "usb",
           "unknown"
@@ -2818,24 +3872,129 @@
           "value": 1133
         },
         "device": {
-          "hex": "c336",
-          "name": "Gaming Keyboard G213",
-          "value": 49974
+          "hex": "0ac4",
+          "name": "G535 Wireless Gaming Headset",
+          "value": 2756
         },
         "revision": {
           "hex": "0000",
           "name": "9.00",
           "value": 0
         },
-        "serial": "1381386C3137",
-        "model": "Logitech Gaming Keyboard G213",
-        "sysfs_id": "/devices/pci0000:00/0000:00:14.0/usb1/1-10/1-10:1.1",
-        "sysfs_bus_id": "1-10:1.1",
+        "model": "Logitech G535 Wireless Gaming Headset",
+        "sysfs_id": "/devices/pci0000:00/0000:00:14.0/usb1/1-10/1-10:1.5",
+        "sysfs_bus_id": "1-10:1.5",
+        "resources": [
+          {
+            "type": "baud",
+            "speed": 12000000,
+            "bits": 0,
+            "stop_bits": 0,
+            "parity": 0,
+            "handshake": 0
+          }
+        ],
+        "detail": {
+          "device_class": {
+            "hex": "00ef",
+            "name": "miscellaneous",
+            "value": 239
+          },
+          "device_subclass": {
+            "hex": "0002",
+            "name": "comm",
+            "value": 2
+          },
+          "device_protocol": 1,
+          "interface_class": {
+            "hex": "000a",
+            "name": "data",
+            "value": 10
+          },
+          "interface_subclass": {
+            "hex": "0000",
+            "name": "per_interface",
+            "value": 0
+          },
+          "interface_protocol": 0,
+          "interface_number": 5,
+          "interface_alternate_setting": 0,
+          "interface_association": {
+            "function_class": {
+              "hex": "0002",
+              "name": "comm",
+              "value": 2
+            },
+            "function_subclass": {
+              "hex": "0002",
+              "name": "comm",
+              "value": 2
+            },
+            "function_protocol": 0,
+            "interface_count": 2,
+            "first_interface": 4
+          }
+        },
+        "hotplug": "usb",
+        "driver": "cdc_acm",
+        "driver_module": "cdc_acm",
+        "drivers": [
+          "cdc_acm"
+        ],
+        "driver_modules": [
+          "cdc_acm"
+        ],
+        "module_alias": "usb:v046Dp0AC4d0900dcEFdsc02dp01ic0Aisc00ip00in05"
+      },
+      {
+        "index": 52,
+        "attached_to": 54,
+        "class_list": [
+          "usb",
+          "unknown"
+        ],
+        "bus_type": {
+          "hex": "0086",
+          "name": "USB",
+          "value": 134
+        },
+        "slot": {
+          "bus": 0,
+          "number": 0
+        },
+        "base_class": {
+          "hex": "0000",
+          "name": "Unclassified device",
+          "value": 0
+        },
+        "sub_class": {
+          "hex": "0000",
+          "name": "Unclassified device",
+          "value": 0
+        },
+        "vendor": {
+          "hex": "046d",
+          "name": "Logitech Inc.",
+          "value": 1133
+        },
+        "device": {
+          "hex": "0ac4",
+          "name": "G535 Wireless Gaming Headset",
+          "value": 2756
+        },
+        "revision": {
+          "hex": "0000",
+          "name": "9.00",
+          "value": 0
+        },
+        "model": "Logitech G535 Wireless Gaming Headset",
+        "sysfs_id": "/devices/pci0000:00/0000:00:14.0/usb1/1-10/1-10:1.3",
+        "sysfs_bus_id": "1-10:1.3",
         "unix_device_names": [
-          "/dev/input/by-id/usb-Logitech_Gaming_Keyboard_G213_1381386C3137-if01-event-kbd",
-          "/dev/input/by-path/pci-0000:00:14.0-usb-0:10:1.1-event-kbd",
-          "/dev/input/by-path/pci-0000:00:14.0-usbv2-0:10:1.1-event-kbd",
-          "/dev/input/event4"
+          "/dev/input/by-id/usb-Logitech_G535_Wireless_Gaming_Headset-event-if03",
+          "/dev/input/by-path/pci-0000:00:14.0-usb-0:10:1.3-event",
+          "/dev/input/by-path/pci-0000:00:14.0-usbv2-0:10:1.3-event",
+          "/dev/input/event8"
         ],
         "resources": [
           {
@@ -2849,16 +4008,16 @@
         ],
         "detail": {
           "device_class": {
-            "hex": "0000",
-            "name": "per_interface",
-            "value": 0
+            "hex": "00ef",
+            "name": "miscellaneous",
+            "value": 239
           },
           "device_subclass": {
-            "hex": "0000",
-            "name": "per_interface",
-            "value": 0
+            "hex": "0002",
+            "name": "comm",
+            "value": 2
           },
-          "device_protocol": 0,
+          "device_protocol": 1,
           "interface_class": {
             "hex": "0003",
             "name": "hid",
@@ -2870,7 +4029,7 @@
             "value": 0
           },
           "interface_protocol": 0,
-          "interface_number": 1,
+          "interface_number": 3,
           "interface_alternate_setting": 0
         },
         "hotplug": "usb",
@@ -2882,13 +4041,13 @@
         "driver_modules": [
           "usbhid"
         ],
-        "module_alias": "usb:v046DpC336d0900dc00dsc00dp00ic03isc00ip00in01"
+        "module_alias": "usb:v046Dp0AC4d0900dcEFdsc02dp01ic03isc00ip00in03"
       }
     ],
     "usb_controller": [
       {
         "index": 25,
-        "attached_to": 28,
+        "attached_to": 27,
         "class_list": [
           "usb_controller",
           "pci"
@@ -2954,7 +4113,7 @@
       },
       {
         "index": 26,
-        "attached_to": 31,
+        "attached_to": 30,
         "class_list": [
           "usb_controller",
           "pci"
@@ -3019,7 +4178,7 @@
         "module_alias": "pci:v00001B21d00002142sv00001462sd00007A57bc0Csc03i30"
       },
       {
-        "index": 33,
+        "index": 32,
         "attached_to": 0,
         "class_list": [
           "usb_controller",
