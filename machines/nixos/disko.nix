@@ -1,7 +1,7 @@
 # ---
 # schema = "btrfs-single-disk-subvolumes"
 # [placeholders]
-# mainDisk = "/dev/disk/by-id/nvme-Patriot_M.2_P300_1024GB_P300ZCCB250907339" 
+# mainDisk = "/dev/disk/by-id/nvme-Patriot_M.2_P300_1024GB_P300ZCCB250907339"
 # ---
 # This file was automatically generated!
 # CHANGING this configuration requires wiping and reinstalling the machine
@@ -13,36 +13,36 @@
 
   disko.devices = {
     disk = {
-      "main" = {
+      main = {
         name = "main-96dcc5de4a494c9cab562418ef93e693";
         device = "/dev/disk/by-id/nvme-Patriot_M.2_P300_1024GB_P300ZCCB250907339";
         type = "disk";
         content = {
           type = "gpt";
           partitions = {
-            "boot" = {
+            boot = {
               size = "1M";
-              type = "EF02"; # for grub MBR
+              type = "EF02";
               priority = 1;
             };
-            "ESP" = {
+            ESP = {
               type = "EF00";
-              size = "500M";
+              size = "5G";
               content = {
                 type = "filesystem";
                 format = "vfat";
                 mountpoint = "/boot";
-                mountOptions = [ "umask=0077" ];
+                mountOptions = ["umask=0077"];
               };
             };
-            #"swap" = {
-            #  size = "8G"; # adjust
-            #  content = {
-            #    type = "swap";
-            #    discardPolicy = "both";
-            #  };
-            #};
-            "root" = {
+            swap = {
+              size = "16G";
+              content = {
+                type = "swap";
+                discardPolicy = "both";
+              };
+            };
+            root = {
               size = "100%";
               content = {
                 type = "btrfs";
@@ -53,7 +53,10 @@
                 subvolumes = {
                   "@root" = {
                     mountpoint = "/";
-                    mountOptions = [ ];
+                    mountOptions = [
+                      "compress=zstd"
+                      "noatime"
+                    ];
                   };
                   "@nix" = {
                     mountpoint = "/nix";
@@ -64,7 +67,10 @@
                   };
                   "@home" = {
                     mountpoint = "/home";
-                    mountOptions = [ "compress=zstd" ];
+                    mountOptions = [
+                      "compress=zstd"
+                      "noatime"
+                    ];
                   };
                 };
               };
