@@ -1,5 +1,5 @@
 # ---
-# schema = "btrfs-single-disk-subvolumes-impermanance-tmpfs"
+# schema = "btrfs-single-disk-subvolumes"
 # [placeholders]
 # mainDisk = "/dev/disk/by-id/nvme-Patriot_M.2_P300_1024GB_P300ZCCB250907339" 
 # ---
@@ -14,7 +14,7 @@
   disko.devices = {
     disk = {
       "main" = {
-        name = "main-4ae019a72251435589518d79410139e3";
+        name = "main-96dcc5de4a494c9cab562418ef93e693";
         device = "/dev/disk/by-id/nvme-Patriot_M.2_P300_1024GB_P300ZCCB250907339";
         type = "disk";
         content = {
@@ -35,13 +35,13 @@
                 mountOptions = [ "umask=0077" ];
               };
             };
-            "swap" = {
-              size = "8G"; # adjust
-              content = {
-                type = "swap";
-                discardPolicy = "both";
-              };
-            };
+            #"swap" = {
+            #  size = "8G"; # adjust
+            #  content = {
+            #    type = "swap";
+            #    discardPolicy = "both";
+            #  };
+            #};
             "root" = {
               size = "100%";
               content = {
@@ -51,6 +51,10 @@
                   "--label root"
                 ];
                 subvolumes = {
+                  "@root" = {
+                    mountpoint = "/";
+                    mountOptions = [ ];
+                  };
                   "@nix" = {
                     mountpoint = "/nix";
                     mountOptions = [
@@ -62,10 +66,6 @@
                     mountpoint = "/home";
                     mountOptions = [ "compress=zstd" ];
                   };
-                  "@persist" = {
-                    mountpoint = "/persist";
-                    mountOptions = [ "compress=zstd" ];
-                  };
                 };
               };
             };
@@ -73,20 +73,7 @@
         };
       };
     };
-
-    nodev = {
-      "/" = {
-        fsType = "tmpfs";
-        mountOptions = [
-          "size=3G"
-          "mode=0755"
-          "noexec"
-        ];
-      };
-    };
   };
-
-  fileSystems."/persist".neededForBoot = true;
 
   # Automatic local snapshots
   # https://digint.ch/btrbk/doc/readme.html
@@ -106,17 +93,7 @@
       onCalendar = "0/2:00";
       settings = {
         subvolume = "/home";
-        snapshot_create = "onchange";
         snapshot_dir = "/home";
-        snapshot_preserve = "16h 7d 3w 2m";
-        snapshot_preserve_min = "3d";
-      };
-    };
-    instances."persist" = {
-      onCalendar = "0/2:00";
-      settings = {
-        subvolume = "/persist";
-        snapshot_dir = "/persist";
         snapshot_preserve = "16h 7d 3w 2m";
         snapshot_preserve_min = "3d";
       };
