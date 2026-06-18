@@ -1,3 +1,3 @@
-{...}: {
-  hostSpec.hardware.intel.enable = true;
+{lib, ...}: {
+  networking.networkmanager.enable = lib.mkForce true;
 }

@@ -4,70 +4,86 @@
       "name": "nixos",
       "domain": "andrewlee.fun",
       "network": {
-        "type": "lan",
-        "interface": "enp3s0",
-        "ipv4": "192.168.1.253",
-        "ipv6": "2600:1700:5e40:c2e0::10"
+        "lan": {
+          "interface": "enp3s0",
+          "ipv4": "192.168.1.253",
+          "ipv6": "2600:1700:5e40:c2e0::10"
+        }
       }
     },
     {
       "name": "kamrui-h1",
       "domain": "andrewlee.fun",
       "network": {
-        "type": "lan",
-        "interface": "eno1",
-        "ipv4": "192.168.1.251",
-        "ipv6": "2600:1700:5e40:c2e0::11"
+        "lan": {
+          "interface": "eno1",
+          "ipv4": "192.168.1.251",
+          "ipv6": "2600:1700:5e40:c2e0::11"
+        },
+        "wan": {
+          "interface": "wlan0"
+        }
       }
     },
     {
       "name": "inuc-celeron",
       "domain": "andrewlee.fun",
       "network": {
-        "type": "lan",
-        "interface": "eno1",
-        "ipv4": "192.168.1.249",
-        "ipv6": "2600:1700:5e40:c2e0::12"
+        "lan": {
+          "interface": "eno1",
+          "ipv4": "192.168.1.249",
+          "ipv6": "2600:1700:5e40:c2e0::12"
+        }
       }
     },
     {
       "name": "inuc-i5",
       "domain": "andrewlee.fun",
       "network": {
-        "type": "lan",
-        "interface": "eno1",
-        "ipv4": "192.168.1.248",
-        "ipv6": "2600:1700:5e40:c2e0::13"
+        "lan": {
+          "interface": "eno1",
+          "ipv4": "192.168.1.248",
+          "ipv6": "2600:1700:5e40:c2e0::13"
+        },
+        "wan": {
+          "interface": "wlan0"
+        }
       }
     },
     {
       "name": "ghost",
       "domain": "andrewlee.fun",
       "network": {
-        "type": "wan",
-        "interface": "wlp0s20f3",
-        "ipv4": "192.168.1.253",
-        "ipv6": "2600:1700:5e40:c2e0::14"
+        "wan": {
+          "interface": "wlp0s20f3",
+          "ipv4": "192.168.1.252",
+          "ipv6": "2600:1700:5e40:c2e0::14"
+        }
       }
     },
     {
       "name": "hp-notebook",
       "domain": "andrewlee.fun",
       "network": {
-        "type": "wan",
-        "interface": "wlp0s20f3",
-        "ipv4": "192.168.1.251",
-        "ipv6": "2600:1700:5e40:c2e0::15"
+        "wan": {
+          "interface": "wlp0s20f3",
+          "ipv4": "192.168.1.251",
+          "ipv6": "2600:1700:5e40:c2e0::15"
+        }
       }
     },
     {
       "name": "beelink",
       "domain": "andrewlee.fun",
       "network": {
-        "type": "lan",
-        "interface": "eno1",
-        "ipv4": "192.168.1.247",
-        "ipv6": "2600:1700:5e40:c2e0::16"
+        "lan": {
+          "interface": "eno1",
+          "ipv4": "192.168.1.247",
+          "ipv6": "2600:1700:5e40:c2e0::16"
+        },
+        "wan": {
+          "interface": "wlan0"
+        }
       }
     }
   ]

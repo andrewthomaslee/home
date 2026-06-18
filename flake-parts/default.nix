@@ -49,7 +49,6 @@ in {
       imports =
         [
           inputs.home-manager.nixosModules.home-manager
-          self.nixosModules.fh
         ]
         # Import all NixOS Modules from `flake-parts/nixosModules`
         # Filter out profile modules and clan modules
@@ -61,65 +60,6 @@ in {
               && !(lib.hasPrefix "clan-" n)
           )
           self.nixosModules));
-
-      # nix-ld
-      programs.nix-ld = {
-        enable = true;
-        libraries = with pkgs; [
-          stdenv.cc.cc
-        ];
-      };
-
-      # acme
-      security.acme = {
-        acceptTerms = true;
-        defaults.email = lib.mkDefault "andrewthomaslee.business@gmail.com";
-      };
-
-      # Often hangs
-      systemd.services = {
-        NetworkManager-wait-online.enable = lib.mkForce false;
-        systemd-networkd-wait-online.enable = lib.mkForce false;
-      };
-
-      # Home-manager
-      home-manager = {
-        useUserPackages = true;
-        backupFileExtension = "hm-backup";
-        extraSpecialArgs = {inherit customLib;};
-        sharedModules = [inputs.plasma-manager.homeModules.plasma-manager];
-      };
-
-      # localization
-      i18n.defaultLocale = "en_US.UTF-8";
-
-      # timezone
-      time.timeZone = lib.mkDefault "America/Chicago";
-
-      # Services
-      services = {
-        # Limit log size for journal
-        journald.extraConfig = lib.mkDefault "SystemMaxUse=3G";
-        # Automatically update firmware
-        fwupd.enable = lib.mkDefault true;
-        # Enable ACPI
-        acpid.enable = lib.mkDefault true;
-      };
-
-      # Hardware
-      hardware.enableRedistributableFirmware = lib.mkDefault true;
-
-      # System Packages
-      environment = {
-        enableAllTerminfo = lib.mkDefault true;
-        localBinInPath = lib.mkDefault true;
-        systemPackages = with pkgs.unstable; [
-          git
-          nano
-          rsync
-          fh
-        ];
-      };
 
       # Boot
       boot = {
@@ -146,7 +86,7 @@ in {
           ];
         };
         home = {
-          stateVersion = "25.11";
+          stateVersion = "26.05";
           keyboard.layout = "us";
         };
         programs.home-manager.enable = true;
@@ -197,6 +137,10 @@ in {
       inventory = import (relativeToRoot "inventory.nix") {inherit self inputs customLib;};
       specialArgs = {inherit customLib inputs self;};
       inherit ((import "${inputs.clan-community}/services/rancher/flake-module.nix" {}).clan) exportInterfaces;
+      modules = {
+        "@andrewthomaslee/machine-type" = relativeToRoot "clanServices/machine-type";
+        "@andrewthomaslee/tags" = relativeToRoot "clanServices/tags";
+      };
     };
   };
 }

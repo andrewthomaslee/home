@@ -24,16 +24,20 @@ jobs:
     needs: flake-check
     uses: ./.github/workflows/_oci.yml
 
-  publish:
+  docs:
     needs: [build-machines, build-artifacts, build-oci, flake-check]
-    uses: ./.github/workflows/_publish.yml
+    uses: ./.github/workflows/_docs.yml
+
+  push:
+    needs: [build-machines, build-artifacts, build-oci, flake-check]
+    uses: ./.github/workflows/_flakehub.yml
 
   release:
-    needs: publish
+    needs: [docs, push]
     uses: ./.github/workflows/_release.yml
     secrets: inherit
 
-  push-oci:
+  oci:
     needs: release
     uses: ./.github/workflows/_oci.yml
     with:

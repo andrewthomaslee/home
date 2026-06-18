@@ -1,0 +1,20 @@
+name: Machines
+permissions:
+  id-token: write
+  contents: read
+
+on:
+  workflow_dispatch:
+
+jobs:
+  flake-check:
+    uses: ./.github/workflows/_flake-check.yml
+
+  build-machines:
+    needs: flake-check
+    uses: ./.github/workflows/_build-machines.yml
+
+  push:
+    needs: [build-machines, flake-check]
+    uses: ./.github/workflows/_flakehub.yml
+

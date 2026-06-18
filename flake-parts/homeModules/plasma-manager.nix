@@ -3,7 +3,6 @@
   flake.homeModules.plasma-manager = {
     pkgs,
     config,
-    osConfig,
     ...
   }: let
     cfg = config.homeSpec.programs.plasma-manager;
@@ -20,18 +19,18 @@
         darkly
       ];
 
-      # programs.plasma = lib.optionalAttrs osConfig.services.desktopManager.plasma6.enable {
-      #   enable = true;
-      #   workspace = {
-      #     lookAndFeel = "org.kde.breezedark.desktop";
-      #     cursor.theme = "Bibata-Modern-Ice";
-      #   };
-      #   hotkeys.commands."launch-kalk" = {
-      #     name = "Launch Konsole";
-      #     key = "Meta+Alt+K";
-      #     command = "kalk";
-      #   };
-      # };
+      programs.plasma = {
+        enable = true;
+        workspace = {
+          lookAndFeel = "org.kde.breezedark.desktop";
+          cursor.theme = "Bibata-Modern-Ice";
+        };
+        hotkeys.commands."launch-kalk" = {
+          name = "Launch Konsole";
+          key = "Meta+Alt+K";
+          command = "kalk";
+        };
+      };
     };
   };
 }

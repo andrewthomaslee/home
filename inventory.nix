@@ -3,17 +3,7 @@
   inputs,
   customLib,
 }: let
-  extraGroups = [
-    "docker"
-    "wheel"
-    "networkmanager"
-    "audio"
-    "libvirtd"
-    "tty"
-    "dialout"
-    "video"
-    "storage-users"
-  ];
+  inherit (customLib.custom) relativeToRoot;
 in {
   meta = {
     name = "home";
@@ -25,94 +15,82 @@ in {
     # Andrew's PCs
     nixos = {
       deploy.targetHost = "root@nixos.armadillo-frog.ts.net";
-      tags = ["developer" "wife"];
+      tags = ["pc" "intel" "lan" "dev" "netsa" "wife"];
     };
     ghost = {
       deploy.targetHost = "root@ghost.armadillo-frog.ts.net";
-      tags = ["developer"];
+      tags = ["pc" "intel" "wan" "dev" "netsa"];
     };
 
     # Other's PCs
     hp-notebook = {
       deploy.targetHost = "root@hp-notebook.armadillo-frog.ts.net";
-      tags = ["normal" "wife"];
+      tags = ["pc" "wife" "wan"];
     };
 
     # Home Servers
     inuc-celeron = {
       deploy.targetHost = "root@inuc-celeron.armadillo-frog.ts.net";
-      tags = ["server"];
+      tags = ["intel" "m"];
     };
     inuc-i5 = {
       deploy.targetHost = "root@inuc-i5.armadillo-frog.ts.net";
-      tags = ["server"];
+      tags = ["intel" "m" "wan"];
     };
     beelink = {
       deploy.targetHost = "root@beelink.armadillo-frog.ts.net";
-      tags = ["server"];
+      tags = ["amd" "m" "wan"];
     };
     kamrui-h1 = {
       deploy.targetHost = "root@kamrui-h1.armadillo-frog.ts.net";
-      tags = ["server"];
+      tags = ["amd" "m" "kde" "wan" "netsa"];
     };
 
     # Cloud VMs
-    # eu
     hel-1 = {
       deploy.targetHost = "root@hel-1.andrewlee.cloud";
-      tags = ["vms"];
+      tags = ["vm"];
     };
     hel-2 = {
       deploy.targetHost = "root@hel-2.andrewlee.cloud";
-      tags = ["vms"];
+      tags = ["vm"];
     };
     hel-3 = {
       deploy.targetHost = "root@hel-3.andrewlee.cloud";
-      tags = ["vms"];
+      tags = ["vm"];
     };
     hel-4 = {
       deploy.targetHost = "root@hel-4.andrewlee.cloud";
-      tags = ["vms"];
+      tags = ["vm"];
     };
     hel-5 = {
       deploy.targetHost = "root@hel-5.andrewlee.cloud";
-      tags = ["vms"];
+      tags = ["vm"];
     };
   };
 
   # --- Clan Services --- #
   instances = {
-    # --- Profiles --- #
-    # For Andrew's PCs
-    developer = {
-      module.name = "importer";
-      roles.default = {
-        tags = ["developer"];
-        extraModules = [self.nixosModules.profile-developer];
+    machine-type = {
+      module.input = "self";
+      module.name = "@andrewthomaslee/machine-type";
+      roles = {
+        pc.tags.pc = {};
+        m.tags.m = {};
+        vm.tags.vm = {};
       };
     };
-    # For Headless Servers
-    server = {
-      module.name = "importer";
-      roles.default = {
-        tags = ["server"];
-        extraModules = [self.nixosModules.profile-server];
-      };
-    };
-    # For Other's PCs
-    normal = {
-      module.name = "importer";
-      roles.default = {
-        tags = ["normal"];
-        extraModules = [self.nixosModules.profile-normal];
-      };
-    };
-    # For Cloud VMs
-    vms = {
-      module.name = "importer";
-      roles.default = {
-        tags = ["vms"];
-        extraModules = [self.nixosModules.profile-vms];
+
+    tags = {
+      module.input = "self";
+      module.name = "@andrewthomaslee/tags";
+      roles = {
+        dev.tags.dev = {};
+        amd.tags.amd = {};
+        intel.tags.intel = {};
+        lan.tags.lan = {};
+        wan.tags.wan = {};
+        kde.tags.kde = {};
       };
     };
 
@@ -121,32 +99,25 @@ in {
     root = {
       module.name = "users";
       roles.default = {
-        tags = ["all"];
         settings = {
           user = "root";
           share = true;
         };
+        tags = ["all"];
+        extraModules = [(relativeToRoot "users/root")];
       };
     };
+
     # Default User
     netsa = {
       module.name = "users";
       roles.default = {
-        tags = ["all"];
         settings = {
           user = "netsa";
           share = true;
         };
-        extraModules = [
-          {
-            users.users.netsa = {
-              isNormalUser = true;
-              home = "/home/netsa";
-              description = "husband";
-              inherit extraGroups;
-            };
-          }
-        ];
+        tags = ["netsa"];
+        extraModules = [(relativeToRoot "users/netsa")];
       };
     };
 
@@ -154,22 +125,12 @@ in {
     wife = {
       module.name = "users";
       roles.default = {
-        tags = ["wife"];
         settings = {
           user = "wife";
           share = true;
         };
-        extraModules = [
-          {
-            home-manager.users.wife = self.homeModules.profile-wife;
-            users.users.wife = {
-              isNormalUser = true;
-              home = "/home/wife";
-              description = "wife";
-              inherit extraGroups;
-            };
-          }
-        ];
+        tags = ["wife"];
+        extraModules = [(relativeToRoot "users/wife")];
       };
     };
 
@@ -189,62 +150,87 @@ in {
     # https://clan.lol/docs/unstable/services/official/emergency-access
     emergency-access.roles.default.tags = ["all"];
 
-    # home = {
-    #   module = {
-    #     name = "rancher";
-    #     input = "clan-community";
-    #   };
-    #   roles = {
-    #     master.machines.kamrui-h1.settings = {
-    #       domain = "andrewlee.fun";
-    #       distro = "k3s";
-    #       cilium.helmValues.ingressController.enabled = false;
-    #       traefik.enable = false;
-    #       longhorn.helmValues = {
-    #         defaultSettings.guaranteedInstanceManagerCPU = 6;
-    #         longhornUI.replicas = 1;
-    #         csi = {
-    #           attacherReplicaCount = 1;
-    #           provisionerReplicaCount = 1;
-    #           resizerReplicaCount = 1;
-    #           snapshotterReplicaCount = 1;
-    #         };
-    #       };
-    #       wireguard = {
-    #         endpoint = "[2600:1700:5e40:c2e0::11]";
-    #         ipv4 = "172.16.0.1";
-    #       };
-    #     };
-    #     worker.machines = {
-    #       inuc-celeron.settings = {
-    #         services.web = false;
-    #         wireguard = {
-    #           endpoint = "[2600:1700:5e40:c2e0::12]";
-    #           ipv4 = "172.16.0.2";
-    #         };
-    #       };
-    #       inuc-i5.settings = {
-    #         wireguard = {
-    #           endpoint = "[2600:1700:5e40:c2e0::13]";
-    #           ipv4 = "172.16.0.3";
-    #         };
-    #       };
-    #     };
-    #   };
-    # };
+    # -------- ☸️   Kubernetes   ☸️ -------- #
 
+    # --- K3s Mini PC Cluster --- #
+    home = {
+      # Feature Branch of clan-community
+      # https://git.clan.lol/andrewthomaslee/clan-community/src/branch/feat/rancher/
+      module = {
+        name = "rancher";
+        input = "clan-community";
+      };
+      roles = {
+        # -------- Master Machine -------- #
+        master.machines.kamrui-h1.settings = {
+          # --- Cluster Level Settings --- #
+          domain = "andrewlee.fun";
+          distro = "k3s";
+          cilium.id = 1;
+          longhorn = {
+            v2 = {
+              enabled = true;
+              hugepages.enabled = true;
+            };
+            helmValues.csi = {
+              attacherReplicaCount = 1;
+              provisionerReplicaCount = 1;
+              resizerReplicaCount = 1;
+              snapshotterReplicaCount = 1;
+            };
+          };
+          # --- Node level settings --- #
+          services.longhorn.v2.enabled = true;
+          wireguard = {
+            endpoint = "[2600:1700:5e40:c2e0::11]";
+            ipv4 = "172.16.0.1";
+          };
+        };
+        # -------- Manager Nodes -------- #
+        manager.machines = {
+          beelink.settings = {
+            wireguard = {
+              endpoint = "[2600:1700:5e40:c2e0::16]";
+              ipv4 = "172.16.0.3";
+            };
+          };
+          inuc-i5.settings = {
+            wireguard = {
+              endpoint = "[2600:1700:5e40:c2e0::13]";
+              ipv4 = "172.16.0.4";
+            };
+          };
+        };
+        # -------- Worker Nodes -------- #
+        worker.machines = {
+          inuc-celeron.settings = {
+            services.web.enabled = false;
+            wireguard = {
+              endpoint = "[2600:1700:5e40:c2e0::12]";
+              ipv4 = "172.16.0.5";
+            };
+          };
+        };
+      };
+    };
+
+    # --- RKE2 Hetzner Cloud Cluster --- #
     hcloud = {
       module = {
         name = "rancher";
         input = "clan-community";
       };
       roles = {
+        # -------- Master Machine -------- #
         master.machines.hel-1.settings = {
+          # --- Cluster Level Settings --- #
           domain = "andrewlee.cloud";
           distro = "rke2";
           cilium.id = 2;
+          # --- Node level settings --- #
           wireguard.ipv4 = "172.16.1.1";
         };
+        # -------- Manager Nodes -------- #
         manager.machines = {
           hel-2.settings.wireguard.ipv4 = "172.16.1.2";
           hel-3.settings.wireguard.ipv4 = "172.16.1.3";
