@@ -19,6 +19,7 @@
 
       # KDE Desktop
       services = {
+        orca.enable = false;
         desktopManager.plasma6.enable = true;
         displayManager.sddm = {
           enable = true;
