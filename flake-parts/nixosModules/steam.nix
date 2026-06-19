@@ -7,6 +7,11 @@
     ...
   }: let
     cfg = config.hostSpec.programs.steam;
+    pureGamescope =
+      (import pkgs.path {
+        inherit (pkgs) system;
+        config.allowUnfree = true;
+      }).gamescope;
   in {
     options.hostSpec.programs.steam = {
       enable = lib.mkEnableOption "default steam configuration";
@@ -28,7 +33,7 @@
         (pkgs.heroic.override {
           extraPkgs = p:
             with p; [
-              gamescope
+              pureGamescope
               gamemode
               mangohud
               winetricks
@@ -54,7 +59,10 @@
             proton-ge-bin
           ];
         };
-        gamescope.enable = true;
+        gamescope = {
+          enable = true;
+          package = pureGamescope;
+        };
         gamemode = {
           enable = true;
           settings = lib.optionalAttrs cfg.amd {
