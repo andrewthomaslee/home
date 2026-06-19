@@ -31,6 +31,11 @@
 
   boot.kernelParams = ["video=DP-2:3440x1440@99.98"]; # for ASUS ultra wide
 
+  programs.appimage = {
+    enable = true;
+    binfmt = true;
+  };
+
   fileSystems = {
     "/mnt/bazzite" = {
       device = "/dev/disk/by-uuid/57af61ee-5474-4fb4-b000-0cc86669e090";
