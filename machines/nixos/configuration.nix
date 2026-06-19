@@ -29,7 +29,11 @@
     nvtopPackages.full
   ];
 
-  boot.kernelParams = ["video=DP-2:3440x1440@99.98"]; # for ASUS ultra wide
+  boot.kernelParams = [
+    "video=DP-2:3440x1440@165.00" # for ASUS ultra wide
+    "initcall_blacklist=simpledrm_platform_driver_init"
+    "nvidia_drm.fbdev=0"
+  ];
 
   programs.appimage = {
     enable = true;
