@@ -1,6 +1,6 @@
 {pkgs, ...}: {
   hostSpec = {
-    hardware.jovian.enable = false;
+    hardware.jovian.enable = true;
     services = {
       motd.sshMotd = builtins.readFile ./sshMotd.sh;
       flatpak.enable = true;
