@@ -19,11 +19,22 @@
     };
 
     config = lib.mkIf cfg.enable {
+      hardware.graphics.enable32Bit = true;
       boot.kernelPackages = lib.mkForce pkgs.linuxPackages_latest;
       environment.systemPackages = with pkgs; [
         cmake # Cross-platform, open-source build system generator
         steam-rom-manager # App for adding 3rd party games/ROMs as Steam launch items
         steam-run
+        (pkgs.heroic.override {
+          extraPkgs = p:
+            with p; [
+              gamescope
+              gamemode
+              mangohud
+              winetricks
+              cabextract
+            ];
+        })
       ];
 
       # Steam
@@ -43,6 +54,7 @@
             proton-ge-bin
           ];
         };
+        gamescope.enable = true;
         gamemode = {
           enable = true;
           settings = lib.optionalAttrs cfg.amd {
