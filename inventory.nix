@@ -101,7 +101,7 @@ in {
       roles.default = {
         settings = {
           user = "root";
-          share = true;
+          prompt = false;
         };
         tags = ["all"];
         extraModules = [(relativeToRoot "users/root")];
