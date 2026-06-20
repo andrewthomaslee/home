@@ -75,6 +75,7 @@
         localBinInPath = true;
         systemPackages = with pkgs;
         with self.packages.${system}; [
+          zstd
           rsync
           fh
           apply-and-reboot

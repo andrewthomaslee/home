@@ -195,6 +195,7 @@ in {
             };
           };
           inuc-i5.settings = {
+            services.web.enabled = false;
             wireguard = {
               endpoint = "[2600:1700:5e40:c2e0::13]";
               ipv4 = "172.16.0.4";

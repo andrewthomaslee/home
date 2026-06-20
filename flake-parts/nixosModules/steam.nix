@@ -74,6 +74,10 @@
             };
           };
         };
+        appimage = {
+          enable = true;
+          binfmt = true;
+        };
       };
     };
   };
