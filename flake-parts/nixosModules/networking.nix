@@ -20,7 +20,7 @@ in {
         in {
           networkmanager.unmanaged = [interface];
           interfaces.${interface} = {
-            useDHCP = false;
+            useDHCP = true;
             ipv4.addresses = [
               {
                 address = ipv4;
@@ -82,15 +82,15 @@ in {
             # ];
           };
 
-          # defaultGateway = lib.mkDefault {
-          #   address = "192.168.1.254";
-          #   interface = net.wan.interface;
-          # };
+          defaultGateway = lib.mkDefault {
+            address = "192.168.1.254";
+            interface = net.wan.interface;
+          };
 
-          # defaultGateway6 = lib.mkDefault {
-          #   address = "2600:1700:5e40:c2e0::1";
-          #   interface = net.wan.interface;
-          # };
+          defaultGateway6 = lib.mkDefault {
+            address = "2600:1700:5e40:c2e0::1";
+            interface = net.wan.interface;
+          };
 
           nameservers = lib.mkDefault [
             "2606:4700:4700::1111"
