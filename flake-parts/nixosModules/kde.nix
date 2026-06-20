@@ -55,6 +55,7 @@
           hardinfo2 # System information and benchmarks for Linux systems
           haruna # Open source video player built with Qt/QML and libmpv
           xclip # Tool to access the X clipboard from a console application
+          libreoffice-qt-fresh # Comprehensive, professional-quality productivity suite, a variant of openoffice.org
         ];
       };
     };
