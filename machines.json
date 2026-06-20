@@ -5,7 +5,7 @@
       "domain": "andrewlee.fun",
       "network": {
         "lan": {
-          "interface": "enp3s0",
+          "interface": "enp4s0",
           "ipv4": "192.168.1.253",
           "ipv6": "2600:1700:5e40:c2e0::10"
         }
@@ -21,7 +21,7 @@
           "ipv6": "2600:1700:5e40:c2e0::11"
         },
         "wan": {
-          "interface": "wlan0"
+          "interface": "wlp3s0"
         }
       }
     },
@@ -46,7 +46,7 @@
           "ipv6": "2600:1700:5e40:c2e0::13"
         },
         "wan": {
-          "interface": "wlan0"
+          "interface": "wlp1s0"
         }
       }
     },
@@ -67,7 +67,7 @@
       "network": {
         "wan": {
           "interface": "wlp0s20f3",
-          "ipv4": "192.168.1.251",
+          "ipv4": "192.168.1.246",
           "ipv6": "2600:1700:5e40:c2e0::15"
         }
       }
@@ -78,11 +78,11 @@
       "network": {
         "lan": {
           "interface": "eno1",
-          "ipv4": "192.168.1.247",
+          "ipv4": "192.168.1.250",
           "ipv6": "2600:1700:5e40:c2e0::16"
         },
         "wan": {
-          "interface": "wlan0"
+          "interface": "wlp3s0"
         }
       }
     }
