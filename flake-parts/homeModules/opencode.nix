@@ -25,26 +25,31 @@
           alejandra
           ruff
           podman
-          python3Minimal
+          python3
           git
           httpie
           helm-ls
           terraform-ls
           kubectl
           kubernetes-helm
+          gleam
         ];
         tui.theme = "tokyonight";
         settings = {
-          model = "google/gemini-3.5-flash";
-          small_model = "google/gemini-1.5-flash";
+          model = "minimax/minimax-m3";
+          small_model = "google/gemma-4-26b-a4b-it:free";
           compaction = {
             auto = true;
             tail_turns = 2;
           };
           lsp = {
             python = {
-              command = ["${pyrefly}/bin/pyrefly"];
+              command = ["pyrefly"];
               extensions = ["py"];
+            };
+            gleam = {
+              command = ["gleam" "lsp"];
+              extensions = ["gleam"];
             };
           };
           formatter = {
@@ -55,6 +60,10 @@
             python = {
               command = ["ruff" "format" "-"];
               extensions = ["py"];
+            };
+            gleam = {
+              command = ["gleam" "format"];
+              extensions = ["gleam"];
             };
           };
         };
