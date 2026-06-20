@@ -12,13 +12,9 @@
         };
       };
 
-      # Home Options
-      home.packages = with pkgs; [
-        zen-browser
-        discord
-        spotify
-        prismlauncher
-      ];
+      # # Home Options
+      # home.packages = with pkgs; [
+      # ];
     };
   };
 }

@@ -76,7 +76,12 @@
         systemPackages = with pkgs;
         with self.packages.${system}; [
           zstd
+          gzip
           rsync
+          httpie
+          fastfetch
+          jq
+          yq
           fh
           apply-and-reboot
           apply-to-boot

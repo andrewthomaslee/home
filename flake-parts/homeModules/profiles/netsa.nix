@@ -32,23 +32,14 @@
       # Home Options
       home.packages = with pkgs;
         [
-          zen-browser
           moscripts
           kubefetch
         ]
         ++ (with pkgs.unstable; [
-          obsidian
           asciinema
-          prismlauncher
-          tor-browser
           kalker
           lazyssh
           lazyjournal
-          jq
-          yq
-          httpie
-          mediawriter
-          fastfetch
         ]);
     };
   };

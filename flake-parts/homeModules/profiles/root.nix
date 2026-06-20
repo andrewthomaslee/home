@@ -7,6 +7,7 @@
         shell.enable = true;
         ssh.enable = true;
         starship.enable = true;
+        k9s.enable = true;
       };
     };
   };

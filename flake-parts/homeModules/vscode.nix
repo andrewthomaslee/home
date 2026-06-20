@@ -196,6 +196,7 @@
         devcontainer
         devpod
         nil
+        gleam
       ];
 
       programs.bash.shellAliases = {
