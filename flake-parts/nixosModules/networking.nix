@@ -20,7 +20,7 @@ in {
         in {
           networkmanager.unmanaged = [interface];
           interfaces.${interface} = {
-            useDHCP = true;
+            useDHCP = false;
             ipv4.addresses = [
               {
                 address = ipv4;
@@ -44,11 +44,6 @@ in {
             address = "2600:1700:5e40:c2e0::1";
             inherit interface;
           };
-
-          nameservers = lib.mkForce [
-            "2606:4700:4700::1111"
-            "1.1.1.1"
-          ];
         };
       };
     };
@@ -91,11 +86,6 @@ in {
             address = "2600:1700:5e40:c2e0::1";
             interface = net.wan.interface;
           };
-
-          nameservers = lib.mkDefault [
-            "2606:4700:4700::1111"
-            "1.1.1.1"
-          ];
         };
       };
     };

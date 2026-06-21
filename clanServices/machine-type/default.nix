@@ -69,6 +69,12 @@
         graphics.enable = true;
       };
 
+      # networking
+      networking.nameservers = lib.mkForce [
+        "2606:4700:4700::1111"
+        "1.1.1.1"
+      ];
+
       # System Packages
       environment = {
         enableAllTerminfo = true;
