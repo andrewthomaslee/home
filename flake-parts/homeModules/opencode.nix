@@ -33,14 +33,20 @@
           kubectl
           kubernetes-helm
           gleam
+          jq
+          yq
+          bun
+          nodejs-slim_latest
+          go_latest
+          devcontainer
         ];
         tui.theme = "tokyonight";
         settings = {
-          model = "xiaomi/mimo-v2.5-pro";
-          small_model = "google/gemma-4-26b-a4b-it:free";
+          model = "deepseek/deepseek-v4-pro";
+          small_model = "deepseek/deepseek-v4-flash";
           compaction = {
             auto = true;
-            tail_turns = 2;
+            tail_turns = 3;
           };
           lsp = {
             python = {
