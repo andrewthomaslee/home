@@ -36,6 +36,8 @@
             ".terraform*"
             "terraform.tfstate*"
             "config.tf.json"
+            "*.tfbackend"
+            "backend.tfbackend"
           ];
 
           settings = {
