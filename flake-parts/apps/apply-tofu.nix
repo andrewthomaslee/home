@@ -17,6 +17,7 @@
           inputs'.clan-core.packages.clan-cli
           self'.packages.get-keys
           bun
+          git
           (opentofu.withPlugins (p: [
             p.hashicorp_external
             p.hashicorp_tls
@@ -25,15 +26,15 @@
           ]))
         ];
         text = ''
-          if [ "$#" -ne 1 ]; then
-            echo "Usage: apply-tofu <repo-root>" >&2
-            exit 1
-          fi
-
-          REPO_ROOT="$1"
+          REPO_ROOT=$(git rev-parse --show-toplevel)
 
           if [ ! -d "$REPO_ROOT" ]; then
             echo "Error: REPO_ROOT directory not found: $REPO_ROOT" >&2
+            exit 1
+          fi
+
+          if [ ! -f "$REPO_ROOT"/.env ]; then
+            echo "Error: REPO_ROOT/.env not found" >&2
             exit 1
           fi
 
@@ -50,7 +51,8 @@
 
           eval "$(bunx varlock load --format shell --path "$REPO_ROOT"/.env)"
 
-          cp ${tofu.config} "$REPO_ROOT/config.tf.json"
+          rm -fr "$REPO_ROOT/config.tf.json" || true
+          cat ${tofu.config} | jq > "$REPO_ROOT/config.tf.json"
 
           cd "$REPO_ROOT"
 
