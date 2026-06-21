@@ -18,6 +18,7 @@
           self'.packages.get-keys
           bun
           git
+          jq
           (opentofu.withPlugins (p: [
             p.hashicorp_external
             p.hashicorp_tls
