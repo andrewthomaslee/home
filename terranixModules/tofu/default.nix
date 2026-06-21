@@ -120,6 +120,26 @@ in {
   };
 
   config = lib.mkMerge [
+    # --- TF State --- #
+    {
+      variable = {
+        BUCKET_NAME.sensitive = true;
+        ENDPOINT.sensitive = true;
+      };
+
+      terraform.backend = {
+        bucket = "\${var.BUCKET_NAME}";
+        key = "github/andrewthomaslee/home/tofu.tfstate";
+        endpoints.s3 = "\${var.ENDPOINT}";
+        use_lockfile = true;
+        skip_credentials_validation = true;
+        skip_region_validation = true;
+        skip_metadata_api_check = true;
+        skip_requesting_account_id = true;
+        use_path_style = true;
+        skip_s3_checksum = true;
+      };
+    }
     # --- Base Config --- #
     {
       terraform.required_providers.external.source = "hashicorp/external";
