@@ -50,7 +50,9 @@
 
           eval "$(bunx varlock load --format shell --path "$REPO_ROOT"/.env)"
 
-          cp ${tofu.config} config.tf.json
+          cp ${tofu.config} "$REPO_ROOT/config.tf.json"
+
+          cd "$REPO_ROOT"
 
           tofu init -reconfigure -backend-config="$BACKEND_CONFIG"
           tofu apply
