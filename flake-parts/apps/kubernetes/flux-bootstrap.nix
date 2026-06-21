@@ -21,7 +21,7 @@
             flux create source oci cluster-manifests \
               --url=oci://ghcr.io/andrewthomaslee/kube-infra/clusters/"$CLUSTER" \
               --tag=latest \
-              --interval=5m \
+              --interval=1m \
               --secret-ref=ghcr-read-secret \
               --namespace=flux-system \
               --export | kubectl apply -f -
@@ -30,7 +30,7 @@
               --source=OCIRepository/cluster-manifests \
               --path="./" \
               --prune=true \
-              --interval=5m \
+              --interval=1m \
               --namespace=flux-system \
               --export | kubectl apply -f -
           '';
