@@ -1,4 +1,0 @@
-resources:
-  - namespace.yaml
-  - source-helm-cloudflared.yaml
-  - helmrelease-cloudflared.yaml

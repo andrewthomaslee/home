@@ -1,3 +1,0 @@
-resources:
-- source-oci-tofu.yaml
-- helmrelease-tofu.yaml

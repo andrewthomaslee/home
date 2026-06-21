@@ -25,11 +25,6 @@
 
     packer.url = "https://flakehub.com/f/andrewthomaslee/packer/*";
 
-    kubenix = {
-      url = "github:hall/kubenix";
-      inputs.nixpkgs.follows = "nixpkgs-unstable";
-    };
-
     # Mkdocs
     mkdocs-flake = {
       url = "github:applicative-systems/mkdocs-flake";

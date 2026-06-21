@@ -1,6 +1,0 @@
-resources:
-  - packages
-  - helm
-  - kubeseal
-  - longhorn
-  - notifications

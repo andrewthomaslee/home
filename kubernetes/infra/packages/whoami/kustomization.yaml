@@ -1,5 +1,0 @@
-apiVersion: kustomize.config.k8s.io/v1beta1
-kind: Kustomization
-resources:
-  - source-oci-home-oci-packages-whoami.json
-  - kustomization-home-oci-packages-whoami.json
