@@ -33,7 +33,6 @@
               esbenp.prettier-vscode
               ecmel.vscode-html-css
               catppuccin.catppuccin-vsc-icons
-              rooveterinaryinc.roo-cline
               irongeek.vscode-env
               hashicorp.terraform
               budparr.language-hugo-vscode
@@ -197,6 +196,7 @@
         devpod
         nil
         gleam
+        nodejs-slim_latest
       ];
 
       programs.bash.shellAliases = {
