@@ -8,6 +8,8 @@ result-*
 .terraform*
 terraform.tfstate*
 config.tf.json
+backend.tfbackend
+!backend.tfbackend.schema
 
 .env.*
 .env

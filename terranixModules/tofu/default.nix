@@ -120,6 +120,10 @@ in {
   };
 
   config = lib.mkMerge [
+    # --- TF State --- #
+    {
+      terraform.backend.s3 = {};
+    }
     # --- Base Config --- #
     {
       terraform.required_providers.external.source = "hashicorp/external";
