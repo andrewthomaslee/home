@@ -17,13 +17,22 @@
           text = ''
             CLUSTER=$1
             kubectl config use-context "$CLUSTER"
-            flux bootstrap github \
-              --token-auth \
-              --owner=andrewthomaslee \
-              --repository=home \
-              --branch=main \
-              --path=kubernetes/clusters/"$CLUSTER" \
-              --personal
+            flux install
+            flux create source oci cluster-manifests \
+              --url=oci://ghcr.io/andrewthomaslee/kube-infra/clusters/"$CLUSTER" \
+              --tag=latest \
+              --interval=5m \
+              --secret-ref=ghcr-read-secret \
+              --namespace=flux-system \
+              --export | kubectl apply -f -
+
+            flux create kustomization cluster-manifests \
+              --source=OCIRepository/cluster-manifests \
+              --path="./" \
+              --prune=true \
+              --interval=5m \
+              --namespace=flux-system \
+              --export | kubectl apply -f -
           '';
         });
       };
