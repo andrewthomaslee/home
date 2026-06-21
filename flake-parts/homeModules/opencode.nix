@@ -36,7 +36,7 @@
         ];
         tui.theme = "tokyonight";
         settings = {
-          model = "minimax/minimax-m3";
+          model = "xiaomi/mimo-v2.5-pro";
           small_model = "google/gemma-4-26b-a4b-it:free";
           compaction = {
             auto = true;
