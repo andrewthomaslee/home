@@ -10,26 +10,26 @@ on:
   workflow_dispatch:
 
 jobs:
-  flake-check:
+  pre-flight:
     uses: ./.github/workflows/_flake-check.yml
 
-  build-machines:
-    needs: flake-check
+  machines:
+    needs: pre-flight
     uses: ./.github/workflows/_build-machines.yml
 
-  build-artifacts:
-    needs: flake-check
+  artifacts:
+    needs: pre-flight
     uses: ./.github/workflows/_build-artifacts.yml
 
-  docs:
-    needs: [build-machines, build-artifacts, flake-check]
+  mkdocs:
+    needs: [machines, artifacts]
     uses: ./.github/workflows/_docs.yml
 
-  push:
-    needs: [build-machines, build-artifacts, flake-check]
+  flakehub:
+    needs: [machines, artifacts]
     uses: ./.github/workflows/_flakehub.yml
 
-  release:
-    needs: [docs, push]
+  tag:
+    needs: [mkdocs, flakehub]
     uses: ./.github/workflows/_release.yml
     secrets: inherit
