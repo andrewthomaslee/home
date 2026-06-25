@@ -40,8 +40,6 @@
           kalker
           lazyssh
           lazyjournal
-          cloudflare-warp
-          cloudflared
         ]);
     };
   };

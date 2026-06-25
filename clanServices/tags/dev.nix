@@ -13,5 +13,7 @@
     # nixos options
     security.sudo.wheelNeedsPassword = false;
     boot.binfmt.emulatedSystems = ["aarch64-linux"];
+
+    services.cloudflare-warp.enable = true;
   };
 }
