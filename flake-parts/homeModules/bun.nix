@@ -14,6 +14,10 @@
   in {
     options.homeSpec.programs.bun.enable = lib.mkEnableOption "default bun configuration";
     config = lib.mkIf cfg.enable {
+      home.packages = with pkgs.unstable; [
+        nodejs
+        pnpm
+      ];
       programs.bun = {
         enable = true;
         package = pkgs.unstable.bun;

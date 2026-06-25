@@ -22,6 +22,7 @@
         profiles = {
           default = {
             extensions = with pkgs.unstable.vscode-extensions; [
+              gleam.gleam
               kamadorueda.alejandra
               jnoortheen.nix-ide
               bradlc.vscode-tailwindcss
@@ -142,43 +143,6 @@
                   };
                 };
               };
-              roo-cline = {
-                debug = false;
-                allowedCommands = [
-                  "git status"
-                  "git log"
-                  "git diff"
-                  "git show"
-                  "nix flake check"
-                  "nix eval"
-                  "nix flake show"
-                  "nix build"
-                  "nix flake check"
-                  "clan show"
-                  "clan vars list"
-                  "yq"
-                  "jq"
-                  "kubectl get"
-                  "kubectl describe"
-                  "kubectl logs"
-                  "kubectl config use-context"
-                  "cat"
-                  "find"
-                  "ls"
-                  "grep"
-                  "sed"
-                  "rg"
-                  "lt"
-                  "helm show values"
-                  "tail"
-                  "head"
-                ];
-                deniedCommands = [
-                  "nix shell"
-                  "nixos-rebuild"
-                  "sudo"
-                ];
-              };
             };
           };
         };
@@ -196,12 +160,14 @@
         devpod
         nil
         gleam
-        nodejs-slim_latest
+        nodejs
+        kind
       ];
 
       programs.bash.shellAliases = {
         c = "codium .";
         cknownhosts = "codium ~/.ssh/known_hosts";
+        fortune-kind = "nix run github:cafkafk/fortune-kind";
       };
     };
   };
