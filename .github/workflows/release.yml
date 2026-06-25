@@ -5,6 +5,7 @@ permissions:
   contents: write
   packages: write
   pages: write
+  workflows: write
 
 on:
   workflow_dispatch:
