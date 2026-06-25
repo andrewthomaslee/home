@@ -6,9 +6,9 @@
     lib,
     ...
   }: let
-    cfg = config.hostSpec.hardware.intel;
+    cfg = config.hostSpec.hardware.cpu.intel;
   in {
-    options.hostSpec.hardware.intel.enable = lib.mkEnableOption "default intel configuration";
+    options.hostSpec.hardware.cpu.intel.enable = lib.mkEnableOption "default intel configuration";
 
     config = lib.mkIf cfg.enable {
       hardware.graphics = {

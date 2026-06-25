@@ -18,7 +18,7 @@
       };
       amd = lib.mkOption {
         type = lib.types.bool;
-        default = config.hostSpec.hardware.amd.enable or false;
+        default = config.hostSpec.hardware.gpu.amd.enable or false;
         description = "has amd";
         example = true;
       };
