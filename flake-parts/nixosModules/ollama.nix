@@ -12,7 +12,10 @@
       enable = lib.mkEnableOption "default ollama configuration";
       package = lib.mkOption {
         type = lib.types.package;
-        default = pkgs.ollama;
+        default =
+          if config.hostSpec.hardware.gpu.amd.enable
+          then pkgs.unstable.ollama-vulkan
+          else pkgs.unstable.ollama;
       };
       port = lib.mkOption {
         type = lib.types.int;
