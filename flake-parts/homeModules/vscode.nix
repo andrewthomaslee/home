@@ -162,6 +162,9 @@
         gleam
         nodejs
         kind
+        mongodb-compass
+        pgadmin4-desktopmode
+        duckdb
       ];
 
       programs.bash.shellAliases = {
