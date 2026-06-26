@@ -227,17 +227,6 @@ in {
           rule = [
             {
               direction = "in";
-              protocol = "tcp";
-              port = "22";
-              source_ips = ["0.0.0.0/0" "::/0"];
-            }
-            {
-              direction = "in";
-              protocol = "icmp";
-              source_ips = ["0.0.0.0/0" "::/0"];
-            }
-            {
-              direction = "in";
               protocol = "udp";
               port = "51820";
               source_ips =
@@ -264,6 +253,27 @@ in {
               direction = "in";
               protocol = "tcp";
               port = "443";
+              source_ips = ["0.0.0.0/0" "::/0"];
+            }
+          ];
+        };
+        hcloud_firewall.ssh = {
+          name = "ssh";
+          apply_to = [
+            {
+              label_selector = "network=clan_network";
+            }
+          ];
+          rule = [
+            {
+              direction = "in";
+              protocol = "tcp";
+              port = "22";
+              source_ips = ["0.0.0.0/0" "::/0"];
+            }
+            {
+              direction = "in";
+              protocol = "icmp";
               source_ips = ["0.0.0.0/0" "::/0"];
             }
           ];
