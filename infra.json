@@ -1,5 +1,8 @@
 {
-    "meta": {},
+    "meta": {
+        "domain": "andrewlee.cloud",
+        "zone": "eu-central"
+    },
     "clusters": [
         {
             "name": "hcloud",

@@ -14,6 +14,11 @@
         type = lib.types.str;
         default = "andrewlee.cloud";
       };
+      zone = lib.mkOption {
+        type = lib.types.str;
+        default = "eu-central";
+        description = "Hetzner network zone for all machines (e.g. eu-central, us-east)";
+      };
     };
   });
 
@@ -69,37 +74,6 @@
       };
     };
   });
-
-  getZone = region:
-    {
-      "nbg1" = "eu-central";
-      "fsn1" = "eu-central";
-      "hel1" = "eu-central";
-      "ash" = "us-east";
-      "hil" = "us-west";
-      "sin" = "ap-southeast";
-    }
-    .${
-      region
-    } or "eu-central";
-
-  getSafeZone = zone: builtins.replaceStrings ["-"] ["_"] zone;
-
-  zones = lib.unique (map (node: getZone node.cloud.region) allNodes);
-
-  zoneSubnets = {
-    "eu-central" = "10.0.1.0/24";
-    "us-east" = "10.0.2.0/24";
-    "us-west" = "10.0.3.0/24";
-    "ap-southeast" = "10.0.4.0/24";
-  };
-
-  zoneHomeLocation = {
-    "eu-central" = "hel1";
-    "us-east" = "ash";
-    "us-west" = "hil";
-    "ap-southeast" = "sin";
-  };
 in {
   options.terranix = {
     infra_file = lib.mkOption {
@@ -193,29 +167,20 @@ in {
             network = "clan_network";
           };
         };
-        hcloud_network_subnet = builtins.listToAttrs (map (zone: {
-            name = getSafeZone zone;
-            value = {
-              type = "cloud";
-              network_id = "\${hcloud_network.clan_network.id}";
-              network_zone = zone;
-              ip_range = zoneSubnets.${zone};
-            };
-          })
-          zones);
+        hcloud_network_subnet.clan_subnet = {
+          type = "cloud";
+          network_id = "\${hcloud_network.clan_network.id}";
+          network_zone = cfg.meta.zone;
+          ip_range = "10.0.1.0/24";
+        };
         # Placement Group
-        hcloud_placement_group = builtins.listToAttrs (map (zone: {
-            name = getSafeZone zone;
-            value = {
-              name = "clan_placement_group_${zone}";
-              type = "spread";
-              labels = {
-                network = "clan_network";
-                zone = zone;
-              };
-            };
-          })
-          zones);
+        hcloud_placement_group.clan_placement_group = {
+          name = "clan_placement_group";
+          type = "spread";
+          labels = {
+            network = "clan_network";
+          };
+        };
         # Firewall
         hcloud_firewall.clan_firewall = {
           name = "clan_firewall";
@@ -278,16 +243,6 @@ in {
             }
           ];
         };
-        # Floating IP
-        hcloud_floating_ip = builtins.listToAttrs (map (zone: {
-            name = "clan_floating_ipv4_${getSafeZone zone}";
-            value = {
-              name = "clan_floating_ipv4_${getSafeZone zone}";
-              type = "ipv4";
-              home_location = zoneHomeLocation.${zone};
-            };
-          })
-          zones);
       };
     }
     # --- Nodes --- #
@@ -302,7 +257,7 @@ in {
               name = node.name;
               location = node.cloud.region;
               server_type = node.cloud.server_type;
-              placement_group_id = "\${hcloud_placement_group.${getSafeZone (getZone node.cloud.region)}.id}";
+              placement_group_id = "\${hcloud_placement_group.clan_placement_group.id}";
               labels = {
                 region = node.cloud.region;
                 network = "clan_network";
@@ -318,8 +273,7 @@ in {
                 }
               ];
               depends_on = [
-                "hcloud_network_subnet.${getSafeZone (getZone node.cloud.region)}"
-                "hcloud_floating_ip.clan_floating_ipv4_${getSafeZone (getZone node.cloud.region)}"
+                "hcloud_network_subnet.clan_subnet"
               ];
               ssh_keys = "\${concat([hcloud_ssh_key.clan_ssh_key.id], data.hcloud_ssh_keys.all.ssh_keys.*.name)}";
               connection = {
