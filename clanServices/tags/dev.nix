@@ -15,5 +15,6 @@
     boot.binfmt.emulatedSystems = ["aarch64-linux"];
 
     services.cloudflare-warp.enable = true;
+    services.resolved.settings.Resolve.ResolveUnicastSingleLabel = "yes";
   };
 }
