@@ -16,6 +16,7 @@
     config = lib.mkIf cfg.enable {
       # Hardware accelleration
       hardware.graphics.enable = lib.mkForce true;
+      networking.networkmanager.enable = lib.mkForce true;
 
       # KDE Desktop
       services = {
