@@ -29,7 +29,10 @@
       };
     };
     networking = {
-      networkmanager.dns = "systemd-resolved";
+      networkmanager = {
+        dns = "systemd-resolved";
+        unmanaged = ["CloudflareWARP"];
+      };
       resolvconf.enable = false;
     };
   };
