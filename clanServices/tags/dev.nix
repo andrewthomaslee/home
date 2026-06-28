@@ -14,7 +14,20 @@
     security.sudo.wheelNeedsPassword = false;
     boot.binfmt.emulatedSystems = ["aarch64-linux"];
 
-    services.cloudflare-warp.enable = true;
-    services.resolved.settings.Resolve.ResolveUnicastSingleLabel = "yes";
+    services = {
+      cloudflare-warp.enable = true;
+      resolved = {
+        enable = true;
+        dnssec = "false"; # Disable DNSSEC
+        dnstls = "false"; # Disable DNS-over-TLS
+        extraConfig = ''
+          ResolveUnicastSingleLabel=yes
+        '';
+      };
+    };
+    networking = {
+      networkmanager.dns = "systemd-resolved";
+      resolvconf.enable = false;
+    };
   };
 }
