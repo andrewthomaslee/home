@@ -1,8 +1,12 @@
-{...}: {
+{lib, ...}: {
   imports = [];
   config = {
     # hostSpec options
     hostSpec = {
+      networking.tailscale = {
+        enable = lib.mkForce false;
+        systray = lib.mkForce false;
+      };
       services = {
         docker.enable = true;
         storagebox.enable = true;
@@ -18,11 +22,10 @@
       cloudflare-warp.enable = true;
       resolved = {
         enable = true;
-        dnssec = "false"; # Disable DNSSEC
-        dnstls = "false"; # Disable DNS-over-TLS
-        extraConfig = ''
-          ResolveUnicastSingleLabel=yes
-        '';
+        settings.Resolve = {
+          DNSOverTLS = false;
+          DNSSEC = false;
+        };
       };
     };
     networking = {
