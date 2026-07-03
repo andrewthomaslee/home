@@ -180,6 +180,7 @@ in {
             };
           };
           # --- Node level settings --- #
+          cpu = "amd";
           services.longhorn.v2.enabled = true;
           wireguard = {
             endpoint = "[2600:1700:5e40:c2e0::11]";
@@ -189,12 +190,14 @@ in {
         # -------- Manager Nodes -------- #
         manager.machines = {
           beelink.settings = {
+            cpu = "amd";
             wireguard = {
               endpoint = "[2600:1700:5e40:c2e0::16]";
               ipv4 = "172.16.0.3";
             };
           };
           inuc-i5.settings = {
+            cpu = "intel";
             services.web.enabled = false;
             wireguard = {
               endpoint = "[2600:1700:5e40:c2e0::13]";
@@ -205,6 +208,7 @@ in {
         # -------- Worker Nodes -------- #
         worker.machines = {
           inuc-celeron.settings = {
+            cpu = "intel";
             services.web.enabled = false;
             wireguard = {
               endpoint = "[2600:1700:5e40:c2e0::12]";
@@ -228,6 +232,7 @@ in {
           domain = "andrewlee.cloud";
           distro = "rke2";
           cilium.id = 2;
+          defaultCpu = "intel";
           # --- Node level settings --- #
           wireguard.ipv4 = "172.16.1.1";
         };
