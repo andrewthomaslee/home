@@ -18,7 +18,7 @@ in {
           net = (lib.findFirst (m: m.name == config.networking.hostName) null machines).network;
           inherit (net.lan) ipv4 ipv6 interface;
         in {
-          # networkmanager.unmanaged = [interface];
+          networkmanager.unmanaged = [interface];
           interfaces.${interface} = {
             useDHCP = false;
             ipv4.addresses = [
