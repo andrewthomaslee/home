@@ -1,16 +1,8 @@
-{lib, ...}: {
+{...}: {
   imports = [];
   config = {
     # hostSpec options
     hostSpec = {
-      networking = {
-        tailscale = {
-          enable = lib.mkForce false;
-          systray = lib.mkForce false;
-        };
-        warp.enable = true;
-      };
-
       services = {
         docker.enable = true;
         storagebox.enable = true;
