@@ -31,7 +31,7 @@
     networking = {
       networkmanager = {
         dns = "systemd-resolved";
-        unmanaged = ["CloudflareWARP"];
+        # unmanaged = ["CloudflareWARP"];
       };
       resolvconf.enable = false;
     };
