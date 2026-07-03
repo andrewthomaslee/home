@@ -17,6 +17,7 @@
           settings.Resolve = {
             DNSOverTLS = false;
             DNSSEC = false;
+            ResolveUnicastSingleLabel = true;
           };
         };
       };
