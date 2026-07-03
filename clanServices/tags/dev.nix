@@ -3,10 +3,14 @@
   config = {
     # hostSpec options
     hostSpec = {
-      networking.tailscale = {
-        enable = lib.mkForce false;
-        systray = lib.mkForce false;
+      networking = {
+        tailscale = {
+          enable = lib.mkForce false;
+          systray = lib.mkForce false;
+        };
+        warp.enable = true;
       };
+
       services = {
         docker.enable = true;
         storagebox.enable = true;
@@ -17,23 +21,5 @@
     # nixos options
     security.sudo.wheelNeedsPassword = false;
     boot.binfmt.emulatedSystems = ["aarch64-linux"];
-
-    services = {
-      cloudflare-warp.enable = true;
-      resolved = {
-        enable = true;
-        settings.Resolve = {
-          DNSOverTLS = false;
-          DNSSEC = false;
-        };
-      };
-    };
-    networking = {
-      networkmanager = {
-        dns = "systemd-resolved";
-        # unmanaged = ["CloudflareWARP"];
-      };
-      resolvconf.enable = false;
-    };
   };
 }
