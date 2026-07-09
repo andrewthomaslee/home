@@ -127,6 +127,14 @@
                   "!ENV sequence"
                   "!relative scalar"
                 ];
+                disableSchemaDetection = [
+                  "**/.github/workflows/*.yml"
+                  "**/.github/workflows/*.yaml"
+                  "**/.gitea/workflows/*.yml"
+                  "**/.gitea/workflows/*.yaml"
+                  "**/.forgejo/workflows/*.yml"
+                  "**/.forgejo/workflows/*.yaml"
+                ];
               };
               nix = {
                 enableLanguageServer = true;
