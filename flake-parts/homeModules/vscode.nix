@@ -173,7 +173,7 @@
         mongodb-compass
         pgadmin4-desktopmode
         duckdb
-        herdr
+        # herdr
       ];
 
       programs.bash.shellAliases = {
