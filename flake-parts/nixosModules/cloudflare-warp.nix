@@ -33,7 +33,7 @@
             <key>auth_client_id</key>
             <string>$(cat $prompts/id)</string>
             <key>auth_client_secret</key>
-            <string>$(cat $prompts/id)</string>
+            <string>$(cat $prompts/token)</string>
             <key>auto_connect</key>
             <integer>1</integer>
             <key>service_mode</key>
