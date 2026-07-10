@@ -46,26 +46,10 @@ in {
       tags = ["amd" "m" "kde" "wan" "netsa"];
     };
 
-    # Cloud VMs
-    hel-1 = {
-      deploy.targetHost = "root@hel-1.andrewlee.cloud";
-      tags = ["vm"];
-    };
-    hel-2 = {
-      deploy.targetHost = "root@hel-2.andrewlee.cloud";
-      tags = ["vm"];
-    };
-    hel-3 = {
-      deploy.targetHost = "root@hel-3.andrewlee.cloud";
-      tags = ["vm"];
-    };
-    hel-4 = {
-      deploy.targetHost = "root@hel-4.andrewlee.cloud";
-      tags = ["vm"];
-    };
-    hel-5 = {
-      deploy.targetHost = "root@hel-5.andrewlee.cloud";
-      tags = ["vm"];
+    # Hetzner
+    hmetal = {
+      deploy.targetHost = "root@hmetal.andrewlee.cloud";
+      tags = ["m"];
     };
   };
 
@@ -77,7 +61,6 @@ in {
       roles = {
         pc.tags.pc = {};
         m.tags.m = {};
-        vm.tags.vm = {};
       };
     };
 
@@ -219,7 +202,7 @@ in {
       };
     };
 
-    # --- RKE2 Hetzner Cloud Cluster --- #
+    # --- RKE2 Hetzner Robot/Cloud Cluster --- #
     hcloud = {
       module = {
         name = "rancher";
@@ -227,7 +210,7 @@ in {
       };
       roles = {
         # -------- Master Machine -------- #
-        master.machines.hel-1.settings = {
+        master.machines.hmetal.settings = {
           # --- Cluster Level Settings --- #
           domain = "andrewlee.cloud";
           distro = "rke2";
@@ -235,13 +218,6 @@ in {
           defaultCpu = "intel";
           # --- Node level settings --- #
           wireguard.ipv4 = "172.16.1.1";
-        };
-        # -------- Manager Nodes -------- #
-        manager.machines = {
-          hel-2.settings.wireguard.ipv4 = "172.16.1.2";
-          hel-3.settings.wireguard.ipv4 = "172.16.1.3";
-          hel-4.settings.wireguard.ipv4 = "172.16.1.4";
-          hel-5.settings.wireguard.ipv4 = "172.16.1.5";
         };
       };
     };

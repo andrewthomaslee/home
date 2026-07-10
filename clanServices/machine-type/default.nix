@@ -14,10 +14,6 @@
       perInstance.nixosModule = ./m.nix;
       description = "Machine (Bare Metal)";
     };
-    vm = {
-      perInstance.nixosModule = ./vm.nix;
-      description = "Virtual Machine";
-    };
   };
 
   # Common configuration for all macine types

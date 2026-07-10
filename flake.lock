@@ -1,545 +1,5 @@
 {
   "nodes": {
-    "Anvil-Restoration": {
-      "flake": false,
-      "locked": {
-        "narHash": "sha256-7hhjggaKF/xSN3+fuPj5xUlgGH6sgctOwCj8AetXIBM=",
-        "type": "file",
-        "url": "https://cdn.modrinth.com/data/bd8nwTGy/versions/xGzeyADa/anvilrestoration-1.21.11-2.5.jar"
-      },
-      "original": {
-        "type": "file",
-        "url": "https://cdn.modrinth.com/data/bd8nwTGy/versions/xGzeyADa/anvilrestoration-1.21.11-2.5.jar"
-      }
-    },
-    "AppleSkin": {
-      "flake": false,
-      "locked": {
-        "narHash": "sha256-1jGOhIi0vRbgm93Gp2dki008bautSv3AED3RlxVTJYs=",
-        "type": "file",
-        "url": "https://cdn.modrinth.com/data/EsAfCjCV/versions/59ti1rvg/appleskin-fabric-mc1.21.11-3.0.8.jar"
-      },
-      "original": {
-        "type": "file",
-        "url": "https://cdn.modrinth.com/data/EsAfCjCV/versions/59ti1rvg/appleskin-fabric-mc1.21.11-3.0.8.jar"
-      }
-    },
-    "Armored-Elytra": {
-      "flake": false,
-      "locked": {
-        "narHash": "sha256-ehV5DMLFCsjTW1i3SEM34fr4jxP5hzfvToGWFbva59Q=",
-        "type": "file",
-        "url": "https://cdn.modrinth.com/data/AuFCCYMx/versions/mKCSekSL/armored-elytra-1.12.0.jar"
-      },
-      "original": {
-        "type": "file",
-        "url": "https://cdn.modrinth.com/data/AuFCCYMx/versions/mKCSekSL/armored-elytra-1.12.0.jar"
-      }
-    },
-    "Bigger-Sponge-Absorption-Radius": {
-      "flake": false,
-      "locked": {
-        "narHash": "sha256-xGXPSqFZFDY5cHDf/28hyKjyIAlPUAzj2+P/vXmDXr8=",
-        "type": "file",
-        "url": "https://cdn.modrinth.com/data/3PLAyBxz/versions/KzkF169B/biggerspongeabsorptionradius-1.21.11-3.7.jar"
-      },
-      "original": {
-        "type": "file",
-        "url": "https://cdn.modrinth.com/data/3PLAyBxz/versions/KzkF169B/biggerspongeabsorptionradius-1.21.11-3.7.jar"
-      }
-    },
-    "Bow-Infinity-Fix": {
-      "flake": false,
-      "locked": {
-        "narHash": "sha256-C9JStoA3VXAdYCmwMPxEIaLrj5aOA+V9IKnxrUs7pAY=",
-        "type": "file",
-        "url": "https://cdn.modrinth.com/data/BFENfScW/versions/besCdt3U/BowInfinityFix-1.21.9-fabric-3.1.2.jar"
-      },
-      "original": {
-        "type": "file",
-        "url": "https://cdn.modrinth.com/data/BFENfScW/versions/besCdt3U/BowInfinityFix-1.21.9-fabric-3.1.2.jar"
-      }
-    },
-    "Cardinal-Components-API": {
-      "flake": false,
-      "locked": {
-        "narHash": "sha256-Cv1odL1IwEAvaMchSSzHdj1Ybbl0eqnoDR8SuSWogGk=",
-        "type": "file",
-        "url": "https://cdn.modrinth.com/data/K01OU20C/versions/O2RJYZwD/cardinal-components-api-7.3.1.jar"
-      },
-      "original": {
-        "type": "file",
-        "url": "https://cdn.modrinth.com/data/K01OU20C/versions/O2RJYZwD/cardinal-components-api-7.3.1.jar"
-      }
-    },
-    "Cloth-Config-API": {
-      "flake": false,
-      "locked": {
-        "narHash": "sha256-QPwACPGRG9AYA+ioH8igOM9SfoqZ+kzEUtpnqyml/wQ=",
-        "type": "file",
-        "url": "https://cdn.modrinth.com/data/9s6osm5g/versions/xuX40TN5/cloth-config-21.11.153-fabric.jar"
-      },
-      "original": {
-        "type": "file",
-        "url": "https://cdn.modrinth.com/data/9s6osm5g/versions/xuX40TN5/cloth-config-21.11.153-fabric.jar"
-      }
-    },
-    "Clumps": {
-      "flake": false,
-      "locked": {
-        "narHash": "sha256-C0VrWroCXz97/GHnCU6apzWL+tiVx8pHU0sqBqFHEqw=",
-        "type": "file",
-        "url": "https://cdn.modrinth.com/data/Wnxd13zP/versions/OgBE8Rz4/Clumps-fabric-1.21.11-29.0.0.1.jar"
-      },
-      "original": {
-        "type": "file",
-        "url": "https://cdn.modrinth.com/data/Wnxd13zP/versions/OgBE8Rz4/Clumps-fabric-1.21.11-29.0.0.1.jar"
-      }
-    },
-    "Collective": {
-      "flake": false,
-      "locked": {
-        "narHash": "sha256-HkaiLiHdvYikkC4rgUWmJ4ExkRalK9956296GH/qwUA=",
-        "type": "file",
-        "url": "https://cdn.modrinth.com/data/e0M1UDsY/versions/T8rv7kwo/collective-1.21.11-8.13.jar"
-      },
-      "original": {
-        "type": "file",
-        "url": "https://cdn.modrinth.com/data/e0M1UDsY/versions/T8rv7kwo/collective-1.21.11-8.13.jar"
-      }
-    },
-    "Concurrent-Chunk-Management-Engine": {
-      "flake": false,
-      "locked": {
-        "narHash": "sha256-JsExKgXAlIeILHLXuruqsbt4ewqU2zOweKJIXnbfEYw=",
-        "type": "file",
-        "url": "https://cdn.modrinth.com/data/VSNURh3q/versions/olrVZpJd/c2me-fabric-mc1.21.11-0.3.6.0.0.jar"
-      },
-      "original": {
-        "type": "file",
-        "url": "https://cdn.modrinth.com/data/VSNURh3q/versions/olrVZpJd/c2me-fabric-mc1.21.11-0.3.6.0.0.jar"
-      }
-    },
-    "Distant-Horizons": {
-      "flake": false,
-      "locked": {
-        "narHash": "sha256-uZWrx9Jsa8/gathzVpCZwhG/ySOF5sBP57wn7MdYx38=",
-        "type": "file",
-        "url": "https://cdn.modrinth.com/data/uCdwusMi/versions/GT3Bm3GN/DistantHorizons-2.4.5-b-1.21.11-fabric-neoforge.jar"
-      },
-      "original": {
-        "type": "file",
-        "url": "https://cdn.modrinth.com/data/uCdwusMi/versions/GT3Bm3GN/DistantHorizons-2.4.5-b-1.21.11-fabric-neoforge.jar"
-      }
-    },
-    "Dragon-Drops-Elytra": {
-      "flake": false,
-      "locked": {
-        "narHash": "sha256-pwpAKl6G9HljtafbjvQbuS9KFniqej0dXrpqSPeSbbo=",
-        "type": "file",
-        "url": "https://cdn.modrinth.com/data/DPkbo3dg/versions/NwRksTCY/dragondropselytra-1.21.11-3.5.jar"
-      },
-      "original": {
-        "type": "file",
-        "url": "https://cdn.modrinth.com/data/DPkbo3dg/versions/NwRksTCY/dragondropselytra-1.21.11-3.5.jar"
-      }
-    },
-    "Elytra-Trims": {
-      "flake": false,
-      "locked": {
-        "narHash": "sha256-L4xNmCOOlCLDUdOuO29GgL5zTwS5C+dwjInugP//t9s=",
-        "type": "file",
-        "url": "https://cdn.modrinth.com/data/XpzGz7KD/versions/Nzd1iQCn/elytratrims-fabric-4.6.2%2B1.21.11.jar"
-      },
-      "original": {
-        "type": "file",
-        "url": "https://cdn.modrinth.com/data/XpzGz7KD/versions/Nzd1iQCn/elytratrims-fabric-4.6.2%2B1.21.11.jar"
-      }
-    },
-    "Essential-Commands": {
-      "flake": false,
-      "locked": {
-        "narHash": "sha256-lwXbcCQ/1kxReS7vNMUIhinphbcQKoN4W20Po0glnqk=",
-        "type": "file",
-        "url": "https://cdn.modrinth.com/data/6VdDUivB/versions/3s9XXmZa/essential_commands-0.38.6-mc1.21.11.jar"
-      },
-      "original": {
-        "type": "file",
-        "url": "https://cdn.modrinth.com/data/6VdDUivB/versions/3s9XXmZa/essential_commands-0.38.6-mc1.21.11.jar"
-      }
-    },
-    "Extended-Bone-Meal": {
-      "flake": false,
-      "locked": {
-        "narHash": "sha256-6kCCdoP6AifKyqRy95bifaix3hDyjniDOYj2gfPRiCE=",
-        "type": "file",
-        "url": "https://cdn.modrinth.com/data/bHkCoxMs/versions/Z4hgjtLH/extendedbonemeal-1.21.11-3.6.jar"
-      },
-      "original": {
-        "type": "file",
-        "url": "https://cdn.modrinth.com/data/bHkCoxMs/versions/Z4hgjtLH/extendedbonemeal-1.21.11-3.6.jar"
-      }
-    },
-    "Fabric-API": {
-      "flake": false,
-      "locked": {
-        "narHash": "sha256-HosOeLNUcbaLe/WiZ/w+kYyw3IS/vzkqFsJL+uvENfs=",
-        "type": "file",
-        "url": "https://cdn.modrinth.com/data/P7dR8mSH/versions/i5tSkVBH/fabric-api-0.141.3%2B1.21.11.jar"
-      },
-      "original": {
-        "type": "file",
-        "url": "https://cdn.modrinth.com/data/P7dR8mSH/versions/i5tSkVBH/fabric-api-0.141.3%2B1.21.11.jar"
-      }
-    },
-    "FerriteCore": {
-      "flake": false,
-      "locked": {
-        "narHash": "sha256-PhcRMHiexROOH1KAzB7ezib3yHJ00xYrQG7oab+TJ14=",
-        "type": "file",
-        "url": "https://cdn.modrinth.com/data/uXXizFIs/versions/Ii0gP3D8/ferritecore-8.2.0-fabric.jar"
-      },
-      "original": {
-        "type": "file",
-        "url": "https://cdn.modrinth.com/data/uXXizFIs/versions/Ii0gP3D8/ferritecore-8.2.0-fabric.jar"
-      }
-    },
-    "Fixed-Anvil-Repair-Cost": {
-      "flake": false,
-      "locked": {
-        "narHash": "sha256-+XBfC1SwaBjR9OeufjreTeaLYTZUyitlVMWj//QvHE4=",
-        "type": "file",
-        "url": "https://cdn.modrinth.com/data/jmLyNFBG/versions/uCZEtWWi/fixedanvilrepaircost-1.21.11-3.5.jar"
-      },
-      "original": {
-        "type": "file",
-        "url": "https://cdn.modrinth.com/data/jmLyNFBG/versions/uCZEtWWi/fixedanvilrepaircost-1.21.11-3.5.jar"
-      }
-    },
-    "Forge-Config-API-Port": {
-      "flake": false,
-      "locked": {
-        "narHash": "sha256-fUaDDUYew3lehvIKxyIweYIpwfAH4z9Ri85zj5vqsRY=",
-        "type": "file",
-        "url": "https://cdn.modrinth.com/data/ohNO6lps/versions/uXrWPsCu/ForgeConfigAPIPort-v21.11.1-mc1.21.11-Fabric.jar"
-      },
-      "original": {
-        "type": "file",
-        "url": "https://cdn.modrinth.com/data/ohNO6lps/versions/uXrWPsCu/ForgeConfigAPIPort-v21.11.1-mc1.21.11-Fabric.jar"
-      }
-    },
-    "Grind-Enchantments": {
-      "flake": false,
-      "locked": {
-        "narHash": "sha256-DgE1wvUkAFBIZLK9w+2L5fOyJrPQdmkQCVTAdZ7uAKs=",
-        "type": "file",
-        "url": "https://cdn.modrinth.com/data/WC4UgDcZ/versions/XX0LqtxX/grind-enchantments-4.1.0%2B1.21.11-pre2.jar"
-      },
-      "original": {
-        "type": "file",
-        "url": "https://cdn.modrinth.com/data/WC4UgDcZ/versions/XX0LqtxX/grind-enchantments-4.1.0%2B1.21.11-pre2.jar"
-      }
-    },
-    "Infinite-Trading": {
-      "flake": false,
-      "locked": {
-        "narHash": "sha256-fFvzjyFMOTc7zoLmdkR7qTA1mHOx8gfQJ/ru90JtuVI=",
-        "type": "file",
-        "url": "https://cdn.modrinth.com/data/U3eoZT3o/versions/QmTnAQac/infinitetrading-1.21.11-4.6.jar"
-      },
-      "original": {
-        "type": "file",
-        "url": "https://cdn.modrinth.com/data/U3eoZT3o/versions/QmTnAQac/infinitetrading-1.21.11-4.6.jar"
-      }
-    },
-    "Inventory-Sorting": {
-      "flake": false,
-      "locked": {
-        "narHash": "sha256-2ysJdV11PYEESWfKSUDizOjcBeevs16bxSADCRRfpx4=",
-        "type": "file",
-        "url": "https://cdn.modrinth.com/data/5ibSyLAz/versions/Dq4h9aTH/inventorysorter-fabric-2.1.4%2Bmc1.21.11.jar"
-      },
-      "original": {
-        "type": "file",
-        "url": "https://cdn.modrinth.com/data/5ibSyLAz/versions/Dq4h9aTH/inventorysorter-fabric-2.1.4%2Bmc1.21.11.jar"
-      }
-    },
-    "Inventory-Totem": {
-      "flake": false,
-      "locked": {
-        "narHash": "sha256-OwOAGbtNXv/PYvXvGAwnJ7KfFhKYCDvwaJMGv36FmWQ=",
-        "type": "file",
-        "url": "https://cdn.modrinth.com/data/yQj7xqEM/versions/IzZmDI2F/inventorytotem-1.21.11-3.4.jar"
-      },
-      "original": {
-        "type": "file",
-        "url": "https://cdn.modrinth.com/data/yQj7xqEM/versions/IzZmDI2F/inventorytotem-1.21.11-3.4.jar"
-      }
-    },
-    "JEI": {
-      "flake": false,
-      "locked": {
-        "narHash": "sha256-4OGbQlVLMQR5rQRv/+AaGJ5D3K+wBzNXpxOi706QrKA=",
-        "type": "file",
-        "url": "https://cdn.modrinth.com/data/u6dRKJwZ/versions/N7YozqFm/jei-1.21.11-fabric-27.4.0.15.jar"
-      },
-      "original": {
-        "type": "file",
-        "url": "https://cdn.modrinth.com/data/u6dRKJwZ/versions/N7YozqFm/jei-1.21.11-fabric-27.4.0.15.jar"
-      }
-    },
-    "Jade": {
-      "flake": false,
-      "locked": {
-        "narHash": "sha256-Vj8ggWa2PODzS8jLjv0iwvpgsR7XPYaqOyFIO/oKrCg=",
-        "type": "file",
-        "url": "https://cdn.modrinth.com/data/nvQzSEkH/versions/HKUAgY3D/Jade-1.21.11-Fabric-21.1.1.jar"
-      },
-      "original": {
-        "type": "file",
-        "url": "https://cdn.modrinth.com/data/nvQzSEkH/versions/HKUAgY3D/Jade-1.21.11-Fabric-21.1.1.jar"
-      }
-    },
-    "Just-Player-Heads": {
-      "flake": false,
-      "locked": {
-        "narHash": "sha256-iOGDOsyGYJo5pEe4JjNk8oT0el4UIAW0KTCS0UzjBws=",
-        "type": "file",
-        "url": "https://cdn.modrinth.com/data/YdVBZMNR/versions/AlFsC8XK/justplayerheads-1.21.11-4.3.jar"
-      },
-      "original": {
-        "type": "file",
-        "url": "https://cdn.modrinth.com/data/YdVBZMNR/versions/AlFsC8XK/justplayerheads-1.21.11-4.3.jar"
-      }
-    },
-    "Kotlin": {
-      "flake": false,
-      "locked": {
-        "narHash": "sha256-GgEFU3X1EU1IGvYr2eY4YZlxU5AkDV8CSQQTrVb5FhU=",
-        "type": "file",
-        "url": "https://cdn.modrinth.com/data/Ha28R6CL/versions/N6D3uiZF/fabric-language-kotlin-1.13.8%2Bkotlin.2.3.0.jar"
-      },
-      "original": {
-        "type": "file",
-        "url": "https://cdn.modrinth.com/data/Ha28R6CL/versions/N6D3uiZF/fabric-language-kotlin-1.13.8%2Bkotlin.2.3.0.jar"
-      }
-    },
-    "Lithium": {
-      "flake": false,
-      "locked": {
-        "narHash": "sha256-d5PPuc07k/eS/EbrDUgQ3wnsnQKOWApCdY5V8IL77mo=",
-        "type": "file",
-        "url": "https://cdn.modrinth.com/data/gvQqBUqZ/versions/gl30uZvp/lithium-fabric-0.21.2%2Bmc1.21.11.jar"
-      },
-      "original": {
-        "type": "file",
-        "url": "https://cdn.modrinth.com/data/gvQqBUqZ/versions/gl30uZvp/lithium-fabric-0.21.2%2Bmc1.21.11.jar"
-      }
-    },
-    "Open-Parties-and-Claims": {
-      "flake": false,
-      "locked": {
-        "narHash": "sha256-w1we1NtDWGptFyX2BDjfxtpEH+z88suDe45cuUnb9n4=",
-        "type": "file",
-        "url": "https://cdn.modrinth.com/data/gF3BGWvG/versions/JkiXvTq4/open-parties-and-claims-fabric-1.21.11-0.26.2.jar"
-      },
-      "original": {
-        "type": "file",
-        "url": "https://cdn.modrinth.com/data/gF3BGWvG/versions/JkiXvTq4/open-parties-and-claims-fabric-1.21.11-0.26.2.jar"
-      }
-    },
-    "Player-Roles": {
-      "flake": false,
-      "locked": {
-        "narHash": "sha256-tNV+OA6ckx3+4eEPp9SANEqjNDSDoPm4roM9i99DLDU=",
-        "type": "file",
-        "url": "https://cdn.modrinth.com/data/Rt1mrUHm/versions/2PHCrWcd/player-roles-1.8.1.jar"
-      },
-      "original": {
-        "type": "file",
-        "url": "https://cdn.modrinth.com/data/Rt1mrUHm/versions/2PHCrWcd/player-roles-1.8.1.jar"
-      }
-    },
-    "Polymer": {
-      "flake": false,
-      "locked": {
-        "narHash": "sha256-GBEhq0zvNRS0BMd4e5MbxiZm2Qn5Vvxfwk6PFsn9B8w=",
-        "type": "file",
-        "url": "https://cdn.modrinth.com/data/xGdtZczs/versions/wugBT1fU/polymer-bundled-0.15.2%2B1.21.11.jar"
-      },
-      "original": {
-        "type": "file",
-        "url": "https://cdn.modrinth.com/data/xGdtZczs/versions/wugBT1fU/polymer-bundled-0.15.2%2B1.21.11.jar"
-      }
-    },
-    "Puzzles-Lib": {
-      "flake": false,
-      "locked": {
-        "narHash": "sha256-PBKDLfzt7Y3l8vR1pax5onW8z9o4vBMd/+kwXvJbuck=",
-        "type": "file",
-        "url": "https://cdn.modrinth.com/data/QAGBst4M/versions/7L1WGsjw/PuzzlesLib-v21.11.6-mc1.21.11-Fabric.jar"
-      },
-      "original": {
-        "type": "file",
-        "url": "https://cdn.modrinth.com/data/QAGBst4M/versions/7L1WGsjw/PuzzlesLib-v21.11.6-mc1.21.11-Fabric.jar"
-      }
-    },
-    "Random-Bone-Meal-Flowers": {
-      "flake": false,
-      "locked": {
-        "narHash": "sha256-p+WdIu9qD77MGR8IF4vh03GrDyruYwYVyQAMYNh9IVY=",
-        "type": "file",
-        "url": "https://cdn.modrinth.com/data/17enPZMC/versions/xncSYvvy/randombonemealflowers-1.21.11-4.7.jar"
-      },
-      "original": {
-        "type": "file",
-        "url": "https://cdn.modrinth.com/data/17enPZMC/versions/xncSYvvy/randombonemealflowers-1.21.11-4.7.jar"
-      }
-    },
-    "Recast": {
-      "flake": false,
-      "locked": {
-        "narHash": "sha256-2iKWSjEmfVlY0wt+Jwf/JWKrVz1BOzE0pLy0t6pV6Mg=",
-        "type": "file",
-        "url": "https://cdn.modrinth.com/data/8TWzoOby/versions/sad63YT1/recast-1.21.11-3.7.jar"
-      },
-      "original": {
-        "type": "file",
-        "url": "https://cdn.modrinth.com/data/8TWzoOby/versions/sad63YT1/recast-1.21.11-3.7.jar"
-      }
-    },
-    "Respawning-Shulkers": {
-      "flake": false,
-      "locked": {
-        "narHash": "sha256-OoFeUiu777guzRlGB/+x0ZUQqcZxN3IXow7eQaFAU3Y=",
-        "type": "file",
-        "url": "https://cdn.modrinth.com/data/gHCmhGUV/versions/UxqGoIcn/respawningshulkers-1.21.11-4.2.jar"
-      },
-      "original": {
-        "type": "file",
-        "url": "https://cdn.modrinth.com/data/gHCmhGUV/versions/UxqGoIcn/respawningshulkers-1.21.11-4.2.jar"
-      }
-    },
-    "Silk": {
-      "flake": false,
-      "locked": {
-        "narHash": "sha256-WW+6POyAPAsD0lsSEZRMMbhrAu9f99fymIaucfyMgFw=",
-        "type": "file",
-        "url": "https://cdn.modrinth.com/data/aTaCgKLW/versions/tgYliGAU/silk-all-1.11.5.jar"
-      },
-      "original": {
-        "type": "file",
-        "url": "https://cdn.modrinth.com/data/aTaCgKLW/versions/tgYliGAU/silk-all-1.11.5.jar"
-      }
-    },
-    "Storage-Drawers": {
-      "flake": false,
-      "locked": {
-        "narHash": "sha256-4l8eQ7udYHWwAa6asaEWRMcelHCLWd7W9ZnUrZDFz+4=",
-        "type": "file",
-        "url": "https://cdn.modrinth.com/data/guitPqEi/versions/Q9r8LMQL/StorageDrawers-fabric-1.21.11-20.0.0.jar"
-      },
-      "original": {
-        "type": "file",
-        "url": "https://cdn.modrinth.com/data/guitPqEi/versions/Q9r8LMQL/StorageDrawers-fabric-1.21.11-20.0.0.jar"
-      }
-    },
-    "TNT-Breaks-Bedrock": {
-      "flake": false,
-      "locked": {
-        "narHash": "sha256-e9Fa4FtiFvQiSGA73NID36OYTI6QpWPi6MBXWkf6S2M=",
-        "type": "file",
-        "url": "https://cdn.modrinth.com/data/eU2O6Xp1/versions/hwq9f9Cd/tntbreaksbedrock-1.21.11-3.6.jar"
-      },
-      "original": {
-        "type": "file",
-        "url": "https://cdn.modrinth.com/data/eU2O6Xp1/versions/hwq9f9Cd/tntbreaksbedrock-1.21.11-3.6.jar"
-      }
-    },
-    "Travelers-Backpack": {
-      "flake": false,
-      "locked": {
-        "narHash": "sha256-RNO2/EHEYumm/kUkNm9pNMaJPkdn4wSdhh6tErFHB00=",
-        "type": "file",
-        "url": "https://cdn.modrinth.com/data/rlloIFEV/versions/XbEGJQSG/travelersbackpack-fabric-1.21.11-10.11.9.jar"
-      },
-      "original": {
-        "type": "file",
-        "url": "https://cdn.modrinth.com/data/rlloIFEV/versions/XbEGJQSG/travelersbackpack-fabric-1.21.11-10.11.9.jar"
-      }
-    },
-    "Tree-Harvester": {
-      "flake": false,
-      "locked": {
-        "narHash": "sha256-a4IFSHHthv8zAXwmnNXo/smf7Z0PtNlCzgstbmEQh5I=",
-        "type": "file",
-        "url": "https://cdn.modrinth.com/data/abooMhox/versions/8mfyGsIg/treeharvester-1.21.11-9.3.jar"
-      },
-      "original": {
-        "type": "file",
-        "url": "https://cdn.modrinth.com/data/abooMhox/versions/8mfyGsIg/treeharvester-1.21.11-9.3.jar"
-      }
-    },
-    "Universal-Enchants": {
-      "flake": false,
-      "locked": {
-        "narHash": "sha256-QdQwRz75vAhgq64YnN4knIH6nuy6FnCpi0QjomkNZeI=",
-        "type": "file",
-        "url": "https://cdn.modrinth.com/data/DT56YDir/versions/MuPwsQLB/UniversalEnchants-v21.11.2-mc1.21.11-Fabric.jar"
-      },
-      "original": {
-        "type": "file",
-        "url": "https://cdn.modrinth.com/data/DT56YDir/versions/MuPwsQLB/UniversalEnchants-v21.11.2-mc1.21.11-Fabric.jar"
-      }
-    },
-    "Universal-Shops": {
-      "flake": false,
-      "locked": {
-        "narHash": "sha256-nmQijybODbhYeM5S5OWjkmZGA8D6aXwVqktSoDwI1mk=",
-        "type": "file",
-        "url": "https://cdn.modrinth.com/data/cnIatHrN/versions/M6PTvMlM/universal_shops-1.13.0%2B1.21.11.jar"
-      },
-      "original": {
-        "type": "file",
-        "url": "https://cdn.modrinth.com/data/cnIatHrN/versions/M6PTvMlM/universal_shops-1.13.0%2B1.21.11.jar"
-      }
-    },
-    "Vein-Miner": {
-      "flake": false,
-      "locked": {
-        "narHash": "sha256-ZN27VjnRzpVtUu1mTgdxWg5gXd4UO95gGa8CaMsGdY0=",
-        "type": "file",
-        "url": "https://cdn.modrinth.com/data/OhduvhIc/versions/g7E2sCkF/veinminer-fabric-2.6.0.jar"
-      },
-      "original": {
-        "type": "file",
-        "url": "https://cdn.modrinth.com/data/OhduvhIc/versions/g7E2sCkF/veinminer-fabric-2.6.0.jar"
-      }
-    },
-    "Vein-Miner-Enchantment": {
-      "flake": false,
-      "locked": {
-        "narHash": "sha256-z0ZzgBOweY3/m4dO70xpBtd2RUSI9ihvq9YHfXG/oNU=",
-        "type": "file",
-        "url": "https://cdn.modrinth.com/data/4sP0LXxp/versions/h5oKcjvq/veinminer-enchant-2.3.0.jar"
-      },
-      "original": {
-        "type": "file",
-        "url": "https://cdn.modrinth.com/data/4sP0LXxp/versions/h5oKcjvq/veinminer-enchant-2.3.0.jar"
-      }
-    },
-    "Villager-Pickup": {
-      "flake": false,
-      "locked": {
-        "narHash": "sha256-NE2nHJHKlxeF2xAR0oPbpuB/SOue0TVLGzfjdk/K0VE=",
-        "type": "file",
-        "url": "https://cdn.modrinth.com/data/EL95Q1AM/versions/bf8Q2X39/villagerpickup-fabric-1.21.11-1.3.jar"
-      },
-      "original": {
-        "type": "file",
-        "url": "https://cdn.modrinth.com/data/EL95Q1AM/versions/bf8Q2X39/villagerpickup-fabric-1.21.11-1.3.jar"
-      }
-    },
     "clan-community": {
       "inputs": {
         "clan-core": [
@@ -594,33 +54,6 @@
         "url": "https://git.clan.lol/clan/clan-core/archive/main.tar.gz"
       }
     },
-    "clan-core_2": {
-      "inputs": {
-        "data-mesher": "data-mesher_2",
-        "disko": "disko_2",
-        "flake-parts": "flake-parts_5",
-        "nix-darwin": "nix-darwin_2",
-        "nix-select": "nix-select_2",
-        "nixpkgs": [
-          "packer",
-          "nixpkgs"
-        ],
-        "sops-nix": "sops-nix_2",
-        "systems": "systems_6",
-        "treefmt-nix": "treefmt-nix_5"
-      },
-      "locked": {
-        "lastModified": 1778962387,
-        "narHash": "sha256-pdzvyvOnr9oPDpajUgyLcVJrYmoVJtm99ss/YUHr1l8=",
-        "rev": "901cc1aaa7a88d379d8df2060009baa5a9968190",
-        "type": "tarball",
-        "url": "https://git.clan.lol/api/v1/repos/clan/clan-core/archive/901cc1aaa7a88d379d8df2060009baa5a9968190.tar.gz"
-      },
-      "original": {
-        "type": "tarball",
-        "url": "https://git.clan.lol/clan/clan-core/archive/main.tar.gz"
-      }
-    },
     "data-mesher": {
       "inputs": {
         "flake-parts": [
@@ -642,36 +75,6 @@
         "rev": "9f8943c5ce12fa07d66206a4fb8de9ff29f3ba0e",
         "type": "tarball",
         "url": "https://git.clan.lol/api/v1/repos/clan/data-mesher/archive/9f8943c5ce12fa07d66206a4fb8de9ff29f3ba0e.tar.gz"
-      },
-      "original": {
-        "type": "tarball",
-        "url": "https://git.clan.lol/clan/data-mesher/archive/main.tar.gz"
-      }
-    },
-    "data-mesher_2": {
-      "inputs": {
-        "flake-parts": [
-          "packer",
-          "clan-core",
-          "flake-parts"
-        ],
-        "nixpkgs": [
-          "packer",
-          "clan-core",
-          "nixpkgs"
-        ],
-        "treefmt-nix": [
-          "packer",
-          "clan-core",
-          "treefmt-nix"
-        ]
-      },
-      "locked": {
-        "lastModified": 1776654564,
-        "narHash": "sha256-5bpzOOXsaAr4g25/ghtKdYO17xg0l+MieCcWgqx24eY=",
-        "rev": "ad23733ebc47284dc1158db43218cf4027824aee",
-        "type": "tarball",
-        "url": "https://git.clan.lol/api/v1/repos/clan/data-mesher/archive/ad23733ebc47284dc1158db43218cf4027824aee.tar.gz"
       },
       "original": {
         "type": "tarball",
@@ -711,18 +114,6 @@
         "url": "https://install.determinate.systems/determinate-nixd/tag/v3.21.5/macOS"
       }
     },
-    "determinate-nixd-aarch64-darwin_2": {
-      "flake": false,
-      "locked": {
-        "narHash": "sha256-z4mCqKI3Qd6weuHrlfzGccJG0giym/VJhKv20ijRSs0=",
-        "type": "file",
-        "url": "https://install.determinate.systems/determinate-nixd/tag/v3.20.0/macOS"
-      },
-      "original": {
-        "type": "file",
-        "url": "https://install.determinate.systems/determinate-nixd/tag/v3.20.0/macOS"
-      }
-    },
     "determinate-nixd-aarch64-linux": {
       "flake": false,
       "locked": {
@@ -735,18 +126,6 @@
         "url": "https://install.determinate.systems/determinate-nixd/tag/v3.21.5/aarch64-linux"
       }
     },
-    "determinate-nixd-aarch64-linux_2": {
-      "flake": false,
-      "locked": {
-        "narHash": "sha256-yW+VNepSRytzfanSssPMJPvwioCcmlZYaBX8++UFkAk=",
-        "type": "file",
-        "url": "https://install.determinate.systems/determinate-nixd/tag/v3.20.0/aarch64-linux"
-      },
-      "original": {
-        "type": "file",
-        "url": "https://install.determinate.systems/determinate-nixd/tag/v3.20.0/aarch64-linux"
-      }
-    },
     "determinate-nixd-x86_64-linux": {
       "flake": false,
       "locked": {
@@ -757,39 +136,6 @@
       "original": {
         "type": "file",
         "url": "https://install.determinate.systems/determinate-nixd/tag/v3.21.5/x86_64-linux"
-      }
-    },
-    "determinate-nixd-x86_64-linux_2": {
-      "flake": false,
-      "locked": {
-        "narHash": "sha256-+L102C3Hhkd1GlXmRm2eLTLsZKBxEvooiQZFqQRlBf0=",
-        "type": "file",
-        "url": "https://install.determinate.systems/determinate-nixd/tag/v3.20.0/x86_64-linux"
-      },
-      "original": {
-        "type": "file",
-        "url": "https://install.determinate.systems/determinate-nixd/tag/v3.20.0/x86_64-linux"
-      }
-    },
-    "determinate_2": {
-      "inputs": {
-        "determinate-nixd-aarch64-darwin": "determinate-nixd-aarch64-darwin_2",
-        "determinate-nixd-aarch64-linux": "determinate-nixd-aarch64-linux_2",
-        "determinate-nixd-x86_64-linux": "determinate-nixd-x86_64-linux_2",
-        "nix": "nix_2",
-        "nixpkgs": "nixpkgs_8"
-      },
-      "locked": {
-        "lastModified": 1778179392,
-        "narHash": "sha256-W6zorvjBYbzMNvqKIqCdpDF4rq3gj50Xximl56YM9/I=",
-        "rev": "efd54faa68be8cd777b5c28cab11e638998a0853",
-        "revCount": 416,
-        "type": "tarball",
-        "url": "https://api.flakehub.com/f/pinned/DeterminateSystems/determinate/3.20.0/019e03c3-7dc0-7873-a333-9ab02d6f690c/source.tar.gz"
-      },
-      "original": {
-        "type": "tarball",
-        "url": "https://flakehub.com/f/DeterminateSystems/determinate/%2A"
       }
     },
     "disko": {
@@ -813,61 +159,7 @@
         "type": "github"
       }
     },
-    "disko_2": {
-      "inputs": {
-        "nixpkgs": [
-          "packer",
-          "clan-core",
-          "nixpkgs"
-        ]
-      },
-      "locked": {
-        "lastModified": 1776613567,
-        "narHash": "sha256-gC9Cp5ibBmGD5awCA9z7xy6MW6iJufhazTYJOiGlCUI=",
-        "owner": "nix-community",
-        "repo": "disko",
-        "rev": "32f4236bfc141ae930b5ba2fb604f561fed5219d",
-        "type": "github"
-      },
-      "original": {
-        "owner": "nix-community",
-        "repo": "disko",
-        "type": "github"
-      }
-    },
     "flake-compat": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1696426674,
-        "narHash": "sha256-kvjfFW7WAETZlt09AgDn1MrtKzP7t90Vf7vypd3OL1U=",
-        "owner": "edolstra",
-        "repo": "flake-compat",
-        "rev": "0f9255e01c2351cc7d116c072cb317785dd33b33",
-        "type": "github"
-      },
-      "original": {
-        "owner": "edolstra",
-        "repo": "flake-compat",
-        "type": "github"
-      }
-    },
-    "flake-compat_2": {
-      "flake": false,
-      "locked": {
-        "lastModified": 1747046372,
-        "narHash": "sha256-CIVLLkVgvHYbgI2UpXvIIBJ12HWgX+fjA8Xf8PUmqCY=",
-        "owner": "edolstra",
-        "repo": "flake-compat",
-        "rev": "9100a0f413b0c601e0533d1d94ffd501ce2e7885",
-        "type": "github"
-      },
-      "original": {
-        "owner": "edolstra",
-        "repo": "flake-compat",
-        "type": "github"
-      }
-    },
-    "flake-compat_3": {
       "flake": false,
       "locked": {
         "lastModified": 1696426674,
@@ -967,93 +259,6 @@
         "type": "github"
       }
     },
-    "flake-parts_5": {
-      "inputs": {
-        "nixpkgs-lib": [
-          "packer",
-          "clan-core",
-          "nixpkgs"
-        ]
-      },
-      "locked": {
-        "lastModified": 1777988971,
-        "narHash": "sha256-qIoWPDs+0/8JecyYgE3gpKQxW/4bLW/gp45vow9ioCQ=",
-        "owner": "hercules-ci",
-        "repo": "flake-parts",
-        "rev": "0678d8986be1661af6bb555f3489f2fdfc31f6ff",
-        "type": "github"
-      },
-      "original": {
-        "owner": "hercules-ci",
-        "repo": "flake-parts",
-        "type": "github"
-      }
-    },
-    "flake-parts_6": {
-      "inputs": {
-        "nixpkgs-lib": [
-          "packer",
-          "determinate",
-          "nix",
-          "nixpkgs"
-        ]
-      },
-      "locked": {
-        "lastModified": 1748821116,
-        "narHash": "sha256-F82+gS044J1APL0n4hH50GYdPRv/5JWm34oCJYmVKdE=",
-        "rev": "49f0870db23e8c1ca0b5259734a02cd9e1e371a1",
-        "revCount": 377,
-        "type": "tarball",
-        "url": "https://api.flakehub.com/f/pinned/hercules-ci/flake-parts/0.1.377%2Brev-49f0870db23e8c1ca0b5259734a02cd9e1e371a1/01972f28-554a-73f8-91f4-d488cc502f08/source.tar.gz"
-      },
-      "original": {
-        "type": "tarball",
-        "url": "https://flakehub.com/f/hercules-ci/flake-parts/0.1"
-      }
-    },
-    "flake-parts_7": {
-      "inputs": {
-        "nixpkgs-lib": [
-          "packer",
-          "mkdocs-flake",
-          "nixpkgs"
-        ]
-      },
-      "locked": {
-        "lastModified": 1777988971,
-        "narHash": "sha256-qIoWPDs+0/8JecyYgE3gpKQxW/4bLW/gp45vow9ioCQ=",
-        "owner": "hercules-ci",
-        "repo": "flake-parts",
-        "rev": "0678d8986be1661af6bb555f3489f2fdfc31f6ff",
-        "type": "github"
-      },
-      "original": {
-        "owner": "hercules-ci",
-        "repo": "flake-parts",
-        "type": "github"
-      }
-    },
-    "flake-parts_8": {
-      "inputs": {
-        "nixpkgs-lib": [
-          "terranix",
-          "nixpkgs"
-        ]
-      },
-      "locked": {
-        "lastModified": 1778716662,
-        "narHash": "sha256-m1Yf0wZ8j1OHjTc2UwHwyQRSnNeSgLJOd7q5Y45hzi4=",
-        "owner": "hercules-ci",
-        "repo": "flake-parts",
-        "rev": "f7c1a2d347e4c52d5fb8d10cb4d94b5884e546fb",
-        "type": "github"
-      },
-      "original": {
-        "owner": "hercules-ci",
-        "repo": "flake-parts",
-        "type": "github"
-      }
-    },
     "flake-schemas": {
       "locked": {
         "lastModified": 1780327564,
@@ -1100,24 +305,6 @@
         "type": "github"
       }
     },
-    "flake-utils_2": {
-      "inputs": {
-        "systems": "systems_7"
-      },
-      "locked": {
-        "lastModified": 1726560853,
-        "narHash": "sha256-X6rJYSESBVr3hBoH0WbKE5KvhPU5bloyZ2L4K60/fPQ=",
-        "owner": "numtide",
-        "repo": "flake-utils",
-        "rev": "c1dfcf08411b08f6b8615f7d8971a2bfa81d5e8a",
-        "type": "github"
-      },
-      "original": {
-        "owner": "numtide",
-        "repo": "flake-utils",
-        "type": "github"
-      }
-    },
     "git-hooks-nix": {
       "inputs": {
         "flake-compat": "flake-compat",
@@ -1126,34 +313,6 @@
           "nix"
         ],
         "nixpkgs": [
-          "determinate",
-          "nix",
-          "nixpkgs"
-        ]
-      },
-      "locked": {
-        "lastModified": 1747372754,
-        "narHash": "sha256-2Y53NGIX2vxfie1rOW0Qb86vjRZ7ngizoo+bnXU9D9k=",
-        "rev": "80479b6ec16fefd9c1db3ea13aeb038c60530f46",
-        "revCount": 1026,
-        "type": "tarball",
-        "url": "https://api.flakehub.com/f/pinned/cachix/git-hooks.nix/0.1.1026%2Brev-80479b6ec16fefd9c1db3ea13aeb038c60530f46/0196d79a-1b35-7b8e-a021-c894fb62163d/source.tar.gz"
-      },
-      "original": {
-        "type": "tarball",
-        "url": "https://flakehub.com/f/cachix/git-hooks.nix/0.1.941"
-      }
-    },
-    "git-hooks-nix_2": {
-      "inputs": {
-        "flake-compat": "flake-compat_3",
-        "gitignore": [
-          "packer",
-          "determinate",
-          "nix"
-        ],
-        "nixpkgs": [
-          "packer",
           "determinate",
           "nix",
           "nixpkgs"
@@ -1197,13 +356,13 @@
       "locked": {
         "lastModified": 1778781969,
         "narHash": "sha256-Jjuz5CmSkur8KvLDoGa+vylEp+RkQtv4mt/qcMznpH0=",
-        "owner": "vic",
+        "owner": "denful",
         "repo": "import-tree",
         "rev": "d321337efd0f23a9eb14a42adb7b2c29313ab274",
         "type": "github"
       },
       "original": {
-        "owner": "vic",
+        "owner": "denful",
         "repo": "import-tree",
         "type": "github"
       }
@@ -1256,33 +415,6 @@
         "pyproject-nix": "pyproject-nix",
         "treefmt-nix": "treefmt-nix_4",
         "uv2nix": "uv2nix"
-      },
-      "locked": {
-        "lastModified": 1778249747,
-        "narHash": "sha256-6G8VqjpQbL8mocYSfdGw/lMHi4N+BWFEG4MFBPCsy9M=",
-        "owner": "applicative-systems",
-        "repo": "mkdocs-flake",
-        "rev": "3948ac2104b006a2bdaac5a36eddc35a3c4cf975",
-        "type": "github"
-      },
-      "original": {
-        "owner": "applicative-systems",
-        "repo": "mkdocs-flake",
-        "type": "github"
-      }
-    },
-    "mkdocs-flake_2": {
-      "inputs": {
-        "flake-parts": "flake-parts_7",
-        "nixpkgs": [
-          "packer",
-          "nixpkgs"
-        ],
-        "poetry2nix": "poetry2nix_2",
-        "pyproject-build-systems": "pyproject-build-systems_3",
-        "pyproject-nix": "pyproject-nix_3",
-        "treefmt-nix": "treefmt-nix_7",
-        "uv2nix": "uv2nix_3"
       },
       "locked": {
         "lastModified": 1778249747,
@@ -1363,28 +495,6 @@
         "type": "github"
       }
     },
-    "nix-darwin_2": {
-      "inputs": {
-        "nixpkgs": [
-          "packer",
-          "clan-core",
-          "nixpkgs"
-        ]
-      },
-      "locked": {
-        "lastModified": 1775037210,
-        "narHash": "sha256-KM2WYj6EA7M/FVZVCl3rqWY+TFV5QzSyyGE2gQxeODU=",
-        "owner": "nix-darwin",
-        "repo": "nix-darwin",
-        "rev": "06648f4902343228ce2de79f291dd5a58ee12146",
-        "type": "github"
-      },
-      "original": {
-        "owner": "nix-darwin",
-        "repo": "nix-darwin",
-        "type": "github"
-      }
-    },
     "nix-github-actions": {
       "inputs": {
         "nixpkgs": [
@@ -1429,51 +539,6 @@
         "type": "github"
       }
     },
-    "nix-github-actions_3": {
-      "inputs": {
-        "nixpkgs": [
-          "packer",
-          "mkdocs-flake",
-          "poetry2nix",
-          "nixpkgs"
-        ]
-      },
-      "locked": {
-        "lastModified": 1729742964,
-        "narHash": "sha256-B4mzTcQ0FZHdpeWcpDYPERtyjJd/NIuaQ9+BV1h+MpA=",
-        "owner": "nix-community",
-        "repo": "nix-github-actions",
-        "rev": "e04df33f62cdcf93d73e9a04142464753a16db67",
-        "type": "github"
-      },
-      "original": {
-        "owner": "nix-community",
-        "repo": "nix-github-actions",
-        "type": "github"
-      }
-    },
-    "nix-minecraft": {
-      "inputs": {
-        "flake-compat": "flake-compat_2",
-        "nixpkgs": [
-          "nixpkgs-unstable"
-        ],
-        "systems": "systems_5"
-      },
-      "locked": {
-        "lastModified": 1783569535,
-        "narHash": "sha256-jNjyec8jdGS8HDsoWuD2GYokcYgh8hDBvENYy++ue0I=",
-        "owner": "Infinidoge",
-        "repo": "nix-minecraft",
-        "rev": "1d63138515e76ed77f781ced23921060110774f6",
-        "type": "github"
-      },
-      "original": {
-        "owner": "Infinidoge",
-        "repo": "nix-minecraft",
-        "type": "github"
-      }
-    },
     "nix-select": {
       "locked": {
         "lastModified": 1763303120,
@@ -1485,40 +550,6 @@
       "original": {
         "type": "tarball",
         "url": "https://git.clan.lol/clan/nix-select/archive/main.tar.gz"
-      }
-    },
-    "nix-select_2": {
-      "locked": {
-        "lastModified": 1763303120,
-        "narHash": "sha256-yxcNOha7Cfv2nhVpz9ZXSNKk0R7wt4AiBklJ8D24rVg=",
-        "rev": "3d1e3860bef36857a01a2ddecba7cdb0a14c35a9",
-        "type": "tarball",
-        "url": "https://git.clan.lol/api/v1/repos/clan/nix-select/archive/3d1e3860bef36857a01a2ddecba7cdb0a14c35a9.tar.gz"
-      },
-      "original": {
-        "type": "tarball",
-        "url": "https://git.clan.lol/clan/nix-select/archive/main.tar.gz"
-      }
-    },
-    "nix_2": {
-      "inputs": {
-        "flake-parts": "flake-parts_6",
-        "git-hooks-nix": "git-hooks-nix_2",
-        "nixpkgs": "nixpkgs_7",
-        "nixpkgs-23-11": "nixpkgs-23-11_2",
-        "nixpkgs-regression": "nixpkgs-regression_2"
-      },
-      "locked": {
-        "lastModified": 1778177425,
-        "narHash": "sha256-oyHvP5HDRe59opmjTrq2ED9lh+R9FrHyaCGPPNfBqWM=",
-        "rev": "f0ccb960d3ad5bff28acd9cabf8bdef885b5d52f",
-        "revCount": 25858,
-        "type": "tarball",
-        "url": "https://api.flakehub.com/f/pinned/DeterminateSystems/nix-src/3.20.0/019e03bc-3f83-7833-aba3-b691ef4956c7/source.tar.gz"
-      },
-      "original": {
-        "type": "tarball",
-        "url": "https://flakehub.com/f/DeterminateSystems/nix-src/%2A"
       }
     },
     "nixpkgs": {
@@ -1551,39 +582,7 @@
         "type": "github"
       }
     },
-    "nixpkgs-23-11_2": {
-      "locked": {
-        "lastModified": 1717159533,
-        "narHash": "sha256-oamiKNfr2MS6yH64rUn99mIZjc45nGJlj9eGth/3Xuw=",
-        "owner": "NixOS",
-        "repo": "nixpkgs",
-        "rev": "a62e6edd6d5e1fa0329b8653c801147986f8d446",
-        "type": "github"
-      },
-      "original": {
-        "owner": "NixOS",
-        "repo": "nixpkgs",
-        "rev": "a62e6edd6d5e1fa0329b8653c801147986f8d446",
-        "type": "github"
-      }
-    },
     "nixpkgs-regression": {
-      "locked": {
-        "lastModified": 1643052045,
-        "narHash": "sha256-uGJ0VXIhWKGXxkeNnq4TvV3CIOkUJ3PAoLZ3HMzNVMw=",
-        "owner": "NixOS",
-        "repo": "nixpkgs",
-        "rev": "215d4d0fd80ca5163643b03a33fde804a29cc1e2",
-        "type": "github"
-      },
-      "original": {
-        "owner": "NixOS",
-        "repo": "nixpkgs",
-        "rev": "215d4d0fd80ca5163643b03a33fde804a29cc1e2",
-        "type": "github"
-      }
-    },
-    "nixpkgs-regression_2": {
       "locked": {
         "lastModified": 1643052045,
         "narHash": "sha256-uGJ0VXIhWKGXxkeNnq4TvV3CIOkUJ3PAoLZ3HMzNVMw=",
@@ -1611,35 +610,6 @@
       "original": {
         "type": "tarball",
         "url": "https://flakehub.com/f/NixOS/nixpkgs/%2A"
-      }
-    },
-    "nixpkgs_10": {
-      "locked": {
-        "lastModified": 1778869304,
-        "narHash": "sha256-30sZNZoA1cqF5JNO9fVX+wgiQYjB7HJqqJ4ztCDeBZE=",
-        "rev": "d233902339c02a9c334e7e593de68855ad26c4cb",
-        "revCount": 998534,
-        "type": "tarball",
-        "url": "https://api.flakehub.com/f/pinned/NixOS/nixpkgs/0.1.998534%2Brev-d233902339c02a9c334e7e593de68855ad26c4cb/019e3132-2bc3-7cf0-a522-2d02374629cf/source.tar.gz"
-      },
-      "original": {
-        "type": "tarball",
-        "url": "https://flakehub.com/f/NixOS/nixpkgs/0.1.%2A"
-      }
-    },
-    "nixpkgs_11": {
-      "locked": {
-        "lastModified": 1779959262,
-        "narHash": "sha256-/CKe+ffKTLngHU8SVvIjYUo3qzAiB8XNghYQEJkACAQ=",
-        "owner": "nixos",
-        "repo": "nixpkgs",
-        "rev": "97ae3d51bc94cebb7171637c5a3b4aae8eb505b3",
-        "type": "github"
-      },
-      "original": {
-        "owner": "nixos",
-        "repo": "nixpkgs",
-        "type": "github"
       }
     },
     "nixpkgs_2": {
@@ -1716,76 +686,6 @@
         "url": "https://flakehub.com/f/NixOS/nixpkgs/0"
       }
     },
-    "nixpkgs_7": {
-      "locked": {
-        "lastModified": 1773222311,
-        "narHash": "sha256-BHoB/XpbqoZkVYZCfXJXfkR+GXFqwb/4zbWnOr2cRcU=",
-        "rev": "0590cd39f728e129122770c029970378a79d076a",
-        "revCount": 909248,
-        "type": "tarball",
-        "url": "https://api.flakehub.com/f/pinned/NixOS/nixpkgs/0.2511.909248%2Brev-0590cd39f728e129122770c029970378a79d076a/019ce32b-8ace-7339-b129-cceaa8dd10c6/source.tar.gz"
-      },
-      "original": {
-        "type": "tarball",
-        "url": "https://flakehub.com/f/NixOS/nixpkgs/0.2511"
-      }
-    },
-    "nixpkgs_8": {
-      "locked": {
-        "lastModified": 1777826146,
-        "narHash": "sha256-wQ/iN5Zp5VIa3ebBibijPnLyKhor+xEbDy4d0goa9Zs=",
-        "rev": "73c703c22422b8951895a960959dbbaca7296492",
-        "revCount": 991389,
-        "type": "tarball",
-        "url": "https://api.flakehub.com/f/pinned/DeterminateSystems/nixpkgs-weekly/0.1.991389%2Brev-73c703c22422b8951895a960959dbbaca7296492/019df6c8-934b-7d40-b402-027bb5def30f/source.tar.gz"
-      },
-      "original": {
-        "type": "tarball",
-        "url": "https://flakehub.com/f/DeterminateSystems/nixpkgs-weekly/0.1"
-      }
-    },
-    "nixpkgs_9": {
-      "locked": {
-        "lastModified": 1770107345,
-        "narHash": "sha256-tbS0Ebx2PiA1FRW8mt8oejR0qMXmziJmPaU1d4kYY9g=",
-        "owner": "nixos",
-        "repo": "nixpkgs",
-        "rev": "4533d9293756b63904b7238acb84ac8fe4c8c2c4",
-        "type": "github"
-      },
-      "original": {
-        "owner": "nixos",
-        "ref": "nixpkgs-unstable",
-        "repo": "nixpkgs",
-        "type": "github"
-      }
-    },
-    "packer": {
-      "inputs": {
-        "clan-core": "clan-core_2",
-        "determinate": "determinate_2",
-        "flake-parts": [
-          "packer",
-          "clan-core",
-          "flake-parts"
-        ],
-        "import-tree": "import-tree",
-        "mkdocs-flake": "mkdocs-flake_2",
-        "nixpkgs": "nixpkgs_10"
-      },
-      "locked": {
-        "lastModified": 1779916098,
-        "narHash": "sha256-oqRZimLyikKy8hNIkdats8ZlxVDonu2PvG7Pz1OOm7Q=",
-        "rev": "92d6ea7ea2b67ede5759bd78dc9659e023f8616a",
-        "revCount": 47,
-        "type": "tarball",
-        "url": "https://api.flakehub.com/f/pinned/andrewthomaslee/packer/0.1.47%2Brev-92d6ea7ea2b67ede5759bd78dc9659e023f8616a/019e6b4c-e6cf-7312-a208-d768a3d9e945/source.tar.gz"
-      },
-      "original": {
-        "type": "tarball",
-        "url": "https://flakehub.com/f/andrewthomaslee/packer/%2A"
-      }
-    },
     "plasma-manager": {
       "inputs": {
         "home-manager": [
@@ -1819,32 +719,6 @@
         ],
         "systems": "systems_3",
         "treefmt-nix": "treefmt-nix_3"
-      },
-      "locked": {
-        "lastModified": 1743690424,
-        "narHash": "sha256-cX98bUuKuihOaRp8dNV1Mq7u6/CQZWTPth2IJPATBXc=",
-        "owner": "nix-community",
-        "repo": "poetry2nix",
-        "rev": "ce2369db77f45688172384bbeb962bc6c2ea6f94",
-        "type": "github"
-      },
-      "original": {
-        "owner": "nix-community",
-        "repo": "poetry2nix",
-        "type": "github"
-      }
-    },
-    "poetry2nix_2": {
-      "inputs": {
-        "flake-utils": "flake-utils_2",
-        "nix-github-actions": "nix-github-actions_3",
-        "nixpkgs": [
-          "packer",
-          "mkdocs-flake",
-          "nixpkgs"
-        ],
-        "systems": "systems_8",
-        "treefmt-nix": "treefmt-nix_6"
       },
       "locked": {
         "lastModified": 1743690424,
@@ -1918,38 +792,6 @@
         "type": "github"
       }
     },
-    "pyproject-build-systems_3": {
-      "inputs": {
-        "nixpkgs": [
-          "packer",
-          "mkdocs-flake",
-          "nixpkgs"
-        ],
-        "pyproject-nix": [
-          "packer",
-          "mkdocs-flake",
-          "pyproject-nix"
-        ],
-        "uv2nix": [
-          "packer",
-          "mkdocs-flake",
-          "uv2nix"
-        ]
-      },
-      "locked": {
-        "lastModified": 1776659114,
-        "narHash": "sha256-qapCOQmR++yZSY43dzrp3wCrkOTLpod+ONtJWBk6iKU=",
-        "owner": "pyproject-nix",
-        "repo": "build-system-pkgs",
-        "rev": "ffaa2161dd5d63e0e94591f86b54fc239660fb2e",
-        "type": "github"
-      },
-      "original": {
-        "owner": "pyproject-nix",
-        "repo": "build-system-pkgs",
-        "type": "github"
-      }
-    },
     "pyproject-nix": {
       "inputs": {
         "nixpkgs": [
@@ -1992,75 +834,8 @@
         "type": "github"
       }
     },
-    "pyproject-nix_3": {
-      "inputs": {
-        "nixpkgs": [
-          "packer",
-          "mkdocs-flake",
-          "nixpkgs"
-        ]
-      },
-      "locked": {
-        "lastModified": 1776715674,
-        "narHash": "sha256-Gs1VnEkCkkRZxJQAC/Dhz0Jbfi22mFXChbtNg9w/Ybg=",
-        "owner": "pyproject-nix",
-        "repo": "pyproject.nix",
-        "rev": "69f57f27e52a87c54e28138a75ec741cd46663c9",
-        "type": "github"
-      },
-      "original": {
-        "owner": "pyproject-nix",
-        "repo": "pyproject.nix",
-        "type": "github"
-      }
-    },
     "root": {
       "inputs": {
-        "Anvil-Restoration": "Anvil-Restoration",
-        "AppleSkin": "AppleSkin",
-        "Armored-Elytra": "Armored-Elytra",
-        "Bigger-Sponge-Absorption-Radius": "Bigger-Sponge-Absorption-Radius",
-        "Bow-Infinity-Fix": "Bow-Infinity-Fix",
-        "Cardinal-Components-API": "Cardinal-Components-API",
-        "Cloth-Config-API": "Cloth-Config-API",
-        "Clumps": "Clumps",
-        "Collective": "Collective",
-        "Concurrent-Chunk-Management-Engine": "Concurrent-Chunk-Management-Engine",
-        "Distant-Horizons": "Distant-Horizons",
-        "Dragon-Drops-Elytra": "Dragon-Drops-Elytra",
-        "Elytra-Trims": "Elytra-Trims",
-        "Essential-Commands": "Essential-Commands",
-        "Extended-Bone-Meal": "Extended-Bone-Meal",
-        "Fabric-API": "Fabric-API",
-        "FerriteCore": "FerriteCore",
-        "Fixed-Anvil-Repair-Cost": "Fixed-Anvil-Repair-Cost",
-        "Forge-Config-API-Port": "Forge-Config-API-Port",
-        "Grind-Enchantments": "Grind-Enchantments",
-        "Infinite-Trading": "Infinite-Trading",
-        "Inventory-Sorting": "Inventory-Sorting",
-        "Inventory-Totem": "Inventory-Totem",
-        "JEI": "JEI",
-        "Jade": "Jade",
-        "Just-Player-Heads": "Just-Player-Heads",
-        "Kotlin": "Kotlin",
-        "Lithium": "Lithium",
-        "Open-Parties-and-Claims": "Open-Parties-and-Claims",
-        "Player-Roles": "Player-Roles",
-        "Polymer": "Polymer",
-        "Puzzles-Lib": "Puzzles-Lib",
-        "Random-Bone-Meal-Flowers": "Random-Bone-Meal-Flowers",
-        "Recast": "Recast",
-        "Respawning-Shulkers": "Respawning-Shulkers",
-        "Silk": "Silk",
-        "Storage-Drawers": "Storage-Drawers",
-        "TNT-Breaks-Bedrock": "TNT-Breaks-Bedrock",
-        "Travelers-Backpack": "Travelers-Backpack",
-        "Tree-Harvester": "Tree-Harvester",
-        "Universal-Enchants": "Universal-Enchants",
-        "Universal-Shops": "Universal-Shops",
-        "Vein-Miner": "Vein-Miner",
-        "Vein-Miner-Enchantment": "Vein-Miner-Enchantment",
-        "Villager-Pickup": "Villager-Pickup",
         "clan-community": "clan-community",
         "clan-core": "clan-core",
         "determinate": "determinate",
@@ -2070,20 +845,14 @@
         ],
         "flake-schemas": "flake-schemas",
         "home-manager": "home-manager",
-        "import-tree": [
-          "packer",
-          "import-tree"
-        ],
+        "import-tree": "import-tree",
         "jovian": "jovian",
         "kubefetch": "kubefetch",
         "mkdocs-flake": "mkdocs-flake",
         "moscripts": "moscripts",
-        "nix-minecraft": "nix-minecraft",
         "nixpkgs": "nixpkgs_6",
         "nixpkgs-unstable": "nixpkgs-unstable",
-        "packer": "packer",
         "plasma-manager": "plasma-manager",
-        "terranix": "terranix",
         "zen-browser": "zen-browser"
       }
     },
@@ -2100,28 +869,6 @@
         "owner": "Mic92",
         "repo": "sops-nix",
         "rev": "f1406619a3884cd5c47992a70b8b35c9c0fcb4c9",
-        "type": "github"
-      },
-      "original": {
-        "owner": "Mic92",
-        "repo": "sops-nix",
-        "type": "github"
-      }
-    },
-    "sops-nix_2": {
-      "inputs": {
-        "nixpkgs": [
-          "packer",
-          "clan-core",
-          "nixpkgs"
-        ]
-      },
-      "locked": {
-        "lastModified": 1776119890,
-        "narHash": "sha256-Zm6bxLNnEOYuS/SzrAGsYuXSwk3cbkRQZY0fJnk8a5M=",
-        "owner": "Mic92",
-        "repo": "sops-nix",
-        "rev": "d4971dd58c6627bfee52a1ad4237637c0a2fb0cd",
         "type": "github"
       },
       "original": {
@@ -2188,102 +935,6 @@
       "original": {
         "owner": "nix-systems",
         "repo": "default",
-        "type": "github"
-      }
-    },
-    "systems_5": {
-      "locked": {
-        "lastModified": 1681028828,
-        "narHash": "sha256-Vy1rq5AaRuLzOxct8nz4T6wlgyUR7zLU309k9mBC768=",
-        "owner": "nix-systems",
-        "repo": "default",
-        "rev": "da67096a3b9bf56a91d16901293e51ba5b49a27e",
-        "type": "github"
-      },
-      "original": {
-        "owner": "nix-systems",
-        "repo": "default",
-        "type": "github"
-      }
-    },
-    "systems_6": {
-      "locked": {
-        "lastModified": 1774449309,
-        "narHash": "sha256-brhZ8DmuGtzkCYHJg4HEd602amKm89Y9ytsFZ5uWD1w=",
-        "owner": "nix-systems",
-        "repo": "default",
-        "rev": "c29398b59d2048c4ab79345812849c9bd15e9150",
-        "type": "github"
-      },
-      "original": {
-        "owner": "nix-systems",
-        "ref": "future-26.11",
-        "repo": "default",
-        "type": "github"
-      }
-    },
-    "systems_7": {
-      "locked": {
-        "lastModified": 1681028828,
-        "narHash": "sha256-Vy1rq5AaRuLzOxct8nz4T6wlgyUR7zLU309k9mBC768=",
-        "owner": "nix-systems",
-        "repo": "default",
-        "rev": "da67096a3b9bf56a91d16901293e51ba5b49a27e",
-        "type": "github"
-      },
-      "original": {
-        "owner": "nix-systems",
-        "repo": "default",
-        "type": "github"
-      }
-    },
-    "systems_8": {
-      "locked": {
-        "lastModified": 1681028828,
-        "narHash": "sha256-Vy1rq5AaRuLzOxct8nz4T6wlgyUR7zLU309k9mBC768=",
-        "owner": "nix-systems",
-        "repo": "default",
-        "rev": "da67096a3b9bf56a91d16901293e51ba5b49a27e",
-        "type": "github"
-      },
-      "original": {
-        "owner": "nix-systems",
-        "repo": "default",
-        "type": "github"
-      }
-    },
-    "systems_9": {
-      "locked": {
-        "lastModified": 1681028828,
-        "narHash": "sha256-Vy1rq5AaRuLzOxct8nz4T6wlgyUR7zLU309k9mBC768=",
-        "owner": "nix-systems",
-        "repo": "default",
-        "rev": "da67096a3b9bf56a91d16901293e51ba5b49a27e",
-        "type": "github"
-      },
-      "original": {
-        "owner": "nix-systems",
-        "repo": "default",
-        "type": "github"
-      }
-    },
-    "terranix": {
-      "inputs": {
-        "flake-parts": "flake-parts_8",
-        "nixpkgs": "nixpkgs_11",
-        "systems": "systems_9"
-      },
-      "locked": {
-        "lastModified": 1779965098,
-        "narHash": "sha256-Jh0Zk+g0pEbNopADEtqvrnhrl83rlNFHpn3Zhz4s+VM=",
-        "owner": "terranix",
-        "repo": "terranix",
-        "rev": "36ed5bdee452978d0e9c4450de872483ab541006",
-        "type": "github"
-      },
-      "original": {
-        "owner": "terranix",
-        "repo": "terranix",
         "type": "github"
       }
     },
@@ -2369,69 +1020,6 @@
         "type": "github"
       }
     },
-    "treefmt-nix_5": {
-      "inputs": {
-        "nixpkgs": [
-          "packer",
-          "clan-core",
-          "nixpkgs"
-        ]
-      },
-      "locked": {
-        "lastModified": 1775636079,
-        "narHash": "sha256-pc20NRoMdiar8oPQceQT47UUZMBTiMdUuWrYu2obUP0=",
-        "owner": "numtide",
-        "repo": "treefmt-nix",
-        "rev": "790751ff7fd3801feeaf96d7dc416a8d581265ba",
-        "type": "github"
-      },
-      "original": {
-        "owner": "numtide",
-        "repo": "treefmt-nix",
-        "type": "github"
-      }
-    },
-    "treefmt-nix_6": {
-      "inputs": {
-        "nixpkgs": [
-          "packer",
-          "mkdocs-flake",
-          "poetry2nix",
-          "nixpkgs"
-        ]
-      },
-      "locked": {
-        "lastModified": 1730120726,
-        "narHash": "sha256-LqHYIxMrl/1p3/kvm2ir925tZ8DkI0KA10djk8wecSk=",
-        "owner": "numtide",
-        "repo": "treefmt-nix",
-        "rev": "9ef337e492a5555d8e17a51c911ff1f02635be15",
-        "type": "github"
-      },
-      "original": {
-        "owner": "numtide",
-        "repo": "treefmt-nix",
-        "type": "github"
-      }
-    },
-    "treefmt-nix_7": {
-      "inputs": {
-        "nixpkgs": "nixpkgs_9"
-      },
-      "locked": {
-        "lastModified": 1775636079,
-        "narHash": "sha256-pc20NRoMdiar8oPQceQT47UUZMBTiMdUuWrYu2obUP0=",
-        "owner": "numtide",
-        "repo": "treefmt-nix",
-        "rev": "790751ff7fd3801feeaf96d7dc416a8d581265ba",
-        "type": "github"
-      },
-      "original": {
-        "owner": "numtide",
-        "repo": "treefmt-nix",
-        "type": "github"
-      }
-    },
     "uv2nix": {
       "inputs": {
         "nixpkgs": [
@@ -2474,33 +1062,6 @@
         "owner": "pyproject-nix",
         "repo": "uv2nix",
         "rev": "0529e6d8227517205afcd1b37eee3088db745730",
-        "type": "github"
-      },
-      "original": {
-        "owner": "pyproject-nix",
-        "repo": "uv2nix",
-        "type": "github"
-      }
-    },
-    "uv2nix_3": {
-      "inputs": {
-        "nixpkgs": [
-          "packer",
-          "mkdocs-flake",
-          "nixpkgs"
-        ],
-        "pyproject-nix": [
-          "packer",
-          "mkdocs-flake",
-          "pyproject-nix"
-        ]
-      },
-      "locked": {
-        "lastModified": 1777895960,
-        "narHash": "sha256-KebDsQd+A7pm++Tp0744EjULttHvz1wbKqNKkMA/088=",
-        "owner": "pyproject-nix",
-        "repo": "uv2nix",
-        "rev": "5ad90d48b80ecc920ca2247d53f46beba302e186",
         "type": "github"
       },
       "original": {

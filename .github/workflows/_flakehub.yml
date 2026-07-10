@@ -2,6 +2,7 @@ name: Reusable Flakehub
 on: workflow_call
 jobs:
   push:
+    timeout-minutes: 30 
     runs-on: ubuntu-latest
     permissions:
       id-token: write
@@ -16,6 +17,7 @@ jobs:
         uses: ./.github/actions/setup-nix
 
       - name: Publish to FlakeHub
+        timeout-minutes: 30
         uses: DeterminateSystems/flakehub-push@main
         with:
           visibility: public

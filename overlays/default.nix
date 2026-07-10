@@ -14,8 +14,6 @@
   moscripts = inputs.moscripts.packages.${final.stdenv.hostPlatform.system}.default;
   kubefetch = inputs.kubefetch.packages.${final.stdenv.hostPlatform.system}.default;
 
-  playit = self.packages.${final.stdenv.hostPlatform.system}.playit;
-
   k3s = inputs.nixpkgs-unstable.legacyPackages.${final.stdenv.hostPlatform.system}.k3s_1_35;
   rke2 = inputs.nixpkgs-unstable.legacyPackages.${final.stdenv.hostPlatform.system}.rke2_1_35;
 

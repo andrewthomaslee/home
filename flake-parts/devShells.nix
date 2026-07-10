@@ -16,7 +16,6 @@
             kubefetch
             k3s
             clan-cli
-            playit
             tfctl
             longhornctl
           ]

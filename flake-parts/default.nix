@@ -126,12 +126,6 @@ in {
       };
     };
 
-    # -- Terranix Modules ------ #
-    terranixModules = {
-      tofu = import (relativeToRoot "terranixModules/tofu");
-      cloudflare = import (relativeToRoot "terranixModules/cloudflare");
-    };
-
     # --- Clan Configuration ------ #
     clan = {
       inventory = import (relativeToRoot "inventory.nix") {inherit self inputs customLib;};

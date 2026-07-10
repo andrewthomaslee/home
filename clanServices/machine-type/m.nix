@@ -5,7 +5,10 @@
   config = {
     # hostSpec options
     hostSpec = {
-      networking.lan.enabled = true;
+      networking = {
+        warp.headless = true;
+        lan.enabled = true;
+      };
       services.docker.enable = true;
     };
   };
