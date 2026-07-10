@@ -9,51 +9,26 @@
   in {
     options.hostSpec.networking.warp = {
       enable = lib.mkEnableOption "default warp configuration";
-      headless = lib.mkEnableOption "headless login";
-      secretsPath = lib.mkOption {
-        type = lib.types.str;
-        default = "/var/run/secrets/vars/cloudflare-warp";
-        description = "Directory containing the 'id', 'token', and 'org' files for headless login";
-      };
+      headless = lib.mkEnableOption "headless login as a Mesh Node connector";
     };
 
     config = lib.mkIf cfg.enable {
       clan.core.vars.generators = lib.mkIf cfg.headless {
         cloudflare-warp = {
-          share = true;
-          prompts = {
-            id = {};
-            org = {};
-            token = {};
-          };
-          files."creds.xml" = {};
-          script = ''
-            cat > $out/creds.xml <<EOF
-            <dict>
-              <key>organization</key>
-              <string>$(cat $prompts/org)</string>
-              <key>auth_client_id</key>
-              <string>$(cat $prompts/id)</string>
-              <key>auth_client_secret</key>
-              <string>$(cat $prompts/token)</string>
-              <key>auto_connect</key>
-              <integer>1</integer>
-              <key>service_mode</key>
-              <string>warp</string>
-              <key>onboarding</key>
-              <false/>
-            </dict>
-            EOF
-          '';
+          prompts.token.persist = true;
         };
       };
+
       boot.kernel.sysctl = {
         "net.ipv4.ip_forward" = 1;
         "net.ipv6.conf.all.forwarding" = 1;
         "net.ipv6.conf.all.accept_ra" = 2;
       };
       services = {
-        cloudflare-warp.enable = true;
+        cloudflare-warp = {
+          enable = true;
+          package = pkgs.unstable.cloudflare-warp;
+        };
         resolved = {
           enable = true;
           settings.Resolve = {
@@ -81,23 +56,38 @@
         ManageForeignRoutingPolicyRules = false;
       };
       systemd.services = lib.mkIf cfg.headless {
-        cloudflare-warp = {
-          preStart = ''
-            CRED_FILE="${cfg.secretsPath}/creds.xml"
-            MDM_FILE="/var/lib/cloudflare-warp/mdm.xml"
+        cloudflare-warp-connector = {
+          description = "Register Cloudflare WARP Mesh Node Connector";
+          after = ["cloudflare-warp.service"];
+          requires = ["cloudflare-warp.service"];
+          wantedBy = ["multi-user.target"];
+          serviceConfig = {
+            Type = "oneshot";
+            RemainAfterExit = true;
+          };
+          script = let
+            warpCli = "${config.services.cloudflare-warp.package}/bin/warp-cli";
+          in ''
+            TOKEN_FILE="${config.clan.core.vars.generators.cloudflare-warp.files.token.path}"
 
-            # Ensure the configuration directory exists
-            mkdir -p /var/lib/cloudflare-warp
-            cp "$CRED_FILE" "$MDM_FILE"
+            if [[ -s "$TOKEN_FILE" ]]; then
+              echo "Waiting for Cloudflare WARP daemon to be ready..."
+              for i in {1..15}; do
+                if ${warpCli} --accept-tos status >/dev/null 2>&1; then
+                  break
+                fi
+                sleep 1
+              done
 
-            # Check if the secret files exist and are not empty
-            if [[ -s "$MDM_FILE" ]]; then
-              echo "Found Cloudflare WARP credentials. Generating mdm.xml..."
-              chmod 0600 "$MDM_FILE"
+              if ! ${warpCli} --accept-tos registration show | grep -q "Account type"; then
+                echo "Registering Cloudflare Mesh Node..."
+                ${warpCli} --accept-tos connector new "$(cat "$TOKEN_FILE")"
+                ${warpCli} --accept-tos connect
+              else
+                echo "Cloudflare Mesh Node is already registered."
+              fi
             else
-              echo "WARP credentials missing or empty in ${cfg.secretsPath}. Skipping MDM config generation."
-              # Remove any stale MDM configs if secrets are removed to prevent unintended logins
-              rm -f "$MDM_FILE"
+              echo "Mesh Node token not found or empty at $TOKEN_FILE"
             fi
           '';
         };
