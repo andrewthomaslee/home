@@ -5,12 +5,6 @@ result-*
 .direnv
 .devenv
 
-.terraform*
-terraform.tfstate*
-config.tf.json
-backend.tfbackend
-!backend.tfbackend.schema
-
 .env.*
 .env
 !*.env.schema
