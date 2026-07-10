@@ -36,7 +36,7 @@
             DNSSEC = false;
             ResolveUnicastSingleLabel = true;
             DNS =
-              if cfg.headless
+              if !cfg.headless
               then [
                 "127.0.2.2"
                 "127.0.2.3"
