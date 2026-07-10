@@ -26,7 +26,7 @@
         };
         files."creds.xml" = {};
         script = ''
-          cat > creds.xml <<EOF
+          cat > $out/creds.xml <<EOF
           <dict>
             <key>organization</key>
             <string>$(cat $prompts/org)</string>
