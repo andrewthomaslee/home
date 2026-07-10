@@ -216,6 +216,24 @@ in {
           distro = "rke2";
           cilium.id = 2;
           defaultCpu = "intel";
+          longhorn.helmValues = {
+            persistence = {
+              defaultClassReplicaCount = 1;
+              defaultDataLocality = "best-effort";
+            };
+            defaultSettings = {
+              defaultReplicaCount = 1;
+              replicaSoftAntiAffinity = true;
+              defaultDataLocality = "strict-local";
+            };
+            csi = {
+              attacherReplicaCount = 1;
+              provisionerReplicaCount = 1;
+              resizerReplicaCount = 1;
+              snapshotterReplicaCount = 1;
+            };
+          };
+
           # --- Node level settings --- #
           wireguard.ipv4 = "172.16.1.1";
         };
