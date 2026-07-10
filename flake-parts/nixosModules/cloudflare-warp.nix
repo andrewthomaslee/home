@@ -7,9 +7,43 @@
   }: let
     cfg = config.hostSpec.networking.warp;
   in {
-    options.hostSpec.networking.warp.enable = lib.mkEnableOption "default warp configuration";
+    options.hostSpec.networking.warp = {
+      enable = lib.mkEnableOption "default warp configuration";
+      secretsPath = lib.mkOption {
+        type = lib.types.str;
+        default = "/var/run/secrets/vars/cloudflare-warp";
+        description = "Directory containing the 'id', 'token', and 'org' files for headless login";
+      };
+    };
 
     config = lib.mkIf cfg.enable {
+      clan.core.vars.generators.cloudflare-warp = {
+        share = true;
+        prompts = {
+          id = {};
+          org = {};
+          token = {};
+        };
+        files."creds.xml" = {};
+        script = ''
+          cat > creds.xml <<EOF
+          <dict>
+            <key>organization</key>
+            <string>$ORG</string>
+            <key>auth_client_id</key>
+            <string>$ID</string>
+            <key>auth_client_secret</key>
+            <string>$TOKEN</string>
+            <key>auto_connect</key>
+            <integer>1</integer>
+            <key>service_mode</key>
+            <string>warp</string>
+            <key>onboarding</key>
+            <false/>
+          </dict>
+          EOF
+        '';
+      };
       boot.kernel.sysctl = {
         "net.ipv4.ip_forward" = 1;
         "net.ipv6.conf.all.forwarding" = 1;
@@ -20,8 +54,6 @@
         resolved = {
           enable = true;
           settings.Resolve = {
-            # LLMNR = false;
-            # MulticastDNS = false;
             DNSOverTLS = false;
             DNSSEC = false;
             ResolveUnicastSingleLabel = true;
@@ -42,9 +74,28 @@
         resolvconf.enable = false;
       };
       systemd.network.config.networkConfig = {
-        # This prevents systemd-networkd from deleting WARP's custom ip rules and tables.
         ManageForeignRoutes = false;
         ManageForeignRoutingPolicyRules = false;
+      };
+      systemd.services.cloudflare-warp = {
+        preStart = ''
+          CRED_FILE="${cfg.secretsPath}/creds.xml"
+          MDM_FILE="/var/lib/cloudflare-warp/mdm.xml"
+
+          # Ensure the configuration directory exists
+          mkdir -p /var/lib/cloudflare-warp
+          cp "$CRED_FILE" "$MDM_FILE"
+
+          # Check if the secret files exist and are not empty
+          if [[ -s "$MDM_FILE" ]]; then
+            echo "Found Cloudflare WARP credentials. Generating mdm.xml..."
+            chmod 0600 "$MDM_FILE"
+          else
+            echo "WARP credentials missing or empty in ${cfg.secretsPath}. Skipping MDM config generation."
+            # Remove any stale MDM configs if secrets are removed to prevent unintended logins
+            rm -f "$MDM_FILE"
+          fi
+        '';
       };
     };
   };
