@@ -29,11 +29,11 @@
           cat > creds.xml <<EOF
           <dict>
             <key>organization</key>
-            <string>$ORG</string>
+            <string>$(cat $prompts/org)</string>
             <key>auth_client_id</key>
-            <string>$ID</string>
+            <string>$(cat $prompts/id)</string>
             <key>auth_client_secret</key>
-            <string>$TOKEN</string>
+            <string>$(cat $prompts/id)</string>
             <key>auto_connect</key>
             <integer>1</integer>
             <key>service_mode</key>
