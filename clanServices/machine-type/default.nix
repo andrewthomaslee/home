@@ -39,7 +39,7 @@
       # --- hostSpec options --- #
       hostSpec = {
         clan.enable = true;
-        networking.tailscale.enable = true;
+        networking.warp.enable = true;
         services = {
           motd.enable = true;
           openssh.enable = true;

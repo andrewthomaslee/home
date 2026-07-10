@@ -14,13 +14,13 @@
     security.sudo.wheelNeedsPassword = false;
     boot.binfmt.emulatedSystems = ["aarch64-linux"];
 
-    specialisation.warp.configuration = {
+    specialisation.tailscale.configuration = {
       hostSpec.networking = {
         tailscale = {
-          enable = lib.mkForce false;
-          systray = lib.mkForce false;
+          enable = lib.mkForce true;
+          systray = lib.mkForce true;
         };
-        warp.enable = lib.mkForce true;
+        warp.enable = lib.mkForce false;
       };
     };
   };
