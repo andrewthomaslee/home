@@ -14,35 +14,35 @@ in {
   machines = {
     # Andrew's PCs
     nixos = {
-      deploy.targetHost = "root@nixos.armadillo-frog.ts.net";
+      deploy.targetHost = "root@192.168.1.253";
       tags = ["pc" "intel" "lan" "dev" "netsa" "wife"];
     };
     ghost = {
-      deploy.targetHost = "root@ghost.armadillo-frog.ts.net";
+      deploy.targetHost = "root@192.168.1.252";
       tags = ["pc" "intel" "wan" "dev" "netsa"];
     };
 
     # Other's PCs
     hp-notebook = {
-      deploy.targetHost = "root@hp-notebook.armadillo-frog.ts.net";
+      deploy.targetHost = "root@192.168.1.246";
       tags = ["pc" "wife" "wan"];
     };
 
     # Home Servers
     inuc-celeron = {
-      deploy.targetHost = "root@inuc-celeron.armadillo-frog.ts.net";
+      deploy.targetHost = "root@192.168.1.249";
       tags = ["intel" "m"];
     };
     inuc-i5 = {
-      deploy.targetHost = "root@inuc-i5.armadillo-frog.ts.net";
+      deploy.targetHost = "root@192.168.1.248";
       tags = ["intel" "m" "wan"];
     };
     beelink = {
-      deploy.targetHost = "root@beelink.armadillo-frog.ts.net";
+      deploy.targetHost = "root@192.168.1.250";
       tags = ["amd" "m" "wan"];
     };
     kamrui-h1 = {
-      deploy.targetHost = "root@kamrui-h1.armadillo-frog.ts.net";
+      deploy.targetHost = "root@192.168.1.251";
       tags = ["amd" "m" "kde" "wan" "netsa"];
     };
 
