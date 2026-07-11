@@ -12,7 +12,7 @@
             priority = 1;
           };
           ESP = {
-            size = "10G";
+            size = "15G";
             type = "EF00";
             priority = 2;
             content = {
@@ -35,43 +35,43 @@
         };
       };
     };
-    disk1 = {
-      type = "disk";
-      device = "/dev/disk/by-id/ata-SAMSUNG_MZ7LM480HCHP-00003_S1YJNXAG900394";
-      content = {
-        type = "gpt";
-        partitions = {
-          nixos = {
-            size = "100%";
-            content = {
-              type = "filesystem";
-              format = "ext4";
-              mountpoint = "/mnt/disk1";
-              mountOptions = ["noatime"];
-              extraArgs = ["-L" "disk1"];
-            };
-          };
-        };
-      };
-    };
-    disk2 = {
-      type = "disk";
-      device = "/dev/disk/by-id/ata-SAMSUNG_MZ7GE480HMHP-00003_S1M8NYAF700380";
-      content = {
-        type = "gpt";
-        partitions = {
-          nixos = {
-            size = "100%";
-            content = {
-              type = "filesystem";
-              format = "ext4";
-              mountpoint = "/mnt/disk2";
-              mountOptions = ["noatime"];
-              extraArgs = ["-L" "disk2"];
-            };
-          };
-        };
-      };
-    };
+    # disk1 = {
+    #   type = "disk";
+    #   device = "/dev/disk/by-id/ata-SAMSUNG_MZ7LM480HCHP-00003_S1YJNXAG900394";
+    #   content = {
+    #     type = "gpt";
+    #     partitions = {
+    #       nixos = {
+    #         size = "100%";
+    #         content = {
+    #           type = "filesystem";
+    #           format = "ext4";
+    #           mountpoint = "/mnt/disk1";
+    #           mountOptions = ["noatime"];
+    #           extraArgs = ["-L" "disk1"];
+    #         };
+    #       };
+    #     };
+    #   };
+    # };
+    # disk2 = {
+    #   type = "disk";
+    #   device = "/dev/disk/by-id/ata-SAMSUNG_MZ7GE480HMHP-00003_S1M8NYAF700380";
+    #   content = {
+    #     type = "gpt";
+    #     partitions = {
+    #       nixos = {
+    #         size = "100%";
+    #         content = {
+    #           type = "filesystem";
+    #           format = "ext4";
+    #           mountpoint = "/mnt/disk2";
+    #           mountOptions = ["noatime"];
+    #           extraArgs = ["-L" "disk2"];
+    #         };
+    #       };
+    #     };
+    #   };
+    # };
   };
 }

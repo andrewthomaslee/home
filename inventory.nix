@@ -48,7 +48,7 @@ in {
 
     # Hetzner
     hmetal = {
-      deploy.targetHost = "root@hmetal.andrewlee.cloud";
+      deploy.targetHost = "root@[2a01:4f9:2a:b8d::2]";
       tags = ["m"];
     };
   };
@@ -235,7 +235,10 @@ in {
           };
 
           # --- Node level settings --- #
-          wireguard.ipv4 = "172.16.1.1";
+          wireguard = {
+            endpoint = "[2a01:4f9:2a:b8d::2]";
+            ipv4 = "172.16.1.1";
+          };
         };
       };
     };
