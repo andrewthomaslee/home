@@ -216,25 +216,34 @@ in {
           distro = "rke2";
           cilium.id = 2;
           defaultCpu = "intel";
-          longhorn.helmValues = {
-            persistence = {
-              defaultClassReplicaCount = 1;
-              defaultDataLocality = "best-effort";
+          longhorn = {
+            v2 = {
+              enabled = true;
+              hugepages.enabled = true;
             };
-            defaultSettings = {
-              defaultReplicaCount = 1;
-              replicaSoftAntiAffinity = true;
-              defaultDataLocality = "strict-local";
-            };
-            csi = {
-              attacherReplicaCount = 1;
-              provisionerReplicaCount = 1;
-              resizerReplicaCount = 1;
-              snapshotterReplicaCount = 1;
+            helmValues = {
+              persistence = {
+                dataEngine = "v2";
+                defaultClassReplicaCount = 1;
+                defaultDataLocality = "best-effort";
+              };
+              defaultSettings = {
+                v1DataEngine = false;
+                defaultReplicaCount = 1;
+                replicaSoftAntiAffinity = true;
+                defaultDataLocality = "strict-local";
+              };
+              csi = {
+                attacherReplicaCount = 1;
+                provisionerReplicaCount = 1;
+                resizerReplicaCount = 1;
+                snapshotterReplicaCount = 1;
+              };
             };
           };
 
           # --- Node level settings --- #
+          services.longhorn.v2.enabled = true;
           wireguard = {
             endpoint = "[2a01:4f9:2a:b8d::2]";
             ipv4 = "172.16.1.1";
