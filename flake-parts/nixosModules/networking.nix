@@ -14,11 +14,15 @@ in {
       options.hostSpec.networking.lan = {
         enabled = lib.mkEnableOption "default lan configuration";
         defaultGateway = lib.mkOption {
-          type = lib.types.string;
+          type = lib.types.str;
           default = "192.168.1.254";
         };
         defaultGateway6 = lib.mkOption {
-          type = lib.types.string;
+          type = lib.types.str;
+          default = "2600:1700:5e40:c2e0::1";
+        };
+        defaultGateway6 = lib.mkOption {
+          type = lib.types.str;
           default = "2600:1700:5e40:c2e0::1";
         };
       };
