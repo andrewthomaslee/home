@@ -36,18 +36,12 @@
             DNSOverTLS = false;
             DNSSEC = false;
             ResolveUnicastSingleLabel = true;
-            DNS =
-              if cfg.headless
-              then [
-                "1.1.1.1"
-                "1.0.0.1"
-              ]
-              else [
-                "127.0.2.2"
-                "127.0.2.3"
-                "fd01:db8:1111::2"
-                "fd01:db8:1111::3"
-              ];
+            DNS = [
+              "127.0.2.2"
+              "127.0.2.3"
+              "fd01:db8:1111::2"
+              "fd01:db8:1111::3"
+            ];
           };
         };
       };
