@@ -21,10 +21,6 @@ in {
           type = lib.types.str;
           default = "2600:1700:5e40:c2e0::1";
         };
-        defaultGateway6 = lib.mkOption {
-          type = lib.types.str;
-          default = "2600:1700:5e40:c2e0::1";
-        };
       };
 
       config = lib.mkIf cfg.enabled {
