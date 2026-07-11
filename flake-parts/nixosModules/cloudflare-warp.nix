@@ -38,8 +38,8 @@
             DNS =
               if cfg.headless
               then [
-                "2606:4700:4700::1111"
-                "2606:4700:4700::1001"
+                # "2606:4700:4700::1111"
+                # "2606:4700:4700::1001"
                 "1.1.1.1"
               ]
               else [
@@ -65,7 +65,8 @@
       systemd.services = lib.mkIf cfg.headless {
         cloudflare-warp-connector = {
           description = "Register Cloudflare WARP Mesh Node Connector";
-          after = ["cloudflare-warp.service"];
+          after = ["cloudflare-warp.service" "network-online.target"];
+          wants = ["network-online.target"];
           requires = ["cloudflare-warp.service"];
           wantedBy = ["multi-user.target"];
           serviceConfig = {
