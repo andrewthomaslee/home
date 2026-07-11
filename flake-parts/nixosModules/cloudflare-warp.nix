@@ -58,7 +58,7 @@
         };
         resolvconf.enable =
           if cfg.headless
-          then true
+          then lib.mkForce true
           else false;
         firewall.trustedInterfaces = ["CloudflareWARP"];
       };
