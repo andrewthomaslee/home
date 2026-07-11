@@ -152,6 +152,7 @@ in {
           cilium = {
             id = 1;
             helmValues = {
+              devices = "eth+,eno+,enp+,wl+,kube";
               ipMasqAgent = {
                 enabled = true;
                 config.nonMasqueradeCIDRs = [
@@ -228,6 +229,7 @@ in {
           cilium = {
             id = 2;
             helmValues = {
+              devices = "eth+,eno+,enp+,wl+,kube";
               ipMasqAgent = {
                 enabled = true;
                 config.nonMasqueradeCIDRs = [
