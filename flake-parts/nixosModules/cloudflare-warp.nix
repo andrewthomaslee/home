@@ -38,8 +38,6 @@
             DNS =
               if cfg.headless
               then [
-                # "2606:4700:4700::1111"
-                # "2606:4700:4700::1001"
                 "1.1.1.1"
               ]
               else [
@@ -87,12 +85,36 @@
                 sleep 1
               done
 
+              # 1. Clean up lingering mdm.xml if any exists
+              if [[ -f /var/lib/cloudflare-warp/mdm.xml ]]; then
+                echo "Found lingering mdm.xml. Removing..."
+                rm -f /var/lib/cloudflare-warp/mdm.xml
+                ${warpCli} --accept-tos disconnect || true
+                ${warpCli} --accept-tos registration delete || true
+              fi
+
+              # 2. Check if registered, but NOT as a Mesh Connector (TunnelOnly)
+              if ${warpCli} --accept-tos registration show | grep -q "Account type"; then
+                if ! ${warpCli} --accept-tos settings | grep -q "Mode: TunnelOnly"; then
+                  echo "Detected standard client registration (not in TunnelOnly mode). Clearing registration..."
+                  ${warpCli} --accept-tos disconnect || true
+                  ${warpCli} --accept-tos registration delete || true
+                fi
+              fi
+
+              # 3. Perform registration if we cleared it above or if it is a clean slate
               if ! ${warpCli} --accept-tos registration show | grep -q "Account type"; then
                 echo "Registering Cloudflare Mesh Node..."
                 ${warpCli} --accept-tos connector new "$(cat "$TOKEN_FILE")"
                 ${warpCli} --accept-tos connect
               else
-                echo "Cloudflare Mesh Node is already registered."
+                # Make sure the connector is actually connected
+                if ${warpCli} --accept-tos status | grep -q "Disconnected"; then
+                  echo "Mesh Node is registered but disconnected. Connecting..."
+                  ${warpCli} --accept-tos connect
+                else
+                  echo "Cloudflare Mesh Node is already registered and active."
+                fi
               fi
             else
               echo "Mesh Node token not found or empty at $TOKEN_FILE"
