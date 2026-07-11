@@ -11,7 +11,17 @@ in {
     }: let
       cfg = config.hostSpec.networking.lan;
     in {
-      options.hostSpec.networking.lan.enabled = lib.mkEnableOption "default lan configuration";
+      options.hostSpec.networking.lan = {
+        enabled = lib.mkEnableOption "default lan configuration";
+        defaultGateway = lib.mkOption {
+          type = lib.types.string;
+          default = "192.168.1.254";
+        };
+        defaultGateway6 = lib.mkOption {
+          type = lib.types.string;
+          default = "2600:1700:5e40:c2e0::1";
+        };
+      };
 
       config = lib.mkIf cfg.enabled {
         networking = let
@@ -35,14 +45,14 @@ in {
             ];
           };
 
-          defaultGateway = lib.mkForce {
-            address = "192.168.1.254";
-            inherit interface;
+          defaultGateway = {
+            address = lib.mkForce cfg.defaultGateway;
+            interface = lib.mkForce interface;
           };
 
-          defaultGateway6 = lib.mkForce {
-            address = "2600:1700:5e40:c2e0::1";
-            inherit interface;
+          defaultGateway6 = {
+            address = lib.mkForce cfg.defaultGateway6;
+            interface = lib.mkForce interface;
           };
         };
       };
@@ -77,14 +87,14 @@ in {
             # ];
           };
 
-          defaultGateway = lib.mkDefault {
-            address = "192.168.1.254";
-            interface = net.wan.interface;
+          defaultGateway = {
+            address = lib.mkDefault "192.168.1.254";
+            interface = lib.mkDefault net.wan.interface;
           };
 
-          defaultGateway6 = lib.mkDefault {
-            address = "2600:1700:5e40:c2e0::1";
-            interface = net.wan.interface;
+          defaultGateway6 = {
+            address = lib.mkDefault "2600:1700:5e40:c2e0::1";
+            interface = lib.mkDefault net.wan.interface;
           };
         };
       };
