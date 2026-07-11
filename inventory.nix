@@ -149,19 +149,7 @@ in {
           # --- Cluster Level Settings --- #
           domain = "andrewlee.fun";
           distro = "k3s";
-          cilium = {
-            id = 1;
-            helmValues = {
-              devices = "eth+,eno+,enp+,wl+,kube";
-              ipMasqAgent = {
-                enabled = true;
-                config.nonMasqueradeCIDRs = [
-                  "10.0.0.0/8"
-                  "100.64.0.0/10"
-                ];
-              };
-            };
-          };
+          cilium.id = 1;
           longhorn = {
             v2 = {
               enabled = true;
@@ -226,19 +214,7 @@ in {
           # --- Cluster Level Settings --- #
           domain = "andrewlee.cloud";
           distro = "rke2";
-          cilium = {
-            id = 2;
-            helmValues = {
-              devices = "eth+,eno+,enp+,wl+,kube";
-              ipMasqAgent = {
-                enabled = true;
-                config.nonMasqueradeCIDRs = [
-                  "10.0.0.0/8"
-                  "100.64.0.0/10"
-                ];
-              };
-            };
-          };
+          cilium.id = 2;
           defaultCpu = "intel";
           longhorn.helmValues = {
             persistence = {

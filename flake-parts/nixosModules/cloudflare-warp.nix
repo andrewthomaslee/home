@@ -7,18 +7,9 @@
   }: let
     cfg = config.hostSpec.networking.warp;
   in {
-    options.hostSpec.networking.warp = {
-      enable = lib.mkEnableOption "default warp configuration";
-      headless = lib.mkEnableOption "headless login as a Mesh Node connector";
-    };
+    options.hostSpec.networking.warp.enable = lib.mkEnableOption "default warp configuration";
 
     config = lib.mkIf cfg.enable {
-      clan.core.vars.generators = lib.mkIf cfg.headless {
-        cloudflare-warp = {
-          prompts.token.persist = true;
-        };
-      };
-
       boot.kernel.sysctl = {
         "net.ipv4.ip_forward" = 1;
         "net.ipv6.conf.all.forwarding" = 1;
@@ -57,47 +48,6 @@
       systemd.network.config.networkConfig = {
         ManageForeignRoutes = false;
         ManageForeignRoutingPolicyRules = false;
-      };
-
-      systemd.services = lib.mkIf cfg.headless {
-        cloudflare-warp-connector = {
-          description = "Register Cloudflare WARP Mesh Node Connector";
-          after = ["cloudflare-warp.service" "network-online.target"];
-          wants = ["network-online.target"];
-          requires = ["cloudflare-warp.service"];
-          wantedBy = ["multi-user.target"];
-          serviceConfig = {
-            Type = "oneshot";
-            RemainAfterExit = true;
-          };
-          script = let
-            warpCli = "${config.services.cloudflare-warp.package}/bin/warp-cli";
-          in ''
-            TOKEN_FILE="${config.clan.core.vars.generators.cloudflare-warp.files.token.path}"
-
-            if [[ -s "$TOKEN_FILE" ]]; then
-              echo "Waiting for Cloudflare WARP daemon to be ready..."
-              for i in {1..15}; do
-                if ${warpCli} --accept-tos status >/dev/null 2>&1; then
-                  break
-                fi
-                sleep 1
-              done
-
-              # Only attempt registration if the device is completely unregistered
-              if ! ${warpCli} --accept-tos registration show | grep -q "Account type"; then
-                echo "Registering Cloudflare Mesh Node..."
-                ${warpCli} --accept-tos connector new "$(cat "$TOKEN_FILE")"
-              fi
-
-              # Ensure the daemon connects
-              ${warpCli} --accept-tos connect
-
-            else
-              echo "Mesh Node token not found or empty at $TOKEN_FILE"
-            fi
-          '';
-        };
       };
     };
   };
