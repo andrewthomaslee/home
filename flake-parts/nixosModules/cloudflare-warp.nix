@@ -56,10 +56,6 @@
           dns = "systemd-resolved";
           unmanaged = ["CloudflareWARP"];
         };
-        resolvconf.enable =
-          if cfg.headless
-          then lib.mkForce true
-          else false;
         firewall.trustedInterfaces = ["CloudflareWARP"];
       };
       systemd.network.config.networkConfig = {
