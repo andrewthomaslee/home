@@ -36,17 +36,17 @@
             DNSSEC = false;
             ResolveUnicastSingleLabel = true;
             DNS =
-              if !cfg.headless
+              if cfg.headless
               then [
+                "2606:4700:4700::1111"
+                "2606:4700:4700::1001"
+                "1.1.1.1"
+              ]
+              else [
                 "127.0.2.2"
                 "127.0.2.3"
                 "fd01:db8:1111::2"
                 "fd01:db8:1111::3"
-              ]
-              else [
-                "2606:4700:4700::1111"
-                "2606:4700:4700::1001"
-                "1.1.1.1"
               ];
           };
         };
@@ -56,7 +56,11 @@
           dns = "systemd-resolved";
           unmanaged = ["CloudflareWARP"];
         };
-        resolvconf.enable = false;
+        resolvconf.enable =
+          if cfg.headless
+          then true
+          else false;
+        firewall.trustedInterfaces = ["CloudflareWARP"];
       };
       systemd.network.config.networkConfig = {
         ManageForeignRoutes = false;
