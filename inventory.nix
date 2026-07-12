@@ -153,6 +153,7 @@ in {
             id = 1;
             version = "1.19.5";
             helmValues.hubble.ui.ingress = {
+              enabled = true;
               className = "traefik";
               hosts = [
                 "hubble.andrewlee.fun"
@@ -241,6 +242,7 @@ in {
           cilium = {
             id = 2;
             helmValues.hubble.ui.ingress = {
+              enabled = true;
               className = "traefik";
               hosts = [
                 "hubble.netsam.dev"
