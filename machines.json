@@ -88,7 +88,7 @@
     },
     {
       "name": "hmetal",
-      "domain": "andrewlee.cloud",
+      "domain": "netsam.dev",
       "network": {
         "lan": {
           "interface": "enp5s0",
