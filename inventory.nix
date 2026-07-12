@@ -49,7 +49,7 @@ in {
     # Hetzner
     hmetal = {
       deploy.targetHost = "root@[2a01:4f9:2a:b8d::2]";
-      tags = ["m" "master" "netsa"];
+      tags = ["m" "master" "kde" "netsa"];
     };
   };
 
