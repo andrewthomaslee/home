@@ -240,7 +240,6 @@ in {
           defaultCpu = "intel";
           cilium = {
             id = 2;
-            version = "1.19.5";
             helmValues.hubble.ui.ingress = {
               className = "traefik";
               hosts = [
