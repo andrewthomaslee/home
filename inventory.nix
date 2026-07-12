@@ -149,17 +149,40 @@ in {
           # --- Cluster Level Settings --- #
           domain = "andrewlee.fun";
           distro = "k3s";
-          cilium.id = 1;
+          cilium = {
+            id = 1;
+            version = "1.19.5";
+            helmValues.hubble.ui.ingress = {
+              className = "traefik";
+              hosts = [
+                "hubble.andrewlee.fun"
+              ];
+            };
+          };
           longhorn = {
+            version = "1.12.0";
             v2 = {
               enabled = true;
               hugepages.enabled = true;
             };
-            helmValues.csi = {
-              attacherReplicaCount = 2;
-              provisionerReplicaCount = 2;
-              resizerReplicaCount = 2;
-              snapshotterReplicaCount = 2;
+            helmValues = {
+              csi = {
+                attacherReplicaCount = 2;
+                provisionerReplicaCount = 2;
+                resizerReplicaCount = 2;
+                snapshotterReplicaCount = 2;
+              };
+              httproute = {
+                enabled = true;
+                parentRefs = [
+                  {
+                    name = "traefik-gateway";
+                    namespace = "kube-system";
+                    sectionName = "web";
+                  }
+                ];
+                hostnames = ["longhorn.andrewlee.fun"];
+              };
             };
           };
           # --- Node level settings --- #
@@ -212,11 +235,21 @@ in {
         # -------- Master Machine -------- #
         master.machines.hmetal.settings = {
           # --- Cluster Level Settings --- #
-          domain = "andrewlee.cloud";
+          domain = "netsam.dev";
           distro = "rke2";
-          cilium.id = 2;
           defaultCpu = "intel";
+          cilium = {
+            id = 2;
+            version = "1.19.5";
+            helmValues.hubble.ui.ingress = {
+              className = "traefik";
+              hosts = [
+                "hubble.netsam.dev"
+              ];
+            };
+          };
           longhorn = {
+            version = "1.12.0";
             v2 = {
               enabled = true;
               hugepages.enabled = true;
@@ -239,10 +272,22 @@ in {
                 resizerReplicaCount = 1;
                 snapshotterReplicaCount = 1;
               };
+              httproute = {
+                enabled = true;
+                parentRefs = [
+                  {
+                    name = "traefik-gateway";
+                    namespace = "kube-system";
+                    sectionName = "web";
+                  }
+                ];
+                hostnames = ["longhorn.netsam.dev"];
+              };
             };
           };
 
           # --- Node level settings --- #
+          cpu = "intel";
           services.longhorn.v2.enabled = true;
           wireguard = {
             endpoint = "[2a01:4f9:2a:b8d::2]";
