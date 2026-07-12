@@ -11,23 +11,28 @@
     ...
   }: let
     cfg = config.homeSpec.programs.ksshaskpass;
+    ksshaskpass = lib.getExe pkgs.kdePackages.ksshaskpass;
   in {
     options.homeSpec.programs.ksshaskpass.enable = lib.mkEnableOption "default ksshaskpass configuration";
 
     config = lib.mkIf cfg.enable {
       home.packages = [pkgs.kdePackages.ksshaskpass];
-      xdg.configFile."environment.d/ssh_askpass.conf".text = ''
-        SSH_ASKPASS="/run/current-system/sw/bin/ksshaskpass"
-      '';
-      xdg.configFile."autostart/ssh-add.desktop".text = ''
+      home.sessionVariables = {
+        SSH_ASKPASS = ksshaskpass;
+        SSH_ASKPASS_REQUIRE = "prefer";
+      };
+      xdg.configFile."autostart/ssh-add.desktop".text = lib.mkAfter ''
         [Desktop Entry]
-        Exec=ssh-add -q
+        Exec=env SSH_ASKPASS="${ksshaskpass}" SSH_ASKPASS_REQUIRE=prefer ssh-add -q
         Name=ssh-add
         Type=Application
+        X-KDE-autostart-after=panel
       '';
       xdg.configFile."plasma-workspace/env/ssh-agent-startup.sh" = {
         text = ''
           #!/bin/sh
+          export SSH_ASKPASS="${ksshaskpass}"
+          export SSH_ASKPASS_REQUIRE="prefer"
           [ -n "$SSH_AGENT_PID" ] || eval "$(ssh-agent -s)"
         '';
         executable = true;

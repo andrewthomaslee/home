@@ -40,6 +40,7 @@
       tor-browser
       obsidian
       mediawriter
+      rewaita
     ];
   };
 }
