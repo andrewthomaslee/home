@@ -156,10 +156,10 @@ in {
               hugepages.enabled = true;
             };
             helmValues.csi = {
-              attacherReplicaCount = 1;
-              provisionerReplicaCount = 1;
-              resizerReplicaCount = 1;
-              snapshotterReplicaCount = 1;
+              attacherReplicaCount = 2;
+              provisionerReplicaCount = 2;
+              resizerReplicaCount = 2;
+              snapshotterReplicaCount = 2;
             };
           };
           # --- Node level settings --- #
