@@ -30,5 +30,9 @@
       perInstance.nixosModule = ./kde.nix;
       description = "kde";
     };
+    master = {
+      perInstance.nixosModule = ./master.nix;
+      description = "master";
+    };
   };
 }

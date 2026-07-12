@@ -43,13 +43,13 @@ in {
     };
     kamrui-h1 = {
       deploy.targetHost = "root@192.168.1.251";
-      tags = ["amd" "m" "kde" "wan" "netsa"];
+      tags = ["amd" "m" "master" "kde" "wan" "netsa"];
     };
 
     # Hetzner
     hmetal = {
       deploy.targetHost = "root@[2a01:4f9:2a:b8d::2]";
-      tags = ["m"];
+      tags = ["m" "master"];
     };
   };
 
@@ -74,6 +74,7 @@ in {
         lan.tags.lan = {};
         wan.tags.wan = {};
         kde.tags.kde = {};
+        master.tags.master = {};
       };
     };
 
