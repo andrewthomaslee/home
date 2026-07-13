@@ -22,4 +22,7 @@
 
   apply-and-reboot = self.packages.${final.stdenv.hostPlatform.system}.apply-and-reboot;
   apply-to-reboot = self.packages.${final.stdenv.hostPlatform.system}.apply-to-reboot;
+  apply-now = self.packages.${final.stdenv.hostPlatform.system}.apply-now;
+  apply-test = self.packages.${final.stdenv.hostPlatform.system}.apply-test;
+  apply-dry-activate = self.packages.${final.stdenv.hostPlatform.system}.apply-dry-activate;
 }

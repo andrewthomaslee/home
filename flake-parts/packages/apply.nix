@@ -24,6 +24,33 @@
           fh apply nixos "https://flakehub.com/f/andrewthomaslee/home/*" boot
         '';
       };
+      apply-now = pkgs.writeShellApplication {
+        name = "apply-now";
+        runtimeInputs = with pkgs; [
+          fh
+        ];
+        text = ''
+          fh apply nixos "https://flakehub.com/f/andrewthomaslee/home/*" switch
+        '';
+      };
+      apply-test = pkgs.writeShellApplication {
+        name = "apply-test";
+        runtimeInputs = with pkgs; [
+          fh
+        ];
+        text = ''
+          fh apply nixos "https://flakehub.com/f/andrewthomaslee/home/*" test
+        '';
+      };
+      apply-dry-activate = pkgs.writeShellApplication {
+        name = "apply-dry-activate";
+        runtimeInputs = with pkgs; [
+          fh
+        ];
+        text = ''
+          fh apply nixos "https://flakehub.com/f/andrewthomaslee/home/*" dry-activate
+        '';
+      };
     };
   };
 }
