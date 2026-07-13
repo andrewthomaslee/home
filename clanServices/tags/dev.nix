@@ -3,9 +3,12 @@
   config = {
     # hostSpec options
     hostSpec = {
-      networking.tailscale = {
-        enable = true;
-        systray = true;
+      networking = {
+        tailscale = {
+          enable = true;
+          systray = true;
+        };
+        warp.enable = true;
       };
       services = {
         docker.enable = true;
@@ -18,13 +21,24 @@
     security.sudo.wheelNeedsPassword = false;
     boot.binfmt.emulatedSystems = ["aarch64-linux"];
 
-    specialisation.warp.configuration = {
-      hostSpec.networking = {
-        tailscale = {
-          enable = lib.mkForce false;
-          systray = lib.mkForce false;
+    specialisation = {
+      warp.configuration = {
+        hostSpec.networking = {
+          tailscale = {
+            enable = lib.mkForce false;
+            systray = lib.mkForce false;
+          };
+          warp.enable = lib.mkForce true;
         };
-        warp.enable = lib.mkForce true;
+      };
+      tailscale.configuration = {
+        hostSpec.networking = {
+          tailscale = {
+            enable = lib.mkForce true;
+            systray = lib.mkForce true;
+          };
+          warp.enable = lib.mkForce false;
+        };
       };
     };
   };
