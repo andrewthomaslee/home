@@ -153,6 +153,7 @@ in {
           cilium = {
             id = 1;
             version = "1.19.5";
+            clustermesh.enabled = false;
             helmValues.hubble.ui.ingress = {
               enabled = true;
               className = "traefik";
@@ -222,78 +223,6 @@ in {
               endpoint = "[2600:1700:5e40:c2e0::12]";
               ipv4 = "172.16.0.5";
             };
-          };
-        };
-      };
-    };
-
-    # --- RKE2 Hetzner Robot/Cloud Cluster --- #
-    hcloud = {
-      module = {
-        name = "rancher";
-        input = "clan-community";
-      };
-      roles = {
-        # -------- Master Machine -------- #
-        master.machines.hmetal.settings = {
-          # --- Cluster Level Settings --- #
-          domain = "netsam.dev";
-          distro = "rke2";
-          defaultCpu = "intel";
-          cilium = {
-            id = 2;
-            helmValues.hubble.ui.ingress = {
-              enabled = true;
-              className = "traefik";
-              hosts = [
-                "hubble.netsam.dev"
-              ];
-            };
-          };
-          longhorn = {
-            version = "1.12.0";
-            v2 = {
-              enabled = true;
-              hugepages.enabled = true;
-            };
-            helmValues = {
-              persistence = {
-                dataEngine = "v2";
-                defaultClassReplicaCount = 1;
-                defaultDataLocality = "best-effort";
-              };
-              defaultSettings = {
-                v1DataEngine = false;
-                defaultReplicaCount = 1;
-                replicaSoftAntiAffinity = true;
-                defaultDataLocality = "strict-local";
-              };
-              csi = {
-                attacherReplicaCount = 1;
-                provisionerReplicaCount = 1;
-                resizerReplicaCount = 1;
-                snapshotterReplicaCount = 1;
-              };
-              httproute = {
-                enabled = true;
-                parentRefs = [
-                  {
-                    name = "traefik-gateway";
-                    namespace = "kube-system";
-                    sectionName = "web";
-                  }
-                ];
-                hostnames = ["longhorn.netsam.dev"];
-              };
-            };
-          };
-
-          # --- Node level settings --- #
-          cpu = "intel";
-          services.longhorn.v2.enabled = true;
-          wireguard = {
-            endpoint = "[2a01:4f9:2a:b8d::2]";
-            ipv4 = "172.16.1.1";
           };
         };
       };
