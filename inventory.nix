@@ -45,12 +45,6 @@ in {
       deploy.targetHost = "root@192.168.1.251";
       tags = ["amd" "m" "master" "kde" "wan" "netsa"];
     };
-
-    # Hetzner
-    hmetal = {
-      deploy.targetHost = "root@[2a01:4f9:2a:b8d::2]";
-      tags = ["intel" "m" "master" "kde" "netsa"];
-    };
   };
 
   # --- Clan Services --- #
