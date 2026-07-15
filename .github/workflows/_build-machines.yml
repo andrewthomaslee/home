@@ -5,7 +5,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        machine: [nixos, ghost, kamrui-h1, beelink, inuc-celeron, inuc-i5, hp-notebook, hmetal]
+        machine: [nixos, ghost, kamrui-h1, beelink, inuc-celeron, inuc-i5, hp-notebook]
     runs-on: ubuntu-latest
     permissions:
       id-token: write
