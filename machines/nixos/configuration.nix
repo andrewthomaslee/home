@@ -25,8 +25,10 @@
     };
   };
 
-  environment.systemPackages = with pkgs; [
+  environment.systemPackages = with pkgs;
+  with pkgs.unstable; [
     nvtopPackages.full
+    minion
   ];
 
   boot.kernelParams = [
