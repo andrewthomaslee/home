@@ -24,7 +24,10 @@
     };
 
     config = lib.mkIf cfg.enable {
-      hardware.graphics.enable32Bit = true;
+      hardware = {
+        graphics.enable32Bit = true;
+        xone.enable = true;
+      };
       boot.kernelPackages = lib.mkForce pkgs.linuxPackages_latest;
       environment.systemPackages = with pkgs; [
         cmake # Cross-platform, open-source build system generator
