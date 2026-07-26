@@ -3,13 +3,6 @@
   config = {
     # hostSpec options
     hostSpec = {
-      networking = {
-        tailscale = {
-          enable = true;
-          systray = true;
-        };
-        warp.enable = true;
-      };
       services = {
         docker.enable = true;
         storagebox.enable = true;
