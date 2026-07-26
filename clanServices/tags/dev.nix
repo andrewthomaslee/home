@@ -3,10 +3,6 @@
   config = {
     # hostSpec options
     hostSpec = {
-      networking.tailscale = {
-        enable = lib.mkForce false;
-        systray = lib.mkForce false;
-      };
       services = {
         docker.enable = true;
         storagebox.enable = true;
@@ -26,15 +22,6 @@
             systray = lib.mkForce false;
           };
           warp.enable = lib.mkForce true;
-        };
-      };
-      tailscale.configuration = {
-        hostSpec.networking = {
-          tailscale = {
-            enable = lib.mkForce true;
-            systray = lib.mkForce true;
-          };
-          warp.enable = lib.mkForce false;
         };
       };
     };
