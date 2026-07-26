@@ -3,6 +3,10 @@
   config = {
     # hostSpec options
     hostSpec = {
+      networking.tailscale = {
+        enable = lib.mkForce false;
+        systray = lib.mkForce false;
+      };
       services = {
         docker.enable = true;
         storagebox.enable = true;
