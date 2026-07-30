@@ -170,7 +170,7 @@
         gleam
         nodejs
         kind
-        mongodb-compass
+        # mongodb-compass
         pgadmin4-desktopmode
         duckdb
         # herdr
