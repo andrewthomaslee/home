@@ -35,7 +35,7 @@
               ecmel.vscode-html-css
               catppuccin.catppuccin-vsc-icons
               irongeek.vscode-env
-              hashicorp.terraform
+              # hashicorp.terraform
               budparr.language-hugo-vscode
               gruntfuggly.todo-tree
               ms-azuretools.vscode-docker
@@ -170,7 +170,7 @@
         gleam
         nodejs
         kind
-        # mongodb-compass
+        mongodb-compass
         pgadmin4-desktopmode
         duckdb
         # herdr
