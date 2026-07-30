@@ -52,7 +52,7 @@
             "cache.clan.lol-1:3KztgSAB5R1M+Dz7vzkBGzXdodizbgLXGXKXlcQLA28="
           ];
 
-          substituters = [
+          extra-substituters = [
             "https://cache.nixos.org"
             "https://nix-community.cachix.org"
             "https://cache.lounge.rocks/nix-cache"
