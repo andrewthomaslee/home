@@ -174,6 +174,7 @@
         pgadmin4-desktopmode
         duckdb
         # herdr
+        actionlint
       ];
 
       programs.bash.shellAliases = {

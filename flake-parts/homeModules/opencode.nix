@@ -18,6 +18,7 @@
         enable = true;
         package = opencode;
         extraPackages = [
+          actionlint
           uv
           nix
           pyrefly
