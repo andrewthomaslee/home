@@ -10,7 +10,8 @@
           coreutils
         ];
         text = ''
-          fh apply nixos "https://flakehub.com/f/andrewthomaslee/home/*" boot
+          REPO=$1
+          fh apply nixos "https://flakehub.com/f/andrewthomaslee/$REPO/*" boot
           sleep 10
           systemctl reboot
         '';
@@ -21,7 +22,8 @@
           fh
         ];
         text = ''
-          fh apply nixos "https://flakehub.com/f/andrewthomaslee/home/*" boot
+          REPO=$1
+          fh apply nixos "https://flakehub.com/f/andrewthomaslee/$REPO/*" boot
         '';
       };
       apply-now = pkgs.writeShellApplication {
@@ -30,7 +32,8 @@
           fh
         ];
         text = ''
-          fh apply nixos "https://flakehub.com/f/andrewthomaslee/home/*" switch
+          REPO=$1
+          fh apply nixos "https://flakehub.com/f/andrewthomaslee/$REPO/*" switch
         '';
       };
       apply-test = pkgs.writeShellApplication {
@@ -39,7 +42,8 @@
           fh
         ];
         text = ''
-          fh apply nixos "https://flakehub.com/f/andrewthomaslee/home/*" test
+          REPO=$1
+          fh apply nixos "https://flakehub.com/f/andrewthomaslee/$REPO/*" test
         '';
       };
       apply-dry-activate = pkgs.writeShellApplication {
@@ -48,7 +52,8 @@
           fh
         ];
         text = ''
-          fh apply nixos "https://flakehub.com/f/andrewthomaslee/home/*" dry-activate
+          REPO=$1
+          fh apply nixos "https://flakehub.com/f/andrewthomaslee/$REPO/*" dry-activate
         '';
       };
     };

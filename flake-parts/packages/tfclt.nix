@@ -3,7 +3,7 @@
   perSystem = {pkgs, ...}: {
     packages.tfctl = pkgs.stdenv.mkDerivation rec {
       pname = "tfctl";
-      version = "0.16.3";
+      version = "0.16.4";
       src = pkgs.fetchurl {
         url = "https://github.com/flux-iac/tofu-controller/releases/download/v${version}/tfctl_Linux_amd64.tar.gz";
         hash = "sha256-7Y8TnA8G12YThdl69hmEbLvZg1OMjj1wvtIm5WixSwM=";
