@@ -81,14 +81,15 @@
 
 ```console
 $ nix flake show
+warning: unknown setting 'lazy-trees'
+warning: Git tree '/home/netsa/home' is dirty
+git+file:///home/netsa/home
 ├───apps
 │   └───x86_64-linux
+│       ├───apply-and-reboot: app: Apply latest NixOS configuration + delayed reboot to allow Terraform/SSH to exit cleanly
 │       ├───fetch-kubeconfig: app: no description
-│       ├───flux-bootstrap: app: no description
-│       ├───kubenix: app: no description
-│       ├───tmp-pod: app: no description
+│       ├───get-keys: app: no description
 │       ├───update-flake-show: app: no description
-│       ├───update-minecraft-mods: app: no description
 │       └───watch-documentation: app: Run mkdocs in watch mode over your documentation folder. Automatically rebuilds your docs on changes.
 ├───clan: unknown
 ├───clanInternals: unknown
@@ -103,44 +104,53 @@ $ nix flake show
 ├───homeModules: unknown
 ├───nixosConfigurations
 │   ├───ghost: NixOS configuration
-│   ├───hel-1: NixOS configuration
 │   ├───hp-notebook: NixOS configuration
-│   ├───kamrui-h1: NixOS configuration
 │   └───nixos: NixOS configuration
 ├───nixosModules
+│   ├───amd: NixOS module
 │   ├───bluetooth: NixOS module
 │   ├───clan: NixOS module
 │   ├───clan-machine-ghost: NixOS module
-│   ├───clan-machine-hel-1: NixOS module
 │   ├───clan-machine-hp-notebook: NixOS module
-│   ├───clan-machine-kamrui-h1: NixOS module
 │   ├───clan-machine-nixos: NixOS module
 │   ├───default: NixOS module
 │   ├───docker: NixOS module
+│   ├───flatpak: NixOS module
+│   ├───intel: NixOS module
+│   ├───jovian: NixOS module
 │   ├───kde: NixOS module
-│   ├───minecraft: NixOS module
+│   ├───lan: NixOS module
+│   ├───longhorn: NixOS module
 │   ├───motd: NixOS module
-│   ├───networking: NixOS module
 │   ├───nix: NixOS module
+│   ├───nix-ld: NixOS module
+│   ├───ollama: NixOS module
 │   ├───openssh: NixOS module
-│   ├───profile-developer: NixOS module
-│   ├───profile-normal: NixOS module
-│   ├───profile-server: NixOS module
+│   ├───rancher: NixOS module
 │   ├───sound: NixOS module
+│   ├───steam: NixOS module
 │   ├───storagebox: NixOS module
 │   ├───tailscale: NixOS module
+│   ├───wan: NixOS module
+│   ├───warp: NixOS module
 │   └───wayland: NixOS module
 ├───overlays
 │   └───default: Nixpkgs overlay
 ├───packages
 │   └───x86_64-linux
+│       ├───apply-and-reboot: package 'apply-and-reboot'
+│       ├───apply-dry-activate: package 'apply-dry-activate'
+│       ├───apply-now: package 'apply-now'
+│       ├───apply-test: package 'apply-test'
+│       ├───apply-to-boot: package 'apply-to-reboot'
+│       ├───devShell: package 'nix-shell'
 │       ├───documentation: package 'mkdocs-flake-documentation'
-│       ├───helsinki: package 'helsinki-generated.json'
-│       ├───home: package 'home-generated.json'
-│       ├───playit: package 'playit-0.17.1'
-│       └───shared: package 'shared-generated.json'
+│       ├───get-keys: package 'get-keys'
+│       ├───longhornctl: package 'longhornctl-v1.12.0'
+│       └───tfctl: package 'tfctl-0.16.4'
 └───templates
     ├───clan: template: Dendritic Clan Flake
     ├───default: template: Dendritic Flake
-    └───minimal: template: Minimal Dendritic Flake
+    ├───minimal: template: Minimal Dendritic Flake
+    └───self: template: This Flake
 ```
