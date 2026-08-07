@@ -38,7 +38,7 @@
 
   fileSystems = {
     "/mnt/sata" = {
-      device = "/dev/disk/by-uuid/57af61ee-5474-4fb4-b000-0cc86669e090";
+      device = "/dev/disk/by-id/ata-Samsung_SSD_860_EVO_500GB_S5B2NR0N426114V";
       fsType = "ext4";
       options = ["noatime" "nofail"];
     };
