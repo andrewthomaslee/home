@@ -10,10 +10,10 @@
       perInstance.nixosModule = ./dev.nix;
       description = "Dev Computer";
     };
-    amd = {
-      perInstance.nixosModule = ./amd.nix;
-      description = "amd";
-    };
+    # amd = {
+    #   perInstance.nixosModule = ./amd.nix;
+    #   description = "amd";
+    # };
     intel = {
       perInstance.nixosModule = ./intel.nix;
       description = "intel";
@@ -25,14 +25,6 @@
     wan = {
       perInstance.nixosModule = ./wan.nix;
       description = "wan";
-    };
-    kde = {
-      perInstance.nixosModule = ./kde.nix;
-      description = "kde";
-    };
-    master = {
-      perInstance.nixosModule = ./master.nix;
-      description = "master";
     };
   };
 }

@@ -10,10 +10,6 @@
       perInstance.nixosModule = ./pc.nix;
       description = "Personal Computer";
     };
-    m = {
-      perInstance.nixosModule = ./m.nix;
-      description = "Machine (Bare Metal)";
-    };
   };
 
   # Common configuration for all macine types

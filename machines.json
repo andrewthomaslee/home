@@ -12,45 +12,6 @@
       }
     },
     {
-      "name": "kamrui-h1",
-      "domain": "andrewlee.fun",
-      "network": {
-        "lan": {
-          "interface": "eno1",
-          "ipv4": "192.168.1.251",
-          "ipv6": "2600:1700:5e40:c2e0::11"
-        },
-        "wan": {
-          "interface": "wlp3s0"
-        }
-      }
-    },
-    {
-      "name": "inuc-celeron",
-      "domain": "andrewlee.fun",
-      "network": {
-        "lan": {
-          "interface": "eno1",
-          "ipv4": "192.168.1.249",
-          "ipv6": "2600:1700:5e40:c2e0::12"
-        }
-      }
-    },
-    {
-      "name": "inuc-i5",
-      "domain": "andrewlee.fun",
-      "network": {
-        "lan": {
-          "interface": "eno1",
-          "ipv4": "192.168.1.248",
-          "ipv6": "2600:1700:5e40:c2e0::13"
-        },
-        "wan": {
-          "interface": "wlp1s0"
-        }
-      }
-    },
-    {
       "name": "ghost",
       "domain": "andrewlee.fun",
       "network": {
@@ -69,31 +30,6 @@
           "interface": "wlp0s20f3",
           "ipv4": "192.168.1.246",
           "ipv6": "2600:1700:5e40:c2e0::15"
-        }
-      }
-    },
-    {
-      "name": "beelink",
-      "domain": "andrewlee.fun",
-      "network": {
-        "lan": {
-          "interface": "eno1",
-          "ipv4": "192.168.1.250",
-          "ipv6": "2600:1700:5e40:c2e0::16"
-        },
-        "wan": {
-          "interface": "wlp3s0"
-        }
-      }
-    },
-    {
-      "name": "hmetal",
-      "domain": "netsam.dev",
-      "network": {
-        "lan": {
-          "interface": "enp5s0",
-          "ipv4": "95.216.11.88",
-          "ipv6": "2a01:4f9:2a:b8d::2"
         }
       }
     }
