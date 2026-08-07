@@ -53,24 +53,19 @@
         default.nix     # Default flake-parts configuration
         profiles.nix    # Profiles for NixOS and Home-manager
         devShells.nix   # Development Shells
-        kubenix.nix     # Manifests built with `nix run .#kubenix`
         apps/           # Applications `nix run .#<app>`
         packages/       # Packages `nix build .#<package>`
         homeModules/    # Home-manager Modules
         nixosModules/   # NixOS Modules
 
-    kubernetes/         # Kubernetes Manifests and Kubenix Packages
-        shared.nix      # Shared Kubernetes Manifests
-        <cluster>.nix   # Cluster Manifests    
-        clusters/       # FluxCD Bootstrap Folders
-
     documentation/      # MkDocs
         mkdocs.yml      # MkDocs configuration
         docs/           # Documentation source
 
-    .github/workflows/      # GitHub Actions workflows
-        check-flake.yml     # Flake Health Checker ( Run on push )
-        publish-flake.yml   # Publish to FlakeHub + MkDocs to GitHub Pages ( Run on tagged release )
+    .github/workflows/    # GitHub Actions workflows
+        ci.yml            # Flake Health Checker ( Run on push )
+        machines.yml      # Build Machines + Publish to FlakeHub ( Run on trigger )
+        release.yml       # Tagged release + Build Machines + Build Docs & devShells + Publish to FlakeHub ( Run on trigger )
 
     .devcontainer/          # Devcontainer
 
@@ -81,9 +76,6 @@
 
 ```console
 $ nix flake show
-warning: unknown setting 'lazy-trees'
-warning: Git tree '/home/netsa/home' is dirty
-git+file:///home/netsa/home
 ├───apps
 │   └───x86_64-linux
 │       ├───apply-and-reboot: app: Apply latest NixOS configuration + delayed reboot to allow Terraform/SSH to exit cleanly
