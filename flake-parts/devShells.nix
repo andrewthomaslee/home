@@ -33,6 +33,7 @@
             dive
             kustomize
             vcluster
+            disko
           ]);
         shellHook = ''
           export REPO_ROOT

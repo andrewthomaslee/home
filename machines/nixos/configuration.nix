@@ -37,10 +37,10 @@
   ];
 
   fileSystems = {
-    "/mnt/bazzite" = {
+    "/mnt/sata" = {
       device = "/dev/disk/by-uuid/57af61ee-5474-4fb4-b000-0cc86669e090";
-      fsType = "btrfs";
-      options = ["noatime" "nofail" "compress=zstd"];
+      fsType = "ext4";
+      options = ["noatime" "nofail"];
     };
     "/mnt/hdd" = {
       device = "/dev/disk/by-uuid/f7244784-88e5-48ed-9d2a-37f5d3f7f217";
