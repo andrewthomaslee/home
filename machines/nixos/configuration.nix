@@ -36,16 +36,39 @@
     "nvidia_drm.fbdev=0"
   ];
 
-  fileSystems = {
-    "/mnt/sata" = {
-      device = "/dev/disk/by-id/ata-Samsung_SSD_860_EVO_500GB_S5B2NR0N426114V";
-      fsType = "ext4";
-      options = ["noatime" "nofail"];
+  # Shared group for both users (gid matches storagebox module)
+  users.groups.storage-users.gid = 982;
+
+  # NOTE: /mnt/sata and /mnt/hdd mounts are managed by the disko NixOS module
+  # from disko.devices.disk.sata and .sdb in ./disko.nix (it auto-generates the
+  # fileSystems entries using /dev/disk/by-partlabel, which match the existing
+  # partitions disk-sata-sata and disk-sdb-data). Do NOT add manual fileSystems
+  # entries here for those mountpoints — it would conflict with disko's.
+
+  # Shared Steam games library (Samsung SSD) and shared user drive (2TB HDD).
+  # storage-users (gid 982) is shared by wife & netsa.
+  # setgid (2775) makes new files inherit the storage-users group;
+  # default ACLs (set below) make new files group-writable regardless of
+  # umask 022, so both users can install/verify/update each other's games
+  # and freely share files under /mnt/hdd.
+  systemd.tmpfiles.rules = [
+    "d /mnt/sata 0775 root storage-users -"
+    "d /mnt/sata/SteamLibrary 2775 root storage-users -"
+    "d /mnt/hdd 2775 root storage-users -"
+  ];
+
+  systemd.services.shared-drive-acls = {
+    description = "Default ACLs for shared storage drives";
+    wantedBy = ["multi-user.target"];
+    unitConfig.RequiresMountsFor = "/mnt/sata /mnt/hdd";
+    path = [pkgs.acl];
+    serviceConfig = {
+      Type = "oneshot";
+      RemainAfterExit = true;
     };
-    "/mnt/hdd" = {
-      device = "/dev/disk/by-uuid/f7244784-88e5-48ed-9d2a-37f5d3f7f217";
-      fsType = "ext4";
-      options = ["noatime" "nofail"];
-    };
+    script = ''
+      setfacl -m g:storage-users:rwx,d:g:storage-users:rwx /mnt/sata/SteamLibrary
+      setfacl -m g:storage-users:rwx,d:g:storage-users:rwx /mnt/hdd
+    '';
   };
 }
