@@ -40,6 +40,7 @@
           kalker
           lazyssh
           lazyjournal
+          freelens-bin
         ]);
     };
   };
