@@ -16,7 +16,6 @@
     config = lib.mkIf cfg.enable {
       home.packages = with inputs.opencode.packages.${pkgs.stdenv.hostPlatform.system}; [
         opencode-desktop
-        opencode
       ];
       programs.opencode = {
         enable = true;
