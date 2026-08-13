@@ -135,7 +135,8 @@ $ nix flake show
 │       ├───documentation: package 'mkdocs-flake-documentation'
 │       ├───get-keys: package 'get-keys'
 │       ├───longhornctl: package 'longhornctl-v1.12.0'
-│       └───tfctl: package 'tfctl-0.16.4'
+│       ├───tfctl: package 'tfctl-0.16.4'
+│       └───vcluster: package 'vcluster-v0.36.1'
 └───templates
     ├───clan: template: Dendritic Clan Flake
     ├───default: template: Dendritic Flake
