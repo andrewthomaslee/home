@@ -64,7 +64,10 @@
     jovian.url = "github:Jovian-Experiments/Jovian-NixOS";
 
     # OpenCode
-    opencode.url = "github:anomalyco/opencode";
+    opencode = {
+      url = "github:anomalyco/opencode";
+      inputs.nixpkgs.follows = "nixpkgs-unstable";
+    };
   };
 
   outputs = inputs:
