@@ -24,7 +24,7 @@
 ## Features
 
 ### ☸️ **Kubernetes**
-`K3s` • `Cilium & Cluster Mesh` • `Sealed Secrets` • `FluxCD` • `Kubenix` • `Cloudflare Tunnels`
+`GitOps` • `K3s` • `Helm` • `FluxCD` • `Argo` • `Sealed Secrets`• `Cilium Cluster Mesh` • `Cloudflare Tunnels`
 
 ### ❄️ **NixOS**
 `Determinate Systems` • `Clan.lol` • `flake-parts` • `dendritic` • `home-manager` • `Tailscale` • `Modded Minecraft Server` • `KDE` • `Wayland`
