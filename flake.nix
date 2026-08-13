@@ -62,6 +62,9 @@
 
     # Jovian NixOS
     jovian.url = "github:Jovian-Experiments/Jovian-NixOS";
+
+    # OpenCode
+    opencode.url = "github:anomalyco/opencode";
   };
 
   outputs = inputs:

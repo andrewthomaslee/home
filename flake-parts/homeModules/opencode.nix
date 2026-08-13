@@ -1,5 +1,5 @@
 {
-  # inputs,
+  inputs,
   # self,
   lib,
   ...
@@ -14,10 +14,14 @@
   in {
     options.homeSpec.programs.opencode.enable = lib.mkEnableOption "default opencode configuration";
     config = lib.mkIf cfg.enable {
-      programs.opencode = with pkgs.unstable; {
+      home.packages = with inputs.opencode.packages.${pkgs.stdenv.hostPlatform.system}; [
+        opencode-desktop
+        opencode
+      ];
+      programs.opencode = {
         enable = true;
-        package = opencode;
-        extraPackages = [
+        package = inputs.opencode.packages.${pkgs.stdenv.hostPlatform.system}.opencode;
+        extraPackages = with pkgs.unstable; [
           actionlint
           uv
           nix
@@ -40,6 +44,11 @@
           nodejs-slim_latest
           go_latest
           devcontainer
+          k3d
+          k3s
+          rke2
+          devpod
+          docker
         ];
         tui.theme = "tokyonight";
         settings = {
