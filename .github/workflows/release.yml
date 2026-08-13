@@ -22,6 +22,7 @@ jobs:
     uses: ./.github/workflows/_build-artifacts.yml
 
   mkdocs:
+    needs: pre-flight
     uses: ./.github/workflows/_docs.yml
 
   flakehub:
