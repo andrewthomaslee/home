@@ -13,6 +13,11 @@ jobs:
   pre-flight:
     uses: ./.github/workflows/_flake-check.yml
 
+  tag:
+    needs: pre-flight
+    uses: ./.github/workflows/_release.yml
+    secrets: inherit
+
   machines:
     needs: pre-flight
     uses: ./.github/workflows/_build-machines.yml
@@ -28,8 +33,3 @@ jobs:
   flakehub:
     needs: [machines, artifacts, mkdocs]
     uses: ./.github/workflows/_flakehub.yml
-
-  tag:
-    needs: [pre-flight]
-    uses: ./.github/workflows/_release.yml
-    secrets: inherit
