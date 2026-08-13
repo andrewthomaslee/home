@@ -5,7 +5,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        artifact: [devShell, documentation]
+        artifact: [devShell, vcluster, tfctl, longhornctl]
     runs-on: ubuntu-latest
     permissions:
       id-token: write
