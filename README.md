@@ -17,7 +17,7 @@
 
 
 <h3 align="center">
-  <strong>🏠 Home Repository for my <u>NixOS Machines</u>❄️ and <u>Kubernetes Clusters</u>☸️</strong>
+  <strong>🏠 Home Repository for my <u>NixOS Machines</u>❄️ and <u>Kubernetes</u>☸️</strong>
 </h3>
 
 

@@ -36,7 +36,7 @@
         "nix-darwin": "nix-darwin",
         "nix-select": "nix-select",
         "nixpkgs": [
-          "nixpkgs-unstable"
+          "nixpkgs"
         ],
         "sops-nix": "sops-nix",
         "systems": "systems",
