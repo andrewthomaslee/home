@@ -31,5 +31,5 @@ jobs:
     uses: ./.github/workflows/_docs.yml
 
   flakehub:
-    needs: [machines, artifacts, mkdocs]
+    needs: [machines, artifacts, mkdocs, tag]
     uses: ./.github/workflows/_flakehub.yml
