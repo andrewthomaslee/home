@@ -19,7 +19,7 @@
         wayland.enable = true;
       };
     };
-    environment.systemPackages = with pkgs;
+    environment.systemPackages = with pkgs.unstable;
     with kdePackages; [
       video-downloader # download youtube videos
       libreoffice-qt-fresh # Comprehensive, professional-quality productivity suite, a variant of openoffice.org
