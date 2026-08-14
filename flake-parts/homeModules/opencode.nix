@@ -60,6 +60,7 @@
           rke2
           devpod
           docker
+          kubernetes
         ];
         tui.theme = "tokyonight";
         settings = {
