@@ -97,7 +97,8 @@ $ nix flake show
 ├───nixosConfigurations
 │   ├───ghost: NixOS configuration
 │   ├───hp-notebook: NixOS configuration
-│   └───nixos: NixOS configuration
+│   ├───nixos: NixOS configuration
+│   └───nixos-installer: NixOS configuration
 ├───nixosModules
 │   ├───amd: NixOS module
 │   ├───bluetooth: NixOS module
@@ -105,6 +106,7 @@ $ nix flake show
 │   ├───clan-machine-ghost: NixOS module
 │   ├───clan-machine-hp-notebook: NixOS module
 │   ├───clan-machine-nixos: NixOS module
+│   ├───clan-machine-nixos-installer: NixOS module
 │   ├───default: NixOS module
 │   ├───docker: NixOS module
 │   ├───flatpak: NixOS module
