@@ -6,6 +6,9 @@ repo_name: andrewthomaslee/home
 
 nav:
   - Home: index.md
+  - Architecture:
+      - Overview: architecture/index.md
+      - ADR 0001 - Multi-Host Deployment: architecture/adr/0001-multi-host-deployment-strategy.md
   - Minecraft:
       - Overview: minecraft/index.md
       - mc.andrewlee.fun: minecraft/mc-andrewlee-fun.md
