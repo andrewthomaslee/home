@@ -14,6 +14,18 @@
   in {
     options.homeSpec.programs.opencode.enable = lib.mkEnableOption "default opencode configuration";
     config = lib.mkIf cfg.enable {
+      # add skills to config
+      xdg.configFile."opencode/skills".source = inputs.agents.lib.mkSkills {
+        inherit pkgs;
+        customSkills = "${inputs.skills-anthropic}/skills";
+        externalSkills = [
+          # Include all skills from anthropics/skills
+          # {src = inputs.skills-anthropic;}
+          # Or cherry-pick specific skills:
+          # { src = inputs.skills-anthropic; selectSkills = [ "mcp-builder" ]; }
+        ];
+      };
+
       home.packages = with inputs.opencode.packages.${pkgs.stdenv.hostPlatform.system}; [
         opencode-desktop
       ];
@@ -34,7 +46,6 @@
           httpie
           helm-ls
           terraform-ls
-          kubectl
           kubernetes-helm
           gleam
           jq
@@ -45,6 +56,7 @@
           devcontainer
           k3d
           k3s
+          rke2
           rke2
           devpod
           docker

@@ -68,6 +68,19 @@
       url = "github:anomalyco/opencode";
       inputs.nixpkgs.follows = "nixpkgs-unstable";
     };
+
+    agents = {
+      url = "git+https://code.m3ta.dev/m3tam3re/AGENTS";
+      inputs.nixpkgs.follows = "nixpkgs-unstable";
+    };
+    skills-anthropic = {
+      url = "github:anthropics/skills";
+      flake = false;
+    };
+    whisper-dictation = {
+      url = "github:jacopone/whisper-dictation";
+      inputs.nixpkgs.follows = "nixpkgs-unstable";
+    };
   };
 
   outputs = inputs:

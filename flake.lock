@@ -1,5 +1,25 @@
 {
   "nodes": {
+    "agents": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs-unstable"
+        ]
+      },
+      "locked": {
+        "lastModified": 1783016143,
+        "narHash": "sha256-3qejDAo4g2XfzTyWCaX8RVKH17JXnw/fujsbXQA+Mzc=",
+        "ref": "refs/heads/master",
+        "rev": "83284d752d2ac325d4bf3ab7b38acad1c2fffe3a",
+        "revCount": 98,
+        "type": "git",
+        "url": "https://code.m3ta.dev/m3tam3re/AGENTS"
+      },
+      "original": {
+        "type": "git",
+        "url": "https://code.m3ta.dev/m3tam3re/AGENTS"
+      }
+    },
     "clan-community": {
       "inputs": {
         "clan-core": [
@@ -297,6 +317,24 @@
         "owner": "numtide",
         "repo": "flake-utils",
         "rev": "c1dfcf08411b08f6b8615f7d8971a2bfa81d5e8a",
+        "type": "github"
+      },
+      "original": {
+        "owner": "numtide",
+        "repo": "flake-utils",
+        "type": "github"
+      }
+    },
+    "flake-utils_2": {
+      "inputs": {
+        "systems": "systems_5"
+      },
+      "locked": {
+        "lastModified": 1731533236,
+        "narHash": "sha256-l0KFg5HjrsfsO/JpG+r7fRrqm12kzFHyUHqHCVpMMbI=",
+        "owner": "numtide",
+        "repo": "flake-utils",
+        "rev": "11707dc2f618dd54ca8739b309ec4fc024de578b",
         "type": "github"
       },
       "original": {
@@ -854,6 +892,7 @@
     },
     "root": {
       "inputs": {
+        "agents": "agents",
         "clan-community": "clan-community",
         "clan-core": "clan-core",
         "determinate": "determinate",
@@ -872,7 +911,25 @@
         "nixpkgs-unstable": "nixpkgs-unstable",
         "opencode": "opencode",
         "plasma-manager": "plasma-manager",
+        "skills-anthropic": "skills-anthropic",
+        "whisper-dictation": "whisper-dictation",
         "zen-browser": "zen-browser"
+      }
+    },
+    "skills-anthropic": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1786644594,
+        "narHash": "sha256-5/0f5AnGWX3oM+M9Xm/zSmooz11+S1YRdFPmAX+DXi0=",
+        "owner": "anthropics",
+        "repo": "skills",
+        "rev": "f6656c1256d5a8adfa37db9110046ef20bac644c",
+        "type": "github"
+      },
+      "original": {
+        "owner": "anthropics",
+        "repo": "skills",
+        "type": "github"
       }
     },
     "sops-nix": {
@@ -943,6 +1000,21 @@
       }
     },
     "systems_4": {
+      "locked": {
+        "lastModified": 1681028828,
+        "narHash": "sha256-Vy1rq5AaRuLzOxct8nz4T6wlgyUR7zLU309k9mBC768=",
+        "owner": "nix-systems",
+        "repo": "default",
+        "rev": "da67096a3b9bf56a91d16901293e51ba5b49a27e",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nix-systems",
+        "repo": "default",
+        "type": "github"
+      }
+    },
+    "systems_5": {
       "locked": {
         "lastModified": 1681028828,
         "narHash": "sha256-Vy1rq5AaRuLzOxct8nz4T6wlgyUR7zLU309k9mBC768=",
@@ -1086,6 +1158,27 @@
       "original": {
         "owner": "pyproject-nix",
         "repo": "uv2nix",
+        "type": "github"
+      }
+    },
+    "whisper-dictation": {
+      "inputs": {
+        "flake-utils": "flake-utils_2",
+        "nixpkgs": [
+          "nixpkgs-unstable"
+        ]
+      },
+      "locked": {
+        "lastModified": 1785743674,
+        "narHash": "sha256-gyyr6g7C8ioAvJLLuqGWUAI+gkY8fw5Cb70pqqfnyJ4=",
+        "owner": "jacopone",
+        "repo": "whisper-dictation",
+        "rev": "cc86d7e1c47395fc682d590e19ac18518f9707e9",
+        "type": "github"
+      },
+      "original": {
+        "owner": "jacopone",
+        "repo": "whisper-dictation",
         "type": "github"
       }
     },

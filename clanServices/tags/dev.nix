@@ -1,4 +1,9 @@
-{lib, ...}: {
+{
+  lib,
+  inputs,
+  pkgs,
+  ...
+}: {
   imports = [];
   config = {
     # hostSpec options
@@ -13,6 +18,17 @@
     # nixos options
     security.sudo.wheelNeedsPassword = false;
     boot.binfmt.emulatedSystems = ["aarch64-linux"];
+
+    # In your configuration
+    environment.systemPackages = [
+      inputs.whisper-dictation.packages.${pkgs.stdenv.hostPlatform.system}.default
+    ];
+
+    # Enable auto-start
+    systemd.user.services.whisper-dictation = {
+      enable = true;
+      wantedBy = ["graphical-session.target"];
+    };
 
     specialisation = {
       warp.configuration = {

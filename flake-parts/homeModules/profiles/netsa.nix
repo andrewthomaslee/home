@@ -3,6 +3,38 @@
   flake.homeModules.profile-netsa = {pkgs, ...}: {
     imports = [self.homeModules.default];
     config = {
+      xdg.configFile."whisper-dictation/config.yaml".source = (pkgs.formats.yaml {}).generate "whisper-dictation-config" {
+        hotkey = {
+          modifiers = ["super"];
+          key = "slash";
+        };
+
+        input_device = null;
+
+        whisper = {
+          model = "base";
+          language = "en";
+          threads = 4;
+          use_gpu = true;
+        };
+
+        ui = {
+          show_waveform = true;
+          theme = "dark";
+        };
+
+        processing = {
+          remove_filler_words = true;
+          auto_capitalize = true;
+          auto_punctuate = false;
+        };
+
+        typing = {
+          key_delay = 0;
+          key_hold = 0;
+          start_delay = 0;
+        };
+      };
       # homeSpec options
       homeSpec = {
         xdg.enable = true;
