@@ -33,7 +33,7 @@
       filelight # disk usage analyzer
       kalk # Calculator
       xclip # Tool to access the X clipboard from a console application
-      zen-browser
+      pkgs.zen-browser
       discord
       spotify
       prismlauncher
