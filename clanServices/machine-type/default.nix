@@ -10,6 +10,10 @@
       perInstance.nixosModule = ./pc.nix;
       description = "Personal Computer";
     };
+    iso = {
+      perInstance.nixosModule = ./iso.nix;
+      description = "nixos-installer";
+    };
   };
 
   # Common configuration for all macine types

@@ -6,14 +6,11 @@
     determinate.url = "https://flakehub.com/f/DeterminateSystems/determinate/*";
 
     # Nixpkgs
-    nixpkgs.url = "https://flakehub.com/f/NixOS/nixpkgs/0";
+    nixpkgs.follows = "clan-core/nixpkgs";
     nixpkgs-unstable.url = "github:NixOS/nixpkgs/nixos-unstable";
 
     # Clan.lol
-    clan-core = {
-      url = "https://git.clan.lol/clan/clan-core/archive/main.tar.gz";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
+    clan-core.url = "https://git.clan.lol/clan/clan-core/archive/main.tar.gz";
 
     # Clan.lol Community
     clan-community = {
@@ -29,7 +26,7 @@
 
     # Home-manager
     home-manager = {
-      url = "github:nix-community/home-manager/release-26.05";
+      url = "github:nix-community/home-manager";
       inputs.nixpkgs.follows = "nixpkgs";
     };
     # KDE

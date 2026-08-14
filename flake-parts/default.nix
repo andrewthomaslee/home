@@ -86,7 +86,7 @@ in {
           ];
         };
         home = {
-          stateVersion = "26.05";
+          stateVersion = "26.11";
           keyboard.layout = "us";
         };
         programs.home-manager.enable = true;

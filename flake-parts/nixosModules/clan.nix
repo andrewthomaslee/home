@@ -13,7 +13,7 @@
         settings.state-version.enable = lib.mkForce false;
       };
 
-      system.stateVersion = lib.mkForce "26.05";
+      system.stateVersion = lib.mkForce "26.11";
     };
   };
 }

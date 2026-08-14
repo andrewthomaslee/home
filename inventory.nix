@@ -26,6 +26,8 @@ in {
       deploy.targetHost = "root@192.168.1.246";
       tags = ["pc" "intel" "wan" "wife"];
     };
+
+    nixos-installer.tags = ["iso"];
   };
 
   # --- Clan Services --- #
@@ -33,7 +35,10 @@ in {
     machine-type = {
       module.input = "self";
       module.name = "@andrewthomaslee/machine-type";
-      roles.pc.tags.pc = {};
+      roles = {
+        pc.tags.pc = {};
+        iso.tags.iso = {};
+      };
     };
 
     tags = {
@@ -47,6 +52,11 @@ in {
         wan.tags.wan = {};
       };
     };
+
+    # installer = {
+    #   module.name = "installer";
+    #   roles.iso.tags.iso = {};
+    # };
 
     # --- Create Users --- #
     # Admin
