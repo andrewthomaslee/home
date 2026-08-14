@@ -5,7 +5,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        machine: [nixos, ghost, hp-notebook]
+        machine: [nixos, ghost, hp-notebook, nixos-installer]
     runs-on: ubuntu-latest
     permissions:
       id-token: write
