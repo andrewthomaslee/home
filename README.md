@@ -138,6 +138,7 @@ $ nix flake show
 │       ├───devShell: package 'nix-shell'
 │       ├───documentation: package 'mkdocs-flake-documentation'
 │       ├───get-keys: package 'get-keys'
+│       ├───hcloud-ip: package 'hcloud-ip-v0.0.1'
 │       ├───longhornctl: package 'longhornctl-v1.12.0'
 │       ├───tfctl: package 'tfctl-0.16.4'
 │       └───vcluster: package 'vcluster-v0.36.1'
