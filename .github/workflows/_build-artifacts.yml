@@ -5,7 +5,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        artifact: [devShell, vcluster, tfctl, longhornctl]
+        artifact: [devShell, vcluster, tfctl, longhornctl, hcloud-ip]
     runs-on: ubuntu-latest
     permissions:
       id-token: write
