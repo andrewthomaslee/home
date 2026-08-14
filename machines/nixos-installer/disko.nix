@@ -1,7 +1,7 @@
 {
   disko.devices.disk = {
     nixos = {
-      device = "/dev/sda";
+      device = "/dev/disk/by-id/usb-_USB_DISK_3.0_070807029C907132-0:0";
       type = "disk";
       content = {
         type = "gpt";
