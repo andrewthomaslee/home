@@ -57,7 +57,6 @@
           k3d
           k3s
           rke2
-          rke2
           devpod
           docker
           kubernetes
@@ -69,6 +68,16 @@
           compaction = {
             auto = true;
             tail_turns = 3;
+          };
+          permission = {
+            read = {
+              "/nix/store/**" = "allow";
+              "/tmp/**" = "allow";
+            };
+            external_directory = {
+              "/nix/store/**" = "allow";
+              "/tmp/**" = "allow";
+            };
           };
           lsp = {
             python = {
