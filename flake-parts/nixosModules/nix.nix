@@ -11,21 +11,35 @@
     options.hostSpec.services.nix.enable = lib.mkEnableOption "default nix configuration";
 
     config = lib.mkIf cfg.enable {
-      # github PAT for private repos
-      clan.core.vars.generators."nix" = {
-        prompts.nix-access-tokens.persist = true;
+      clan.core.vars.generators.github = {
         share = true;
+        prompts.pat = {
+          description = "GitHub personal access token (e.g. github_pat_...), configure with contents read only";
+          type = "hidden";
+        };
+        files.access-tokens.secret = true;
+        script = ''
+          token=$(cat "$prompts/pat")
+          # strip surrounding whitespace
+          token=''${token#"''${token%%[![:space:]]*}"}
+          token=''${token%"''${token##*[![:space:]]}"}
+          if [ -z "$token" ]; then
+            echo "GitHub token is empty" >&2
+            exit 1
+          fi
+          printf 'access-tokens = github.com=%s\n' "$token" > "$out/token"
+        '';
       };
 
       nix = {
         gc = {
           automatic = true;
           dates = "weekly";
-          options = "--delete-older-than 30d";
+          options = "--delete-older-than 180d";
         };
 
         extraOptions = ''
-          !include ${config.clan.core.vars.generators."nix".files."nix-access-tokens".path}
+          !include ${config.clan.core.vars.generators.github.files.access-tokens.path}
         '';
 
         settings = {
