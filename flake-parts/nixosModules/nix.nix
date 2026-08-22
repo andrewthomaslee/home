@@ -27,7 +27,7 @@
             echo "GitHub token is empty" >&2
             exit 1
           fi
-          printf 'access-tokens = github.com=%s\n' "$token" > "$out/token"
+          printf 'access-tokens = github.com=%s\n' "$token" > "$out/access-tokens"
         '';
       };
 
