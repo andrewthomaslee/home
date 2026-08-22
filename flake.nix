@@ -74,10 +74,6 @@
       url = "github:anthropics/skills";
       flake = false;
     };
-    whisper-dictation = {
-      url = "github:jacopone/whisper-dictation";
-      inputs.nixpkgs.follows = "nixpkgs-unstable";
-    };
   };
 
   outputs = inputs:
