@@ -11,26 +11,6 @@
     options.hostSpec.services.nix.enable = lib.mkEnableOption "default nix configuration";
 
     config = lib.mkIf cfg.enable {
-      clan.core.vars.generators.github = {
-        share = true;
-        prompts.pat = {
-          description = "GitHub personal access token (e.g. github_pat_...), configure with contents read only";
-          type = "hidden";
-        };
-        files.access-tokens.secret = true;
-        script = ''
-          token=$(cat "$prompts/pat")
-          # strip surrounding whitespace
-          token=''${token#"''${token%%[![:space:]]*}"}
-          token=''${token%"''${token##*[![:space:]]}"}
-          if [ -z "$token" ]; then
-            echo "GitHub token is empty" >&2
-            exit 1
-          fi
-          printf 'access-tokens = github.com=%s\n' "$token" > "$out/access-tokens"
-        '';
-      };
-
       nix = {
         gc = {
           automatic = true;
@@ -38,15 +18,11 @@
           options = "--delete-older-than 180d";
         };
 
-        extraOptions = ''
-          !include ${config.clan.core.vars.generators.github.files.access-tokens.path}
-        '';
-
         settings = {
           download-buffer-size = 524288000; # 500MB
           auto-optimise-store = true;
           trusted-users = ["root" "netsa"];
-          allowed-users = ["@wheel" "root" "netsa" "wife"];
+          allowed-users = ["@wheel"];
 
           auto-allocate-uids = true;
           system-features = ["uid-range"];
