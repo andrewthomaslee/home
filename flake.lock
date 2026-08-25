@@ -345,6 +345,18 @@
         "url": "https://flakehub.com/f/cachix/git-hooks.nix/0.1.941"
       }
     },
+    "headroom": {
+      "flake": false,
+      "locked": {
+        "narHash": "sha256-F6RMCJrxmBhilLJsa9xMl8IjTdrT3nZfsw7YedyCEQM=",
+        "type": "file",
+        "url": "https://files.pythonhosted.org/packages/15/c9/650195df8133b0f2ae5156bd9780fd70e17d8cead361016983e72d629697/headroom_ai-0.36.5-cp310-abi3-manylinux_2_28_x86_64.whl"
+      },
+      "original": {
+        "type": "file",
+        "url": "https://files.pythonhosted.org/packages/15/c9/650195df8133b0f2ae5156bd9780fd70e17d8cead361016983e72d629697/headroom_ai-0.36.5-cp310-abi3-manylinux_2_28_x86_64.whl"
+      }
+    },
     "home-manager": {
       "inputs": {
         "nixpkgs": [
@@ -879,6 +891,7 @@
           "flake-parts"
         ],
         "flake-schemas": "flake-schemas",
+        "headroom": "headroom",
         "home-manager": "home-manager",
         "import-tree": "import-tree",
         "jovian": "jovian",

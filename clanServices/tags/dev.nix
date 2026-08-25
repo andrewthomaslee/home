@@ -1,9 +1,4 @@
-{
-  lib,
-  inputs,
-  pkgs,
-  ...
-}: {
+{lib, ...}: {
   imports = [];
   config = {
     # hostSpec options
@@ -13,6 +8,7 @@
         storagebox.enable = true;
         nix.enable = true;
       };
+      programs.headroom.enable = true;
     };
 
     # nixos options
