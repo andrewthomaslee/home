@@ -27,6 +27,7 @@
           uv.enable = true;
           vscode.enable = true;
           opencode.enable = true;
+          headroom.enable = true;
         };
       };
       # Home Options

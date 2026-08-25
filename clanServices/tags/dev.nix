@@ -8,7 +8,6 @@
         storagebox.enable = true;
         nix.enable = true;
       };
-      programs.headroom.enable = true;
     };
 
     # nixos options
