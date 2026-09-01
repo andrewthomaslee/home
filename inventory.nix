@@ -17,6 +17,10 @@ in {
       deploy.targetHost = "root@nixos";
       tags = ["pc" "intel" "lan" "dev" "netsa" "wife"];
     };
+    kamrui-h1 = {
+      deploy.targetHost = "root@kamrui-h1";
+      tags = ["pc" "amd" "wan" "dev" "netsa" "wife"];
+    };
     ghost = {
       deploy.targetHost = "root@ghost";
       tags = ["pc" "intel" "wan" "dev" "netsa"];

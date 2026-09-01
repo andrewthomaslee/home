@@ -32,6 +32,17 @@
           "ipv6": "2600:1700:5e40:c2e0::15"
         }
       }
+    },
+    {
+      "name": "kamrui-h1",
+      "domain": "andrewlee.fun",
+      "network": {
+        "wan": {
+          "interface": "wlp0s20f3",
+          "ipv4": "192.168.1.250",
+          "ipv6": "2600:1700:5e40:c2e0::50"
+        }
+      }
     }
   ]
 }
