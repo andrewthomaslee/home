@@ -20,6 +20,7 @@
   tfctl = self.packages.${final.stdenv.hostPlatform.system}.tfctl;
   longhornctl = self.packages.${final.stdenv.hostPlatform.system}.longhornctl;
   vcluster = self.packages.${final.stdenv.hostPlatform.system}.vcluster;
+  splashtop-streamer = self.packages.${final.stdenv.hostPlatform.system}.splashtop-streamer;
 
   apply-and-reboot = self.packages.${final.stdenv.hostPlatform.system}.apply-and-reboot;
   apply-to-reboot = self.packages.${final.stdenv.hostPlatform.system}.apply-to-reboot;

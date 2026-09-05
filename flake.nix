@@ -84,6 +84,12 @@
       url = "github:anthropics/skills";
       flake = false;
     };
+
+    # Splashtop Streamer — remote-access daemon, Ubuntu amd64 tarball containing the .deb
+    splashtop-streamer = {
+      url = "https://download.splashtop.com/linux/STB_CSRS_Ubuntu_v3.8.2.0_amd64.tar.gz";
+      flake = false;
+    };
   };
 
   outputs = inputs:

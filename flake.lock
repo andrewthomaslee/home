@@ -906,6 +906,7 @@
         "opencode": "opencode",
         "plasma-manager": "plasma-manager",
         "skills-anthropic": "skills-anthropic",
+        "splashtop-streamer": "splashtop-streamer",
         "zen-browser": "zen-browser"
       }
     },
@@ -944,6 +945,19 @@
         "owner": "Mic92",
         "repo": "sops-nix",
         "type": "github"
+      }
+    },
+    "splashtop-streamer": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1785228210,
+        "narHash": "sha256-XWchirDdkhpkf7LWIZqQfMNTBjhNnam2VqGSNEu4ngI=",
+        "type": "tarball",
+        "url": "https://download.splashtop.com/linux/STB_CSRS_Ubuntu_v3.8.2.0_amd64.tar.gz"
+      },
+      "original": {
+        "type": "tarball",
+        "url": "https://download.splashtop.com/linux/STB_CSRS_Ubuntu_v3.8.2.0_amd64.tar.gz"
       }
     },
     "systems": {
