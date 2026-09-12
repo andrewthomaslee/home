@@ -101,11 +101,11 @@
         tui.theme = "tokyonight";
         settings = lib.mkMerge [
           {
-            model = "deepseek/deepseek-v4-pro";
-            small_model = "deepseek/deepseek-v4-flash";
+            model = "z-ai/glm-5.3-flash";
+            small_model = "z-ai/glm-5.3-flash";
             compaction = {
               auto = true;
-              tail_turns = 3;
+              tail_turns = 32;
             };
             permission = {
               read = {
