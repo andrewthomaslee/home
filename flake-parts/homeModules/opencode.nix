@@ -15,7 +15,24 @@
     headroomEnabled = config.homeSpec.programs.headroom.enable or false;
     headroomProxyUrl = "http://${headroomCfg.proxy.host}:${toString headroomCfg.proxy.port}/v1";
   in {
-    options.homeSpec.programs.opencode.enable = lib.mkEnableOption "default opencode configuration";
+    options.homeSpec.programs.opencode = {
+      enable = lib.mkEnableOption "default opencode configuration";
+      # Install the Electron desktop app (opencode-desktop). Disable for
+      # headless machines (saves ~2.4 GB: electron + gtk stack).
+      enableDesktop = lib.mkOption {
+        type = lib.types.bool;
+        default = true;
+        description = "Install opencode-desktop (Electron GUI app).";
+      };
+      # Install the full heavy development toolset (k3s, rke2, k3d, devpod,
+      # devcontainer, podman, gleam, terraform-ls, helm-ls, go_latest).
+      # Disable for slim headless agents (keeps docker, kubectl, helm).
+      fullDevTools = lib.mkOption {
+        type = lib.types.bool;
+        default = true;
+        description = "Install the full heavy dev toolset in opencode extraPackages.";
+      };
+    };
     config = lib.mkIf cfg.enable {
       # add skills to config
       xdg.configFile."opencode/skills".source = inputs.agents.lib.mkSkills {
@@ -29,41 +46,58 @@
         ];
       };
 
-      home.packages = with inputs.opencode.packages.${pkgs.stdenv.hostPlatform.system}; [
-        opencode-desktop
-      ];
-      programs.opencode = {
-        enable = true;
-        package = inputs.opencode.packages.${pkgs.stdenv.hostPlatform.system}.opencode;
-        extraPackages = with pkgs.unstable; [
-          actionlint
-          uv
-          nix
-          pyrefly
-          nil
-          alejandra
-          ruff
+      home.packages =
+        (lib.optionals cfg.enableDesktop
+          (with inputs.opencode.packages.${pkgs.stdenv.hostPlatform.system}; [
+            opencode-desktop
+          ]))
+        ++ (lib.optionals cfg.fullDevTools (with pkgs.unstable; [
           podman
-          python3
-          git
-          httpie
+          gleam
           helm-ls
           terraform-ls
-          kubernetes-helm
-          gleam
-          jq
-          yq
-          bun
-          nodejs-slim_latest
           go_latest
           devcontainer
           k3d
           k3s
           rke2
           devpod
-          docker
-          kubernetes
-        ];
+        ]));
+      programs.opencode = {
+        enable = true;
+        package = inputs.opencode.packages.${pkgs.stdenv.hostPlatform.system}.opencode;
+        extraPackages =
+          (with pkgs.unstable; [
+            actionlint
+            uv
+            nix
+            pyrefly
+            nil
+            alejandra
+            ruff
+            python3
+            git
+            httpie
+            kubernetes-helm
+            jq
+            yq
+            bun
+            nodejs-slim_latest
+            docker
+            kubernetes
+          ])
+          ++ (lib.optionals cfg.fullDevTools (with pkgs.unstable; [
+            podman
+            gleam
+            helm-ls
+            terraform-ls
+            go_latest
+            devcontainer
+            k3d
+            k3s
+            rke2
+            devpod
+          ]));
         tui.theme = "tokyonight";
         settings = lib.mkMerge [
           {

@@ -78,23 +78,63 @@
       mkdir -p $out
       cp ${inputs.headroom} $out/headroom_ai-0.37.0-cp310-abi3-manylinux_2_28_x86_64.whl
     '';
-  in {
-    packages.headroom = py.buildPythonApplication {
-      pname = "headroom-ai";
-      version = "0.37.0";
-      format = "wheel";
-      src = "${headroom-wheel}/headroom_ai-0.37.0-cp310-abi3-manylinux_2_28_x86_64.whl";
-      nativeBuildInputs = [pkgs.autoPatchelfHook];
-      buildInputs = [pkgs.stdenv.cc.cc.lib];
-      propagatedBuildInputs = allDeps;
-      autoPatchelfIgnoreMissingDeps = ["libonnxruntime.so"];
-      meta = {
-        description = "Context compression layer for AI agents";
-        homepage = "https://headroom-docs.vercel.app/docs";
-        license = lib.licenses.asl20;
-        mainProgram = "headroom";
-        platforms = ["x86_64-linux"];
+
+    # Base wheel packaging shared by full and slim variants
+    mkHeadroom = propagatedBuildInputs:
+      py.buildPythonApplication {
+        pname = "headroom-ai";
+        version = "0.37.0";
+        format = "wheel";
+        src = "${headroom-wheel}/headroom_ai-0.37.0-cp310-abi3-manylinux_2_28_x86_64.whl";
+        nativeBuildInputs = [pkgs.autoPatchelfHook];
+        buildInputs = [pkgs.stdenv.cc.cc.lib];
+        inherit propagatedBuildInputs;
+        autoPatchelfIgnoreMissingDeps = ["libonnxruntime.so"];
+        meta = {
+          description = "Context compression layer for AI agents";
+          homepage = "https://headroom-docs.vercel.app/docs";
+          license = lib.licenses.asl20;
+          mainProgram = "headroom";
+          platforms = ["x86_64-linux"];
+        };
       };
-    };
+  in {
+    # Full build: headroom-ai[all] — ml/memory/relevance/image/evals/voice/
+    # html/spreadsheet features enabled (torch, sentence-transformers, OCR...).
+    packages.headroom = mkHeadroom allDeps;
+
+    # Slim build: core + proxy + code + mcp only (~3.8 GB smaller closure).
+    # Supports proxy serve + MCP compress/retrieve roundtrip; drops features
+    # that need torch/embedding-models (memory, learn, image OCR, evals).
+    packages.headroom-slim = mkHeadroom (with py; [
+      # --- core ---
+      tiktoken
+      pydantic
+      litellm
+      click
+      rich
+      opentelemetry-api
+      ast-grep-cli
+      pyyaml
+      tomlkit
+      # --- proxy ---
+      fastapi
+      uvicorn
+      orjson
+      httpx
+      h2
+      openai
+      mcp
+      zstandard
+      websockets
+      watchdog
+      magika
+      transformers
+      # --- code (AST compression) ---
+      tree-sitter-language-pack
+      tree-sitter
+      # --- mcp (server tools; shared with proxy) ---
+      starlette
+    ]);
   };
 }

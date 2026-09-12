@@ -22,6 +22,7 @@
   vcluster = self.packages.${final.stdenv.hostPlatform.system}.vcluster;
   splashtop-streamer = self.packages.${final.stdenv.hostPlatform.system}.splashtop-streamer;
   headroom = self.packages.${final.stdenv.hostPlatform.system}.headroom;
+  headroom-slim = self.packages.${final.stdenv.hostPlatform.system}.headroom-slim;
 
   apply-and-reboot = self.packages.${final.stdenv.hostPlatform.system}.apply-and-reboot;
   apply-to-reboot = self.packages.${final.stdenv.hostPlatform.system}.apply-to-reboot;

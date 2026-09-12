@@ -30,6 +30,14 @@ jobs:
     needs: pre-flight
     uses: ./.github/workflows/_docs.yml
 
+  oci:
+    needs: [pre-flight, tag]
+    uses: ./.github/workflows/_oci.yml
+    with:
+      push: true
+      tag: ${{ needs.tag.outputs.tag }}
+    secrets: inherit
+
   flakehub:
-    needs: [machines, artifacts, mkdocs, tag]
+    needs: [machines, artifacts, mkdocs, tag, oci]
     uses: ./.github/workflows/_flakehub.yml

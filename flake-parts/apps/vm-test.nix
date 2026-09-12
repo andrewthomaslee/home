@@ -46,7 +46,7 @@
         ];
         text = ''
           REPO_ROOT=$(git rev-parse --show-toplevel)
-          VM_TESTS="legacyPackages.x86_64-linux.vmTests"
+          VM_TESTS="legacyPackages.${pkgs.system}.vmTests"
 
           usage() {
             cat <<'EOF'

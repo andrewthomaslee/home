@@ -40,6 +40,11 @@
     flake-parts.follows = "clan-core/flake-parts";
     import-tree.url = "github:denful/import-tree";
     flake-schemas.url = "https://flakehub.com/f/DeterminateSystems/flake-schemas/0";
+    kubenix = {
+      url = "github:hall/kubenix";
+      inputs.nixpkgs.follows = "nixpkgs-unstable";
+      inputs.flake-parts.follows = "flake-parts";
+    };
 
     # ------ Packages ------ #
     # Zen Browser

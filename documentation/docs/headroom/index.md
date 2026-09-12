@@ -124,42 +124,39 @@ Also configured declaratively in the same module:
   requires both; see the VM test history).
 - **Compaction**: auto with `tail_turns = 3`.
 
-## VM test
+## VM tests
 
-VM tests live at `legacyPackages.vmTests.<name>` and are deliberately
-**not** part of `nix flake check` (static checks never boot a VM).
+VM tests live in the dedicated `vm-tests/` directory at the repository root.
+They are auto-discovered, dynamically scaled into 3 resource sizes, and exposed
+at `legacyPackages.vmTests.<name>-<size>`. They are deliberately **not** part of
+`nix flake check` (static checks never boot a VM).
 
-Current suite (`nix run .#vm-test -- --list`): `headroom-opencode` —
-1 KVM VM, home-manager profile with headroom + opencode enabled.
+### Sizing schema
 
-What the test asserts:
+Every VM test defined in `vm-tests/<test-name>.nix` automatically generates three size variants:
 
-1. `headroom --version` / `opencode --version` on the user's PATH.
-2. `~/.config/opencode/opencode.json` contains the headroom MCP entry,
-   the transport plugin, and the deepseek provider override.
-3. The `headroom-proxy.service` user unit exists; the test deterministically
-   `daemon-reload`s and starts it (HM activation can race the user-manager
-   boot when linger is enabled).
-4. Proxy health: `curl -sf http://127.0.0.1:8787/livez`.
-5. `headroom mcp --help` (CLI sanity).
-6. **MCP end-to-end** (`/etc/vm-mcp-probe.py`): drives
-   `headroom mcp serve` over stdio JSON-RPC exactly as OpenCode does —
-   `initialize` → `tools/list` (asserts `headroom_compress`,
-   `headroom_retrieve`, `headroom_stats`) → `tools/call headroom_compress`
-   → `tools/call headroom_retrieve` → asserts the verbatim roundtrip.
-   The probe exits 0 only if every step passes.
+| Size | Suffix | Cores | RAM | Disk |
+|---|---|---|---|---|
+| **Small** (Baseline) | `-sm` | 2 cores | 4 GB (`4096 MiB`) | 30 GB (`30720 MiB`) |
+| **Medium** (2x) | `-md` | 4 cores | 8 GB (`8192 MiB`) | 60 GB (`61440 MiB`) |
+| **Large** (3x) | `-lg` | 6 cores | 12 GB (`12288 MiB`) | 90 GB (`92160 MiB`) |
 
-!!! warning "Temporary resource bump"
-    The test currently runs 8 cores / 16 GB RAM / 50 GB disk (marked
-    `# TEMP` in `flake-parts/tests.nix`) to speed up iteration. Revert to
-    2 cores / 2048 MB / default disk once done iterating.
+### Available test suites (`nix run .#vm-test -- --list`):
+
+1. **`headroom-opencode-<sm|md|lg>`** (`vm-tests/headroom-opencode.nix`):
+   - 1 KVM VM, home-manager profile with headroom + opencode enabled.
+   - Asserts binaries on PATH, `opencode.json` generation, `headroom-proxy.service` healthcheck (`/livez`), and stdio JSON-RPC MCP CCR compression roundtrip (`/etc/vm-mcp-probe.py`).
+2. **`headroom-opencode-web-<sm|md|lg>`** (`vm-tests/headroom-opencode-web.nix`):
+   - Tests a KubeVirt AI agent machine using the headless `netsa` profile (`profile-netsa-agent`).
+   - Asserts headless dev tooling on `netsa`'s PATH, `opencode.json` generation, OpenCode Web HTTP access on port 4096 (`<title>OpenCode</title>`), Headroom proxy `/livez`, and MCP CCR roundtrip (`/etc/vm-mcp-probe.py`).
 
 ### Running
 
 ```bash
-nix run .#vm-test -- --list                          # list test names
-nix run .#vm-test -- headroom-opencode               # sandboxed (CI-style)
-nix run .#vm-test -- headroom-opencode --driver      # driver mode: logs + artifacts
+nix run .#vm-test -- --list                             # list all test names
+nix run .#vm-test -- headroom-opencode-sm               # sandboxed (CI-style)
+nix run .#vm-test -- headroom-opencode-sm --driver      # driver mode: logs + artifacts
+nix run .#vm-test -- headroom-opencode-web-sm --driver  # driver mode for web test
 ```
 
 **Sandbox mode** (default): builds the full test derivation; the driver
@@ -179,7 +176,7 @@ the standalone `nixos-test-driver` outside the sandbox:
 Artifacts after a run:
 
 ```
-/tmp/home-vm-tests/headroom-opencode/
+/tmp/home-vm-tests/<name>/
 ├── master.log    # full master log (grep-able, VM serial output included)
 ├── log.xml       # same log as XML (driver LOGFILE)
 ├── junit.xml     # JUnitXML per-subtest report
@@ -193,14 +190,130 @@ Green runs clean `tmp/`; red runs keep it for post-mortem. Exit codes:
 Requirements: `/dev/kvm` (TCG fallback is impossible by design,
 `qemu.forceAccel = true`).
 
+## KubeVirt AI Agent
+
+- **Headless agent profile**: `flake.homeModules.profile-netsa-agent` in `flake-parts/homeModules/profiles/netsa-agent.nix`.
+- **Bootable QCOW2 image**: `packages.kubevirt-image` (single, unsized, **compressed qcow2**, ~2 GB).
+- **OCI ContainerDisk**: `packages.ai-agent` → `ghcr.io/andrewthomaslee/ai-agent` (~2.2 GB layer).
+- **Kustomize manifests**: `packages.ai-agent-oci` (Kubenix-evaluated, kustomize-CLI-validated).
+- **NixOS machine config**: `nixosConfigurations.kubevirt-agent`.
+
+### How the KubeVirt machine is produced
+
+The pipeline is fully deterministic, from flake evaluation to a running
+`VirtualMachine` in Kubernetes:
+
+```
+nix eval  nixosConfigurations.kubevirt-agent
+  ├─ modules: nixpkgs virtualisation/kubevirt.nix + self.nixosModules.default
+  │           + home-manager + profile-netsa-agent
+  ├─ BIOS GRUB on /dev/vda (kubevirt.nix is BIOS-only; GRUB EFI is forced off),
+  │  console=ttyS0, growPartition + autoResize root filesystem
+  ├─ qemu-guest-agent (KubeVirt uses it to report VM IP/status to the k8s API),
+  │  cloud-init, sshd, headroom proxy + opencode-web user services (netsa)
+  └─ system.build.kubevirtImage
+        → make-disk-image.nix boots a throwaway install VM inside the build
+          sandbox, installs the closure and produces a **compressed qcow2**
+          (format = "qcow2-compressed", zlib clusters)
+        → dockerTools.buildImage wraps it as /disk/root.qcow2
+          (packages.ai-agent, a KubeVirt containerDisk)
+        → CI pushes it to ghcr.io/andrewthomaslee/ai-agent:<tag>
+        → Kubenix evaluates the VirtualMachine CR (containerDisk volume +
+          cloudInitNoCloud userData + sized cpu/memory) and the Service
+          (opencode-web 4096 + ssh 22)
+        → kubectl apply -k … spawns the VM
+```
+
+The QCOW2 image and OCI containerDisk are **single, unsized artifacts**: the
+root filesystem auto-grows on boot (`boot.growPartition` + `autoResize`), so
+one image serves every VM size. Resource sizing happens at **deploy time**
+through the Kustomization overlays.
+
+### Manifests package layout (`packages.ai-agent-oci`)
+
+```
+result/
+├── kustomization.yaml          # root build = sm baseline
+├── base/
+│   ├── kustomization.yaml      # labels + resources
+│   ├── virtualmachine.yaml     # VM "ai-agent" (containerDisk + cloudInit)
+│   └── service.yaml            # ClusterIP: 4096 (opencode-web), 22 (ssh)
+└── overlays/
+    ├── sm/                     # 2 cores / 4Gi  (baseline)
+    ├── md/                     # 4 cores / 8Gi  (2x)
+    └── lg/                     # 6 cores / 12Gi (3x)
+```
+
+Every `kustomization.yaml` is validated with the `kustomize` CLI during the
+package build (root + all three overlays). The overlays apply a strategic-merge
+patch on `spec.template.spec.domain` (cpu cores + memory requests/limits) and a
+`app.kubernetes.io/size` label.
+
+### Deploying
+
+```bash
+# from a built manifests package
+nix build .#ai-agent-oci
+kubectl apply -k result/overlays/lg     # or sm / md, or result/ for baseline
+
+# from the published OCI artifact
+oras pull ghcr.io/andrewthomaslee/ai-agent-manifests:latest
+kubectl apply -k latest/overlays/lg
+```
+
+Runtime configuration is injected via the `cloudInitNoCloud` volume: the VM
+writes `/etc/default/opencode-web` (e.g. `OPENCODE_SERVER_PASSWORD`,
+`OPENCODE_PORT`) which the `opencode-web.service` unit picks up through
+`EnvironmentFile`.
+
+### Image optimization (trim + compress)
+
+The agent image is aggressively slimmed without touching desktop profiles
+(all trims are behind defaulted options):
+
+| Optimization | Change | Savings |
+|---|---|---|
+| `homeSpec.programs.opencode.enableDesktop = false` | skips `opencode-desktop` + Electron/GTK chain | ~4 GB |
+| `homeSpec.programs.opencode.fullDevTools = false` | skips k3s/rke2/k3d/devpod/devcontainer/podman/gleam/terraform-helm LSPs/go_latest; **keeps docker, kubectl, helm, k9s, bun, go, uv** | ~3.5 GB |
+| `packages.headroom-slim` | core+proxy+code+mcp deps only (no torch/sentence-transformers/OCR); validated by the MCP E2E test | ~2.7 GB |
+| documentation/manpages off | agent VM needs no docs | ~0.1 GB |
+| `qcow2-compressed` image format | zlib-compressed qcow2 clusters (KubeVirt-compatible) | image 12 GB → **2.0 GB**, OCI layer 6.9 GB → **2.2 GB** |
+
+Desktop profiles (`profile-netsa`, `profile-wife`) keep the defaults
+(`enableDesktop = true`, `fullDevTools = true`, full `pkgs.headroom`) and are
+unchanged. `packages.headroom` (full) is also untouched.
+
+### CI publishing
+
+`.github/workflows/oci.yml` (manual dispatch) and the `Release` workflow both
+invoke `.github/workflows/_oci.yml`, which:
+
+1. Builds `.#ai-agent` → pushes `ghcr.io/andrewthomaslee/ai-agent:<tag>` + `:latest`.
+2. Builds `.#ai-agent-oci` → pushes the whole manifests directory as an OCI
+   artifact at `ghcr.io/andrewthomaslee/ai-agent-manifests:<tag>` + `:latest`
+   via `oras` (artifact type `application/vnd.kustomize.v1+tar`).
+
+### VM test
+
+`vm-tests/headroom-opencode-web.nix` exercises the same machine definition
+(unsized) as `headroom-opencode-web-<size>`: it asserts the headless
+developer tooling is on `netsa`'s PATH, the Headroom proxy healthcheck, the
+OpenCode web UI on port 4096, and the MCP CCR roundtrip.
+
 ## Files landed
 
 | File | Purpose |
 |---|---|
-| `flake-parts/packages/headroom.nix` | `headroom-ai` v0.37.0 package (wheel + autoPatchelf) |
+| `flake-parts/packages/headroom.nix` | `headroom-ai` v0.37.0 (full `[all]`) + `headroom-slim` (core/proxy/code/mcp) packages |
 | `flake-parts/homeModules/headroom.nix` | headroom options + `headroom-proxy.service` user unit |
-| `flake-parts/homeModules/opencode.nix` | OpenCode settings: MCP, plugin, baseURL routing, LSP, formatters |
+| `flake-parts/homeModules/opencode.nix` | OpenCode settings: MCP, plugin, baseURL routing, LSP, formatters; `enableDesktop`/`fullDevTools` trims |
+| `flake-parts/homeModules/profiles/netsa-agent.nix` | Headless AI agent profile with developer toolings |
+| `flake-parts/packages/ai-agent.nix` | KubeVirt QCOW2 image (compressed), OCI containerdisk, Kubenix Kustomization package |
 | `flake-parts/apps/vm-test.nix` | `vm-test` app (sandboxed + driver modes) |
-| `flake-parts/tests.nix` | `headroom-opencode` NixOS VM test + MCP probe |
-| `flake.nix` | `headroom` wheel input pinned to v0.37.0 |
-| `overlays/default.nix` | `pkgs.headroom` |
+| `flake-parts/tests.nix` | VM test auto-discovery & dynamic 3x sizing engine |
+| `vm-tests/headroom-opencode.nix` | Headroom + OpenCode CLI/MCP VM test definition |
+| `vm-tests/headroom-opencode-web.nix` | KubeVirt machine Headroom + OpenCode Web VM test definition |
+| `.github/workflows/_oci.yml` | Reusable workflow to publish OCI containerdisks and Kustomize manifests |
+| `.github/workflows/oci.yml` | Manual dispatch workflow for OCI publishing |
+| `flake.nix` | `headroom` wheel input + `kubenix` input |
+| `overlays/default.nix` | `pkgs.headroom` + `pkgs.headroom-slim` |

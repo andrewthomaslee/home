@@ -1,8 +1,43 @@
 {
   inputs,
   self,
+  lib,
   ...
-}: {
+}: let
+  # Dynamic VM test sizing specifications:
+  # - sm: 2 cores, 4 GB RAM, 30 GB disk (baseline)
+  # - md: 4 cores, 8 GB RAM, 60 GB disk (2x)
+  # - lg: 6 cores, 12 GB RAM, 90 GB disk (3x)
+  sizes = {
+    sm = {
+      cores = 2;
+      memorySize = 4 * 1024; # 4096 MiB
+      diskSize = 30 * 1024; # 30720 MiB
+    };
+    md = {
+      cores = 4;
+      memorySize = 8 * 1024; # 8192 MiB
+      diskSize = 60 * 1024; # 61440 MiB
+    };
+    lg = {
+      cores = 6;
+      memorySize = 12 * 1024; # 12288 MiB
+      diskSize = 90 * 1024; # 92160 MiB
+    };
+  };
+
+  # Dedicated directory containing VM test definitions at repo root
+  testDir = self + "/vm-tests";
+
+  # Auto-discover all *.nix files (excluding files starting with '_' or '.')
+  testFiles =
+    if builtins.pathExists testDir
+    then
+      lib.filterAttrs
+      (name: type: type == "regular" && lib.hasSuffix ".nix" name && !lib.hasPrefix "_" name && !lib.hasPrefix "." name)
+      (builtins.readDir testDir)
+    else {};
+in {
   perSystem = {system, ...}: let
     testPkgs = import inputs.nixpkgs {
       inherit system;
@@ -11,191 +46,63 @@
     };
 
     nixosLib = import (inputs.nixpkgs + "/nixos/lib") {};
-  in {
-    legacyPackages.vmTests = {
-      headroom-opencode = nixosLib.runTest ({...}: {
-        name = "headroom-opencode";
-        hostPkgs = testPkgs;
-        requiredFeatures.kvm = true;
-        globalTimeout = 5 * 60;
-        qemu.forceAccel = true;
 
-        nodes.machine = {pkgs, ...}: {
-          imports = [
-            inputs.clan-core.nixosModules.clanCore
-            self.nixosModules.default
-          ];
+    # Dynamically generate 3 sized tests (sm, md, lg) for a given test file
+    mkSizedTests = filename: _: let
+      rawTest = import (testDir + "/${filename}");
 
-          clan.core.settings = {
-            directory = self;
-            machine.name = "headroom-test";
-          };
-
-          networking.hostName = "headroom-test";
-
-          users.users.alice = {
-            isNormalUser = true;
-            extraGroups = ["wheel"];
-            linger = true;
-          };
-
-          environment.systemPackages = with pkgs; [
-            curl
-            jq
-            python3
-          ];
-
-          home-manager.useGlobalPkgs = false;
-          home-manager.useUserPackages = true;
-          home-manager.sharedModules = [
-            inputs.plasma-manager.homeModules.plasma-manager
-          ];
-          home-manager.users.alice = {
-            imports = [
-              self.homeModules.default
-            ];
-            home.stateVersion = "26.11";
-            homeSpec.programs = {
-              headroom = {
-                enable = true;
-                proxy = {
-                  enable = true;
-                  # Minimal smoke test: memory/learn pull embedding models at
-                  # startup, which blocks on a HF download in a fresh HOME.
-                  memory = false;
-                  learn = false;
-                };
-              };
-              opencode.enable = true;
-            };
-          };
-
-          # TEMP: oversized for faster/smoother runs — revert to 2 cores /
-          # 2048 MB after MCP confirmation is green.
-          virtualisation.cores = 8;
-          virtualisation.memorySize = 16384;
-          virtualisation.diskSize = 50 * 1024;
-
-          # MCP end-to-end probe: drives `headroom mcp serve` over stdio
-          # JSON-RPC exactly as opencode does (mcp.headroom local server) and
-          # exercises the CCR roundtrip: initialize -> tools/list ->
-          # compress -> retrieve (verbatim roundtrip).
-          environment.etc."vm-mcp-probe.py".source = pkgs.writeText "vm-mcp-probe.py" ''
-            import json
-            import subprocess
-            import sys
-
-            PROXY = "http://127.0.0.1:8787"
-
-            def send(proc, obj):
-                proc.stdin.write((json.dumps(obj) + "\n").encode())
-                proc.stdin.flush()
-
-            def recv(proc, want_id):
-                while True:
-                    line = proc.stdout.readline()
-                    if not line:
-                        raise SystemExit("MCP probe: server closed stdout")
-                    msg = json.loads(line)
-                    if msg.get("id") == want_id:
-                        return msg
-
-            def call(proc, id, name, arguments):
-                send(proc, {
-                    "jsonrpc": "2.0", "id": id, "method": "tools/call",
-                    "params": {"name": name, "arguments": arguments},
-                })
-                return recv(proc, id)
-
-            proc = subprocess.Popen(
-                ["headroom", "mcp", "serve", "--proxy-url", PROXY],
-                stdin=subprocess.PIPE, stdout=subprocess.PIPE,
-                stderr=subprocess.DEVNULL,
+      callWith = fn: args:
+        if builtins.isFunction fn
+        then let
+          fnArgs = builtins.functionArgs fn;
+        in
+          if fnArgs == {}
+          then fn args
+          else
+            fn (
+              if fnArgs ? "..."
+              then args
+              else builtins.intersectAttrs fnArgs args
             )
-            try:
-                # 1. initialize
-                send(proc, {
-                    "jsonrpc": "2.0", "id": 1, "method": "initialize",
-                    "params": {
-                        "protocolVersion": "2024-11-05", "capabilities": {},
-                        "clientInfo": {"name": "vm-probe", "version": "0"},
-                    },
-                })
-                init = recv(proc, 1)
-                assert init["result"]["serverInfo"]["name"] == "headroom", init
-                send(proc, {"jsonrpc": "2.0", "method": "notifications/initialized"})
+        else fn;
 
-                # tools/list
-                send(proc, {"jsonrpc": "2.0", "id": 2, "method": "tools/list"})
-                tools = {t["name"] for t in recv(proc, 2)["result"]["tools"]}
-                assert {"headroom_compress", "headroom_retrieve", "headroom_stats"} <= tools, tools
-
-                # compress -> hash
-                content = "\n".join(f"line {i}: some tool output content" for i in range(200))
-                resp = call(proc, 3, "headroom_compress", {"content": content})
-                body = json.loads(resp["result"]["content"][0]["text"])
-                assert "error" not in body, body
-                hash_key = body["hash"]
-                assert hash_key and body["original_tokens"] >= body["compressed_tokens"], body
-
-                # retrieve -> verbatim roundtrip
-                resp = call(proc, 4, "headroom_retrieve", {"hash": hash_key})
-                retrieved = json.loads(resp["result"]["content"][0]["text"])
-                assert retrieved.get("original_content") == content, "retrieve mismatch"
-
-                print("MCP_E2E_OK")
-            finally:
-                try:
-                    proc.stdin.close()
-                except Exception:
-                    pass
-                proc.terminate()
-          '';
+      sizedTests = lib.mapAttrs' (sizeSuffix: sizeConfig: let
+        sizeInfo = sizeConfig // {name = sizeSuffix;};
+        testSpec = callWith rawTest {
+          inherit inputs self system lib;
+          pkgs = testPkgs;
+          testPkgs = testPkgs;
+          size = sizeInfo;
+          sizeName = sizeSuffix;
         };
 
-        testScript = ''
-          start_all()
-          machine.wait_for_unit("multi-user.target")
-          machine.wait_for_unit("user@1000.service")
+        baseName = testSpec.name or (lib.removeSuffix ".nix" filename);
+        testName = "${baseName}-${sizeSuffix}";
+      in
+        lib.nameValuePair testName (nixosLib.runTest {
+          imports = [
+            testSpec
+            {
+              name = lib.mkForce testName;
+              hostPkgs = lib.mkDefault testPkgs;
+              requiredFeatures.kvm = lib.mkDefault true;
+              qemu.forceAccel = lib.mkDefault true;
+              defaults = {
+                virtualisation.cores = lib.mkDefault sizeConfig.cores;
+                virtualisation.memorySize = lib.mkDefault sizeConfig.memorySize;
+                virtualisation.diskSize = lib.mkDefault sizeConfig.diskSize;
+              };
+            }
+          ];
+        }))
+      sizes;
+    in
+      sizedTests;
 
-          # 1. Verify binaries are installed on PATH
-          machine.succeed("su - alice -c 'headroom --version'")
-          machine.succeed("su - alice -c 'opencode --version'")
-
-          # 2. Verify Home-Manager generated ~/.config/opencode/opencode.json with Headroom MCP & Plugin
-          machine.succeed("su - alice -c 'test -f ~/.config/opencode/opencode.json'")
-          machine.succeed("su - alice -c 'jq -e .mcp.headroom ~/.config/opencode/opencode.json'")
-          machine.succeed("su - alice -c 'jq -e .plugin ~/.config/opencode/opencode.json'")
-          machine.succeed("su - alice -c 'jq -e .provider.deepseek ~/.config/opencode/opencode.json'")
-
-          # 3. Verify the headroom-proxy user unit exists and start it.
-          # The HM activation can race the user-manager boot (linger): the
-          # daemon may reach default.target before the unit files land, so
-          # deterministically reload + start rather than relying on luck.
-          machine.succeed("su - alice -c 'test -f ~/.config/systemd/user/headroom-proxy.service'")
-          machine.succeed(
-            "su - alice -c 'export XDG_RUNTIME_DIR=/run/user/1000"
-            " DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/1000/bus;"
-            " systemctl --user daemon-reload'"
-          )
-          machine.succeed(
-            "su - alice -c 'export XDG_RUNTIME_DIR=/run/user/1000"
-            " DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/1000/bus;"
-            " systemctl --user start headroom-proxy.service'"
-          )
-
-          # Verify Headroom proxy is running and responds to healthcheck
-          machine.wait_until_succeeds("curl -sf http://127.0.0.1:8787/livez", timeout=120)
-
-          # 4. Verify Headroom MCP server CLI responds
-          machine.succeed("su - alice -c 'headroom mcp --help'")
-
-          # 5. End-to-end MCP check: drive headroom mcp serve exactly as
-          # opencode would (stdio JSON-RPC) and exercise the CCR roundtrip
-          # (compress -> retrieve verbatim) through the running proxy.
-          machine.succeed("su - alice -c 'python3 /etc/vm-mcp-probe.py'")
-        '';
-      });
-    };
+    # Merge all dynamically generated sized tests across all discovered test files
+    allVmTests = lib.foldl' lib.mergeAttrs {} (lib.mapAttrsToList mkSizedTests testFiles);
+  in {
+    # Expose under legacyPackages so tests are excluded from `nix flake check`
+    legacyPackages.vmTests = allVmTests;
   };
 }

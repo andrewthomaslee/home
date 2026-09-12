@@ -1,0 +1,88 @@
+name: Reusable Build and Push OCI (Images & Manifests)
+
+on:
+  workflow_call:
+    inputs:
+      push:
+        description: 'Whether to push images and manifests to GHCR'
+        required: false
+        type: boolean
+        default: false
+      tag:
+        description: 'Version tag to apply'
+        required: false
+        type: string
+        default: 'latest'
+
+jobs:
+  publish-ai-agent:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      packages: write
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6.0.2
+        with:
+          persist-credentials: false
+
+      - name: Setup Nix
+        uses: ./.github/actions/setup-nix
+
+      - name: Login to GitHub Container Registry
+        if: ${{ inputs.push }}
+        uses: docker/login-action@v4.2.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and Push OCI ContainerDisk Image
+        run: |
+          echo "Building OCI containerdisk image..."
+          nix build .#ai-agent --show-trace
+
+          if [ "${{ inputs.push }}" = "true" ]; then
+            echo "Loading containerdisk image into Docker..."
+            LOAD_OUTPUT=$(docker load -i result)
+            LOADED_IMAGE=$(echo "$LOAD_OUTPUT" | grep -oP 'Loaded image: \K.*')
+
+            IMAGE_NAME="ghcr.io/andrewthomaslee/ai-agent"
+            TAG="${{ inputs.tag }}"
+
+            docker tag "$LOADED_IMAGE" "$IMAGE_NAME:$TAG"
+            docker tag "$LOADED_IMAGE" "$IMAGE_NAME:latest"
+
+            echo "Pushing $IMAGE_NAME:$TAG and latest..."
+            docker push "$IMAGE_NAME:$TAG"
+            docker push "$IMAGE_NAME:latest"
+          fi
+
+      - name: Install ORAS CLI
+        if: ${{ inputs.push }}
+        uses: oras-project/setup-oras@v1
+
+      - name: Build and Publish Kustomization Manifests OCI Artifact
+        run: |
+          echo "Building Kustomization manifests package..."
+          # Kustomize CLI validation of root + overlays/{sm,md,lg} happens
+          # inside the package build itself.
+          nix build .#ai-agent-oci --show-trace
+
+          if [ "${{ inputs.push }}" = "true" ]; then
+            echo "Logging in ORAS to GHCR..."
+            echo "${{ secrets.GITHUB_TOKEN }}" | oras login ghcr.io -u "${{ github.actor }}" --password-stdin
+
+            MANIFEST_REF="ghcr.io/andrewthomaslee/ai-agent-manifests"
+            TAG="${{ inputs.tag }}"
+
+            echo "Pushing manifests OCI artifact to $MANIFEST_REF:$TAG and latest..."
+            oras push "$MANIFEST_REF:$TAG" \
+              --artifact-type application/vnd.kustomize.v1+tar \
+              "result/:application/vnd.oci.image.layer.v1.tar+gzip"
+
+            oras push "$MANIFEST_REF:latest" \
+              --artifact-type application/vnd.kustomize.v1+tar \
+              "result/:application/vnd.oci.image.layer.v1.tar+gzip"
+          fi
