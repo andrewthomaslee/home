@@ -21,6 +21,7 @@
   longhornctl = self.packages.${final.stdenv.hostPlatform.system}.longhornctl;
   vcluster = self.packages.${final.stdenv.hostPlatform.system}.vcluster;
   splashtop-streamer = self.packages.${final.stdenv.hostPlatform.system}.splashtop-streamer;
+  headroom = self.packages.${final.stdenv.hostPlatform.system}.headroom;
 
   apply-and-reboot = self.packages.${final.stdenv.hostPlatform.system}.apply-and-reboot;
   apply-to-reboot = self.packages.${final.stdenv.hostPlatform.system}.apply-to-reboot;

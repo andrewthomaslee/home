@@ -67,12 +67,12 @@
     };
 
     # Headroom — context compression layer for AI agents.
-    # Pinned to the v0.36.5 manylinux_2_28 x86_64 wheel (abi3, compatible with
+    # Pinned to the v0.37.0 manylinux_2_28 x86_64 wheel (abi3, compatible with
     # CPython 3.10–3.13). This is the prebuilt maturin/Rust extension; using
     # the wheel avoids rebuilding the cdylib from source. Used as `src` for
-    # buildPythonApplication { format = "wheel"; } in homeModules/headroom.nix.
+    # buildPythonApplication { format = "wheel"; } in packages/headroom.nix.
     headroom = {
-      url = "https://files.pythonhosted.org/packages/15/c9/650195df8133b0f2ae5156bd9780fd70e17d8cead361016983e72d629697/headroom_ai-0.36.5-cp310-abi3-manylinux_2_28_x86_64.whl";
+      url = "https://files.pythonhosted.org/packages/72/b8/16878cf4fe6fc390a0d22025b671468619db690ff14c1b103ace4b5e35f9/headroom_ai-0.37.0-cp310-abi3-manylinux_2_28_x86_64.whl";
       flake = false;
     };
 
