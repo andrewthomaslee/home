@@ -59,7 +59,7 @@
           go_latest
           devcontainer
           k3d
-          k3s
+          (lib.lowPrio k3s)
           rke2
           devpod
         ]));
@@ -94,7 +94,7 @@
             go_latest
             devcontainer
             k3d
-            k3s
+            (lib.lowPrio k3s)
             rke2
             devpod
           ]));

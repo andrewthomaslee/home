@@ -17,7 +17,7 @@
       home.sessionVariables.GOPATH = "/home/${config.home.username}/.go";
       programs.go = {
         enable = true;
-        package = pkgs.unstable.go;
+        package = pkgs.unstable.go_latest;
         env.GOPATH = "/home/${config.home.username}/.go";
       };
     };
