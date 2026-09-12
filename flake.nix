@@ -71,6 +71,13 @@
       inputs.nixpkgs.follows = "nixpkgs-unstable";
     };
 
+    # MCP-NixOS — MCP server for NixOS / Home Manager / nix-darwin
+    # package & option search (opencode mcp server).
+    mcp-nixos = {
+      url = "github:utensils/mcp-nixos";
+      inputs.nixpkgs.follows = "nixpkgs-unstable";
+    };
+
     # Headroom — context compression layer for AI agents.
     # Pinned to the v0.37.0 manylinux_2_28 x86_64 wheel (abi3, compatible with
     # CPython 3.10–3.13). This is the prebuilt maturin/Rust extension; using

@@ -32,6 +32,13 @@
         default = true;
         description = "Install the full heavy dev toolset in opencode extraPackages.";
       };
+      # Enable the mcp-nixos MCP server (NixOS / Home Manager / nix-darwin
+      # package & option search) in opencode settings.
+      enableNixMcp = lib.mkOption {
+        type = lib.types.bool;
+        default = true;
+        description = "Enable the mcp-nixos MCP server in opencode settings.";
+      };
     };
     config = lib.mkIf cfg.enable {
       # add skills to config
@@ -150,6 +157,15 @@
               };
             };
           }
+          (lib.mkIf cfg.enableNixMcp {
+            mcp = {
+              nixos = {
+                type = "local";
+                command = ["${lib.getExe inputs.mcp-nixos.packages.${pkgs.stdenv.hostPlatform.system}.mcp-nixos}"];
+                enabled = true;
+              };
+            };
+          })
           (lib.mkIf headroomEnabled {
             mcp = {
               headroom = {
