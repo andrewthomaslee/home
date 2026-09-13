@@ -24,7 +24,7 @@
       };
 
       services.tailscale = {
-        enable = true;
+        enable = cfg.enable;
         package = pkgs.unstable.tailscale;
         openFirewall = true;
         authKeyFile = config.clan.core.vars.generators.tailscale.files.auth_key.path;
@@ -64,7 +64,7 @@
         };
       };
 
-      systemd.user.services.tailscale-systray = lib.mkIf cfg.systray {
+      systemd.user.services.tailscale-systray = lib.mkIf (cfg.systray && cfg.enable) {
         enable = true;
         description = "Tailscale Systray GUI";
         after = [

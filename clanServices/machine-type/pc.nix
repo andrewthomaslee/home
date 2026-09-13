@@ -9,7 +9,6 @@
   config = {
     # --- hostSpec options --- #
     hostSpec = {
-      networking.tailscale.systray = true;
       hardware = {
         bluetooth.enable = true;
         sound.enable = true;
