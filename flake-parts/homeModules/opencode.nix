@@ -104,6 +104,39 @@
           Only used with githubMcpAuth = "pat"; must be null for "oauth".
         '';
       };
+      # Cloudflare remote MCP servers (hosted by Cloudflare; browser OAuth
+      # flow on first use, the docs server is public). All default off and
+      # are enabled via the netsa tag profile for the netsa dev machines.
+      enableCloudflareMcp = lib.mkOption {
+        type = lib.types.bool;
+        default = false;
+        description = "Enable the Cloudflare Code Mode MCP server (recommended, broad access across Cloudflare APIs through code execution).";
+      };
+      enableCloudflareDocsMcp = lib.mkOption {
+        type = lib.types.bool;
+        default = false;
+        description = "Enable the Cloudflare Documentation MCP server (up-to-date Cloudflare reference information).";
+      };
+      enableCloudflareBindingsMcp = lib.mkOption {
+        type = lib.types.bool;
+        default = false;
+        description = "Enable the Cloudflare Workers Bindings MCP server (build Workers apps with storage, AI, and compute primitives).";
+      };
+      enableCloudflareBuildsMcp = lib.mkOption {
+        type = lib.types.bool;
+        default = false;
+        description = "Enable the Cloudflare Workers Builds MCP server (insights and management for Cloudflare Workers Builds).";
+      };
+      enableCloudflareBrowserMcp = lib.mkOption {
+        type = lib.types.bool;
+        default = false;
+        description = "Enable the Cloudflare Browser Run MCP server (fetch web pages, convert to markdown, take screenshots).";
+      };
+      enableCloudflareContainersMcp = lib.mkOption {
+        type = lib.types.bool;
+        default = false;
+        description = "Enable the Cloudflare Container MCP server (spin up a sandbox development environment).";
+      };
     };
     config = lib.mkIf cfg.enable {
       # add skills to config
@@ -298,6 +331,63 @@
                   url = "https://api.githubcopilot.com/mcp/";
                   enabled = true;
                 };
+            };
+          })
+          # Cloudflare remote MCP servers: hosted by Cloudflare, no local
+          # install. opencode handles the Cloudflare OAuth flow on first
+          # tool use (the docs server is public).
+          (lib.mkIf cfg.enableCloudflareMcp {
+            mcp = {
+              cloudflare = {
+                type = "remote";
+                url = "https://mcp.cloudflare.com/mcp";
+                enabled = true;
+              };
+            };
+          })
+          (lib.mkIf cfg.enableCloudflareDocsMcp {
+            mcp = {
+              cloudflare-docs = {
+                type = "remote";
+                url = "https://docs.mcp.cloudflare.com/mcp";
+                enabled = true;
+              };
+            };
+          })
+          (lib.mkIf cfg.enableCloudflareBindingsMcp {
+            mcp = {
+              cloudflare-bindings = {
+                type = "remote";
+                url = "https://bindings.mcp.cloudflare.com/mcp";
+                enabled = true;
+              };
+            };
+          })
+          (lib.mkIf cfg.enableCloudflareBuildsMcp {
+            mcp = {
+              cloudflare-builds = {
+                type = "remote";
+                url = "https://builds.mcp.cloudflare.com/mcp";
+                enabled = true;
+              };
+            };
+          })
+          (lib.mkIf cfg.enableCloudflareBrowserMcp {
+            mcp = {
+              cloudflare-browser = {
+                type = "remote";
+                url = "https://browser.mcp.cloudflare.com/mcp";
+                enabled = true;
+              };
+            };
+          })
+          (lib.mkIf cfg.enableCloudflareContainersMcp {
+            mcp = {
+              cloudflare-containers = {
+                type = "remote";
+                url = "https://containers.mcp.cloudflare.com/mcp";
+                enabled = true;
+              };
             };
           })
           (lib.mkIf headroomEnabled {

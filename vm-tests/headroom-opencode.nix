@@ -75,7 +75,8 @@
     };
     # bob: GitHub MCP with the default method (oauth remote server, no
     # secret) to exercise the other mutually-exclusive auth branch —
-    # enableGithubMcp itself also defaults to true.
+    # enableGithubMcp itself also defaults to true. All six Cloudflare
+    # remote MCP servers are enabled to exercise the opt-in path.
     home-manager.users.bob = {
       imports = [
         self.homeModules.default
@@ -85,6 +86,12 @@
         enable = true;
         enableDesktop = false;
         fullDevTools = false;
+        enableCloudflareMcp = true;
+        enableCloudflareDocsMcp = true;
+        enableCloudflareBindingsMcp = true;
+        enableCloudflareBuildsMcp = true;
+        enableCloudflareBrowserMcp = true;
+        enableCloudflareContainersMcp = true;
       };
     };
 
@@ -274,6 +281,12 @@
     )
     machine.succeed("su - bob -c 'jq -e \".mcp.github.type == \\\"remote\\\"\" ~/.config/opencode/opencode.json'")
     machine.succeed("su - bob -c 'jq -e \".mcp.github.url == \\\"https://api.githubcopilot.com/mcp/\\\"\" ~/.config/opencode/opencode.json'")
+
+    # 2e. Verify bob's six Cloudflare remote MCP servers are generated
+    # with the correct URLs (enabled via the opt-in toggles). Hyphenated
+    # keys need bracket notation in jq ("." would parse as subtraction).
+    machine.succeed("su - bob -c 'jq -e \"[.mcp.cloudflare.type, .mcp[\\\"cloudflare-docs\\\"].type, .mcp[\\\"cloudflare-bindings\\\"].type, .mcp[\\\"cloudflare-builds\\\"].type, .mcp[\\\"cloudflare-browser\\\"].type, .mcp[\\\"cloudflare-containers\\\"].type] | all(. == \\\"remote\\\")\" ~/.config/opencode/opencode.json'")
+    machine.succeed("su - bob -c 'jq -e \"[.mcp.cloudflare.url, .mcp[\\\"cloudflare-docs\\\"].url, .mcp[\\\"cloudflare-bindings\\\"].url, .mcp[\\\"cloudflare-builds\\\"].url, .mcp[\\\"cloudflare-browser\\\"].url, .mcp[\\\"cloudflare-containers\\\"].url] == [\\\"https://mcp.cloudflare.com/mcp\\\", \\\"https://docs.mcp.cloudflare.com/mcp\\\", \\\"https://bindings.mcp.cloudflare.com/mcp\\\", \\\"https://builds.mcp.cloudflare.com/mcp\\\", \\\"https://browser.mcp.cloudflare.com/mcp\\\", \\\"https://containers.mcp.cloudflare.com/mcp\\\"]\" ~/.config/opencode/opencode.json'")
 
     # 3. Verify the headroom-proxy user unit exists and start it.
     # The HM activation can race the user-manager boot (linger): the

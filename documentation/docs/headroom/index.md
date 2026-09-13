@@ -113,6 +113,18 @@ The same module also declaratively adds three more MCP servers to
 | `enableOpenrouterMcp` | `true` | `mcp.openrouter` | remote | OpenRouter's hosted MCP server (`https://mcp.openrouter.ai/mcp`): live model catalog, pricing, credits, rankings, benchmarks, docs search. Nothing is installed locally — opencode runs the OAuth flow automatically on first use (minted key expires after 7 days, revocable in the OpenRouter dashboard) |
 | `enablePlaywrightMcp` | `true` | `mcp.playwright` | local | nixpkgs `playwright-mcp` package: browser automation via accessibility snapshots. Fully hermetic — the nixpkgs wrapper pins the browser bundle (`playwright-driver.browsers`) and the playwright node modules into `/nix/store`, so no npx/docker/uvx runtime downloads. Runs `--headless` so it works on displayless agents/VMs; chromium is the default browser |
 | `enableGithubMcp` | `true` | `mcp.github` | local *or* remote | GitHub's official MCP server (`github-mcp-server` from the pinned nixpkgs-unstable revision). Auth method selected by `githubMcpAuth` — see below. Only takes effect when opencode itself is enabled (all `mcp.*` entries live inside `mkIf` on `enable`) |
+| `enableCloudflareMcp` | `false` | `mcp.cloudflare` | remote | Cloudflare **Code Mode** server (`https://mcp.cloudflare.com/mcp`) — recommended entry point, broad access across Cloudflare's APIs through code execution |
+| `enableCloudflareDocsMcp` | `false` | `mcp.cloudflare-docs` | remote | Cloudflare **Documentation** server (`https://docs.mcp.cloudflare.com/mcp`) — up-to-date Cloudflare reference information; public, no OAuth needed |
+| `enableCloudflareBindingsMcp` | `false` | `mcp.cloudflare-bindings` | remote | Cloudflare **Workers Bindings** server (`https://bindings.mcp.cloudflare.com/mcp`) — build Workers applications with storage, AI, and compute primitives |
+| `enableCloudflareBuildsMcp` | `false` | `mcp.cloudflare-builds` | remote | Cloudflare **Workers Builds** server (`https://builds.mcp.cloudflare.com/mcp`) — insights and management for Cloudflare Workers Builds |
+| `enableCloudflareBrowserMcp` | `false` | `mcp.cloudflare-browser` | remote | Cloudflare **Browser Run** server (`https://browser.mcp.cloudflare.com/mcp`) — fetch web pages, convert them to markdown and take screenshots |
+| `enableCloudflareContainersMcp` | `false` | `mcp.cloudflare-containers` | remote | Cloudflare **Container** server (`https://containers.mcp.cloudflare.com/mcp`) — spin up a sandbox development environment |
+
+All six Cloudflare servers are **off by default** and enabled via the
+**netsa tag profile** (`clanServices/tags/netsa.nix`) for the netsa dev
+machines. They are hosted remote servers — no local install, no docker, no
+secrets; opencode runs the Cloudflare browser OAuth flow automatically on
+first tool use (the docs server is public).
 
 ### GitHub MCP server
 
@@ -385,9 +397,9 @@ OpenCode web UI on port 4096, and the MCP CCR roundtrip.
 |---|---|
 | `flake-parts/packages/headroom.nix` | `headroom-ai` v0.37.0 (full `[all]`) + `headroom-slim` (core/proxy/code/mcp) packages |
 | `flake-parts/homeModules/headroom.nix` | headroom options + `headroom-proxy.service` user unit |
-| `flake-parts/homeModules/opencode.nix` | OpenCode settings: MCP (headroom, nixos, openrouter, playwright, github), plugin, baseURL routing, LSP, formatters; `enableDesktop`/`fullDevTools` trims; `enableNixMcp`/`enableOpenrouterMcp`/`enablePlaywrightMcp`/`enableGithubMcp` toggles (github: exclusive `githubMcpAuth` `oauth`/`pat` + `githubPatFile` wrapper) |
+| `flake-parts/homeModules/opencode.nix` | OpenCode settings: MCP (headroom, nixos, openrouter, playwright, github, cloudflare ×6), plugin, baseURL routing, LSP, formatters; `enableDesktop`/`fullDevTools` trims; `enableNixMcp`/`enableOpenrouterMcp`/`enablePlaywrightMcp`/`enableGithubMcp` toggles (github: exclusive `githubMcpAuth` `oauth`/`pat` + `githubPatFile` wrapper); `enableCloudflare*Mcp` toggles (default off) |
 | `flake-parts/nixosModules/github-mcp.nix` | Option-less module: derives the clan vars `github-mcp` PAT generator (shared, prompted, persisted, owner `<user>` mode `0400`) from each home-manager user's `githubMcpAuth = "pat"` opencode config |
-| `clanServices/tags/netsa.nix` | netsa tag profile: `githubMcpAuth = "pat"` for netsa's opencode on netsa-tagged dev machines |
+| `clanServices/tags/netsa.nix` | netsa tag profile: `githubMcpAuth = "pat"` + all six Cloudflare MCP toggles for netsa's opencode on netsa-tagged dev machines |
 | `flake-parts/homeModules/profiles/netsa-agent.nix` | Headless AI agent profile with developer toolings |
 | `flake-parts/packages/ai-agent.nix` | KubeVirt QCOW2 image (compressed), OCI containerdisk, Kubenix Kustomization package |
 | `flake-parts/apps/vm-test.nix` | `vm-test` app (sandboxed + driver modes) |
