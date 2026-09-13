@@ -234,11 +234,11 @@
         tui.theme = "tokyonight";
         settings = lib.mkMerge [
           {
-            model = "z-ai/glm-5.3-flash";
-            small_model = "z-ai/glm-5.3-flash";
+            model = "glm-5.3-flash";
+            small_model = "glm-5.3-flash";
             compaction = {
               auto = true;
-              tail_turns = 32;
+              tail_turns = 12;
             };
             permission = {
               read = {
