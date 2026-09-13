@@ -171,7 +171,7 @@ the standalone `nixos-test-driver` outside the sandbox:
 | `--out DIR` | artifact dir (default `/tmp/home-vm-tests/<name>`) |
 | `--keep-state` | keep VM state between runs (resumable with `-K`) |
 | `--interactive` | drop into the test-driver Python REPL |
-| `--timeout SEC` | external watchdog (default `global_timeout` + 300) |
+| `--timeout SEC` | external watchdog (default `global_timeout` + 300; sandboxed runs default 3900) |
 
 Artifacts after a run:
 

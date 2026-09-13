@@ -32,7 +32,7 @@
     #     --keep-state   keep VM state between runs (driver -K)
     #     --interactive  drop into the ptpython REPL (driverInteractive -I)
     #     --out DIR      artifact directory (default /tmp/home-vm-tests/<name>)
-    #     --timeout SEC  external watchdog (default: global_timeout + 300)
+    #     --timeout SEC  external watchdog (default: 3900 sandboxed, global_timeout + 300 driver)
     apps.vm-test = {
       type = "app";
       program = lib.getExe (pkgs.writeShellApplication {
@@ -59,7 +59,7 @@
             --keep-state    keep VM state between runs (resumable with -K)
             --interactive   drop into the test-driver Python REPL
             --out DIR       artifact directory (default /tmp/home-vm-tests/<name>)
-            --timeout SEC   external watchdog (default: global_timeout + 300)
+            --timeout SEC   external watchdog (default: 3900 sandboxed, global_timeout + 300 driver)
           EOF
           }
 
@@ -90,11 +90,14 @@
           [ -n "$NAME" ] || { usage >&2; exit 2; }
 
           # --- sandboxed (CI-style) mode --------------------------------
+          # Watchdog: mirrors the driver default (global_timeout 3600s +
+          # 300s grace) so a hung build/VM can never block forever.
           if [ "$DRIVER" = 0 ]; then
+            WATCHDOG=''${TIMEOUT:-3900}
             if [ -n "$BUILDER" ]; then
-              exec nix build --impure --store "ssh-ng://$BUILDER" --expr "(builtins.getFlake (toString $REPO_ROOT)).$VM_TESTS.$NAME" -L
+              exec timeout --foreground "$WATCHDOG" nix build --impure --store "ssh-ng://$BUILDER" --expr "(builtins.getFlake (toString $REPO_ROOT)).$VM_TESTS.$NAME" -L
             else
-              exec nix build --impure --expr "(builtins.getFlake (toString $REPO_ROOT)).$VM_TESTS.$NAME" -L
+              exec timeout --foreground "$WATCHDOG" nix build --impure --expr "(builtins.getFlake (toString $REPO_ROOT)).$VM_TESTS.$NAME" -L
             fi
           fi
 
