@@ -7,11 +7,7 @@
   name = "headroom-opencode";
   globalTimeout = 5 * 60;
 
-  nodes.machine = {
-    pkgs,
-    lib,
-    ...
-  }: {
+  nodes.machine = {pkgs, ...}: {
     imports = [
       inputs.clan-core.nixosModules.clanCore
       self.nixosModules.default
@@ -42,12 +38,9 @@
 
     # GitHub MCP (PAT method) for alice: fake PAT deployed as a plain file
     # instead of the clan var (no sops secret exists in the repo), proving
-    # the file -> env -> server-start wiring end to end.
-    hostSpec.programs.githubMcp = {
-      enable = true;
-      user = "alice";
-      auth = "pat";
-    };
+    # the file -> env -> server-start wiring end to end. The "github-mcp"
+    # clan var generator is derived automatically by
+    # nixosModules/github-mcp from alice's githubMcpAuth = "pat" below.
     environment.etc."vm-github-pat".text = "ghp-fake-vm-test-pat";
 
     home-manager.useGlobalPkgs = false;
@@ -73,14 +66,16 @@
         };
         opencode = {
           enable = true;
-          # PAT method wired to the fake file above (overrides the
-          # /run/secrets/... path set by hostSpec.programs.githubMcp).
-          githubPatFile = lib.mkForce "/etc/vm-github-pat";
+          # PAT method with the fake file above as PAT source (defaults to
+          # the clan var path /run/secrets/vars/shared/github-mcp/pat).
+          githubMcpAuth = "pat";
+          githubPatFile = "/etc/vm-github-pat";
         };
       };
     };
-    # bob: GitHub MCP with the default oauth method (remote server, no
-    # secret) to exercise the other mutually-exclusive auth branch.
+    # bob: GitHub MCP with the default method (oauth remote server, no
+    # secret) to exercise the other mutually-exclusive auth branch —
+    # enableGithubMcp itself also defaults to true.
     home-manager.users.bob = {
       imports = [
         self.homeModules.default
@@ -90,7 +85,6 @@
         enable = true;
         enableDesktop = false;
         fullDevTools = false;
-        enableGithubMcp = true;
       };
     };
 

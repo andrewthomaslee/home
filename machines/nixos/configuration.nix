@@ -6,7 +6,6 @@
       flatpak.enable = true;
     };
     programs.steam.enable = true;
-    programs.githubMcp.enable = true;
   };
 
   nixpkgs.config = {

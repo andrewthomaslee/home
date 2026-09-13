@@ -14,16 +14,21 @@
     headroomCfg = config.homeSpec.programs.headroom;
     headroomEnabled = config.homeSpec.programs.headroom.enable or false;
     headroomProxyUrl = "http://${headroomCfg.proxy.host}:${toString headroomCfg.proxy.port}/v1";
-    # Wrapper for the PAT auth method: reads the clan-var-deployed PAT file
-    # (githubPatFile) and exports GITHUB_PERSONAL_ACCESS_TOKEN before exec'ing
-    # the server. The github-mcp-server exits immediately when no PAT env is
-    # set, so a readable file is a hard requirement for the server to start.
+    # PAT file used by the wrapper: explicit githubPatFile override or the
+    # canonical sops-nix deployment path of the shared "github-mcp" clan var
+    # (declared by nixosModules/github-mcp for pat-mode users).
+    githubMcpPatFile =
+      if cfg.githubPatFile == null
+      then "/run/secrets/vars/shared/github-mcp/pat"
+      else cfg.githubPatFile;
+    # Wrapper for the PAT auth method: exports GITHUB_PERSONAL_ACCESS_TOKEN
+    # from the PAT file before exec'ing the server. The github-mcp-server
+    # exits immediately when that env var is unset, so a readable file is a
+    # hard requirement for the server to start.
     githubMcpWrapper = pkgs.writeShellScriptBin "github-mcp-server-opencode" ''
-      ${lib.optionalString (cfg.githubPatFile != null) ''
-        if [ -r ${lib.escapeShellArg cfg.githubPatFile} ]; then
-          export GITHUB_PERSONAL_ACCESS_TOKEN="$(cat ${lib.escapeShellArg cfg.githubPatFile})"
-        fi
-      ''}
+      if [ -r ${lib.escapeShellArg githubMcpPatFile} ]; then
+        export GITHUB_PERSONAL_ACCESS_TOKEN="$(cat ${lib.escapeShellArg githubMcpPatFile})"
+      fi
       exec ${lib.getExe pkgs.unstable.github-mcp-server} stdio "$@"
     '';
   in {
@@ -71,10 +76,12 @@
       };
       # Enable the GitHub MCP server. The auth method is selected by
       # `githubMcpAuth` and the two methods are mutually exclusive
-      # (enforced by assertions below).
+      # (enforced by the enum + assertion below). Only takes effect when
+      # the opencode module itself is enabled (mcp entries live inside
+      # mkIf cfg.enable).
       enableGithubMcp = lib.mkOption {
         type = lib.types.bool;
-        default = false;
+        default = true;
         description = "Enable the GitHub MCP server in opencode settings.";
       };
       githubMcpAuth = lib.mkOption {
@@ -138,10 +145,6 @@
           githubMcpWrapper
         ]);
       assertions = [
-        {
-          assertion = cfg.githubMcpAuth == "pat" -> cfg.githubPatFile != null;
-          message = "opencode: githubMcpAuth = \"pat\" requires githubPatFile (usually /run/secrets/vars/shared/github-mcp/pat).";
-        }
         {
           assertion = cfg.githubMcpAuth == "oauth" -> cfg.githubPatFile == null;
           message = "opencode: githubPatFile is only valid with githubMcpAuth = \"pat\" — the oauth and pat methods are mutually exclusive.";
