@@ -144,6 +144,14 @@
         default = false;
         description = "Enable the MDN Web Docs MCP server (up-to-date web API/CSS/JS reference from Mozilla).";
       };
+      # ArtifactHub MCP server (local stdio, hermetic nix build; off by
+      # default, enabled via the netsa tag profile). Helm-chart tools
+      # against artifacthub.io: chart info, default values, templates.
+      enableArtifacthubMcp = lib.mkOption {
+        type = lib.types.bool;
+        default = false;
+        description = "Enable the ArtifactHub MCP server (Helm chart info/values/templates from artifacthub.io) in opencode settings.";
+      };
     };
     config = lib.mkIf cfg.enable {
       # add skills to config
@@ -180,6 +188,9 @@
         ])
         ++ (lib.optionals cfg.enableGithubMcp [
           pkgs.unstable.github-mcp-server
+        ])
+        ++ (lib.optionals cfg.enableArtifacthubMcp [
+          pkgs.artifacthub-mcp
         ])
         ++ (lib.optionals (cfg.enableGithubMcp && cfg.githubMcpAuth == "pat") [
           githubMcpWrapper
@@ -230,6 +241,9 @@
           ])
           ++ (lib.optionals cfg.enableGithubMcp [
             pkgs.unstable.github-mcp-server
+          ])
+          ++ (lib.optionals cfg.enableArtifacthubMcp [
+            pkgs.artifacthub-mcp
           ]);
         tui.theme = "tokyonight";
         settings = lib.mkMerge [
@@ -403,6 +417,18 @@
               mdn = {
                 type = "remote";
                 url = "https://mcp.mdn.mozilla.net/";
+                enabled = true;
+              };
+            };
+          })
+          (lib.mkIf cfg.enableArtifacthubMcp {
+            mcp = {
+              # ArtifactHub, local stdio server — hermetic nix build from the
+              # pinned v1.1.1 source (packages/artifacthub-mcp.nix); no
+              # docker/npx runtime downloads.
+              artifacthub = {
+                type = "local";
+                command = ["${lib.getExe pkgs.artifacthub-mcp}"];
                 enabled = true;
               };
             };

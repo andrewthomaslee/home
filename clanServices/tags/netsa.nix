@@ -16,5 +16,7 @@
     enableCloudflareContainersMcp = lib.mkDefault true;
     # MDN Web Docs MCP: on for netsa dev machines
     enableMdnMcp = lib.mkDefault true;
+    # ArtifactHub MCP (Helm charts): on for netsa dev machines
+    enableArtifacthubMcp = lib.mkDefault true;
   };
 }

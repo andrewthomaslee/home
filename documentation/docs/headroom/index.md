@@ -120,13 +120,19 @@ The same module also declaratively adds three more MCP servers to
 | `enableCloudflareBrowserMcp` | `false` | `mcp.cloudflare-browser` | remote | Cloudflare **Browser Run** server (`https://browser.mcp.cloudflare.com/mcp`) — fetch web pages, convert them to markdown and take screenshots |
 | `enableCloudflareContainersMcp` | `false` | `mcp.cloudflare-containers` | remote | Cloudflare **Container** server (`https://containers.mcp.cloudflare.com/mcp`) — spin up a sandbox development environment |
 | `enableMdnMcp` | `false` | `mcp.mdn` | remote | MDN Web Docs server (`https://mcp.mdn.mozilla.net/`) — up-to-date web API/CSS/JS reference from Mozilla |
+| `enableArtifacthubMcp` | `false` | `mcp.artifacthub` | local | ArtifactHub MCP server — Helm-chart tools against artifacthub.io: chart info, default `values.yaml` (with fuzzy search), templates (with fuzzy search). Built hermetically from the `v1.1.1` source pin (`buildNpmPackage` in `flake-parts/packages/artifacthub-mcp.nix`), so no docker/`npx` runtime downloads |
 
-All six Cloudflare servers and the MDN Web Docs server are **off by
+All six Cloudflare servers, the MDN Web Docs server, and the ArtifactHub
+server are **off by
 default** and enabled via the
 **netsa tag profile** (`clanServices/tags/netsa.nix`) for the netsa dev
-machines. They are hosted remote servers — no local install, no docker, no
+machines. The Cloudflare/MDN servers are hosted remote servers — no local
+install, no docker, no
 secrets; opencode runs the Cloudflare browser OAuth flow automatically on
-first tool use (the docs and MDN servers are public).
+first tool use (the docs and MDN servers are public). The ArtifactHub
+server is a local stdio binary (also installed on the user's PATH like
+`playwright-mcp`) and needs no secrets — it queries the public
+artifacthub.io API.
 
 ### GitHub MCP server
 
@@ -399,9 +405,9 @@ OpenCode web UI on port 4096, and the MCP CCR roundtrip.
 |---|---|
 | `flake-parts/packages/headroom.nix` | `headroom-ai` v0.37.0 (full `[all]`) + `headroom-slim` (core/proxy/code/mcp) packages |
 | `flake-parts/homeModules/headroom.nix` | headroom options + `headroom-proxy.service` user unit |
-| `flake-parts/homeModules/opencode.nix` | OpenCode settings: MCP (headroom, nixos, openrouter, playwright, github, cloudflare ×6, mdn), plugin, baseURL routing, LSP, formatters; `enableDesktop`/`fullDevTools` trims; `enableNixMcp`/`enableOpenrouterMcp`/`enablePlaywrightMcp`/`enableGithubMcp` toggles (github: exclusive `githubMcpAuth` `oauth`/`pat` + `githubPatFile` wrapper); `enableCloudflare*Mcp`/`enableMdnMcp` toggles (default off) |
+| `flake-parts/homeModules/opencode.nix` | OpenCode settings: MCP (headroom, nixos, openrouter, playwright, github, cloudflare ×6, mdn, artifacthub), plugin, baseURL routing, LSP, formatters; `enableDesktop`/`fullDevTools` trims; `enableNixMcp`/`enableOpenrouterMcp`/`enablePlaywrightMcp`/`enableGithubMcp` toggles (github: exclusive `githubMcpAuth` `oauth`/`pat` + `githubPatFile` wrapper); `enableCloudflare*Mcp`/`enableMdnMcp`/`enableArtifacthubMcp` toggles (default off) |
 | `flake-parts/nixosModules/github-mcp.nix` | Option-less module: derives the clan vars `github-mcp` PAT generator (shared, prompted, persisted, owner `<user>` mode `0400`) from each home-manager user's `githubMcpAuth = "pat"` opencode config |
-| `clanServices/tags/netsa.nix` | netsa tag profile: `githubMcpAuth = "pat"` + all six Cloudflare MCP toggles for netsa's opencode on netsa-tagged dev machines |
+| `clanServices/tags/netsa.nix` | netsa tag profile: `githubMcpAuth = "pat"` + all six Cloudflare MCP toggles + MDN + ArtifactHub toggles for netsa's opencode on netsa-tagged dev machines |
 | `flake-parts/homeModules/profiles/netsa-agent.nix` | Headless AI agent profile with developer toolings |
 | `flake-parts/packages/ai-agent.nix` | KubeVirt QCOW2 image (compressed), OCI containerdisk, Kubenix Kustomization package |
 | `flake-parts/apps/vm-test.nix` | `vm-test` app (sandboxed + driver modes) |

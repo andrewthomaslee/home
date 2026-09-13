@@ -20,6 +20,23 @@
         "url": "https://code.m3ta.dev/m3tam3re/AGENTS"
       }
     },
+    "artifacthub-mcp": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1747116241,
+        "narHash": "sha256-fn3z9958hFAga5SCYpnrMIsBRVKEpYoybNwJVn7aew0=",
+        "owner": "AlexW00",
+        "repo": "artifacthub-mcp",
+        "rev": "64af8dbd4108aa73bb09273eb1b19cbc49b82cff",
+        "type": "github"
+      },
+      "original": {
+        "owner": "AlexW00",
+        "ref": "v1.1.1",
+        "repo": "artifacthub-mcp",
+        "type": "github"
+      }
+    },
     "clan-community": {
       "inputs": {
         "clan-core": [
@@ -1039,6 +1056,7 @@
     "root": {
       "inputs": {
         "agents": "agents",
+        "artifacthub-mcp": "artifacthub-mcp",
         "clan-community": "clan-community",
         "clan-core": "clan-core",
         "determinate": "determinate",

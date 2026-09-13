@@ -78,6 +78,15 @@
       inputs.nixpkgs.follows = "nixpkgs-unstable";
     };
 
+    # ArtifactHub MCP — stdio MCP server for Helm charts on artifacthub.io
+    # (opencode mcp server). Repo has no flake.nix, so the source tree is
+    # pinned to the v1.1.1 tag and built with buildNpmPackage in
+    # packages/artifacthub-mcp.nix.
+    artifacthub-mcp = {
+      url = "github:AlexW00/artifacthub-mcp?ref=v1.1.1";
+      flake = false;
+    };
+
     # Headroom — context compression layer for AI agents.
     # Pinned to the v0.37.0 manylinux_2_28 x86_64 wheel (abi3, compatible with
     # CPython 3.10–3.13). This is the prebuilt maturin/Rust extension; using
