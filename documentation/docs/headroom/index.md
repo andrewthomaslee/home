@@ -104,7 +104,7 @@ home-manager config):
 
 ### Additional MCP servers
 
-The same module also declaratively adds two more MCP servers to
+The same module also declaratively adds three more MCP servers to
 `mcp.<name>`, each behind a defaulted toggle:
 
 | Option | Default | Server | Kind | Description |
@@ -112,6 +112,69 @@ The same module also declaratively adds two more MCP servers to
 | `enableNixMcp` | `true` | `mcp.nixos` | local | mcp-nixos flake package: NixOS / Home Manager / nix-darwin package & option search |
 | `enableOpenrouterMcp` | `true` | `mcp.openrouter` | remote | OpenRouter's hosted MCP server (`https://mcp.openrouter.ai/mcp`): live model catalog, pricing, credits, rankings, benchmarks, docs search. Nothing is installed locally — opencode runs the OAuth flow automatically on first use (minted key expires after 7 days, revocable in the OpenRouter dashboard) |
 | `enablePlaywrightMcp` | `true` | `mcp.playwright` | local | nixpkgs `playwright-mcp` package: browser automation via accessibility snapshots. Fully hermetic — the nixpkgs wrapper pins the browser bundle (`playwright-driver.browsers`) and the playwright node modules into `/nix/store`, so no npx/docker/uvx runtime downloads. Runs `--headless` so it works on displayless agents/VMs; chromium is the default browser |
+| `enableGithubMcp` | `false` | `mcp.github` | local *or* remote | GitHub's official MCP server (`github-mcp-server` from the pinned nixpkgs-unstable revision). Auth method selected by `githubMcpAuth` — see below |
+
+### GitHub MCP server
+
+`mcp.github` is **opt-in** (`enableGithubMcp`, default `false`) and supports
+two **mutually exclusive** auth methods, selected by
+`homeSpec.programs.opencode.githubMcpAuth`:
+
+| `githubMcpAuth` | `mcp.github` entry | Secret |
+|---|---|---|
+| `"oauth"` (**default**) | `type = "remote"`, `url = "https://api.githubcopilot.com/mcp/"` — GitHub's hosted server; opencode runs the browser OAuth flow automatically on first tool use | none |
+| `"pat"` | `type = "local"`, command = the `github-mcp-server-opencode` wrapper (`github-mcp-server stdio`) | PAT file at `githubPatFile` |
+
+Exclusivity is enforced by home-manager assertions (eval-time): `"pat"`
+requires `githubPatFile` to be set, and `"oauth"` requires it to be `null`.
+
+The wrapper reads the PAT file and exports `GITHUB_PERSONAL_ACCESS_TOKEN`
+before exec'ing the server. The upstream server exits immediately when that
+env var is unset, so a readable PAT file is a hard requirement for the
+`"pat"` method to work.
+
+#### NixOS module (`flake-parts/nixosModules/github-mcp.nix`)
+
+`hostSpec.programs.githubMcp` wires everything together (default: off):
+
+| Option | Default | Description |
+|---|---|---|
+| `enable` | `false` | Enable the GitHub MCP server for this machine |
+| `user` | `"netsa"` | User that runs opencode and owns the deployed PAT secret |
+| `auth` | `"oauth"` | Auth method, propagated to the HM `githubMcpAuth` option |
+
+When enabled, the module sets `homeSpec.programs.opencode.enableGithubMcp`
+and `githubMcpAuth` for `${user}`. With `auth = "pat"` it additionally
+declares the clan vars generator and sets
+`githubPatFile = /run/secrets/vars/shared/github-mcp/pat`:
+
+```nix
+clan.core.vars.generators."github-mcp" = {
+  share = true;              # one PAT for the whole fleet
+  prompts.pat.persist = true;
+  prompts.pat.type = "hidden";
+  files.pat = {
+    owner = cfg.user;        # readable by the opencode user
+    mode = "0400";
+    neededFor = "services";  # deployed via sops-nix at boot
+  };
+};
+```
+
+Provisioning (interactive, **no fake values in the repo**):
+
+```bash
+clan vars set github-mcp pat <machine>   # or: clan vars generate
+clan vars upload <machine>               # if needed
+```
+
+sops-nix then deploys the secret to
+`/run/secrets/vars/shared/github-mcp/pat` (owner = `user`, mode `0400`) and
+the wrapper picks it up on every MCP server start. Machines using the
+default `"oauth"` method declare no generator and need no secret at all.
+
+Currently enabled (oauth method) on the netsa dev machines
+(`machines/{nixos,kamrui-h1,ghost}/configuration.nix`).
 
 No docker image or `uvx` shim is needed anywhere: OpenRouter is remote-only,
 and Playwright comes from the pinned nixpkgs revision. `playwright-mcp` is
@@ -162,7 +225,8 @@ Every VM test defined in `vm-tests/<test-name>.nix` automatically generates thre
 
 1. **`headroom-opencode-<sm|md|lg>`** (`vm-tests/headroom-opencode.nix`):
    - 1 KVM VM, home-manager profile with headroom + opencode enabled.
-   - Asserts binaries on PATH (headroom, opencode, playwright-mcp), `opencode.json` generation (headroom MCP + plugin + provider override + `mcp.openrouter`/`mcp.playwright` entries), `headroom-proxy.service` healthcheck (`/livez`), stdio JSON-RPC MCP CCR compression roundtrip (`/etc/vm-mcp-probe.py`), and a second stdio probe driving the Playwright MCP server (`initialize` → `tools/list`, asserting `browser_navigate`/`browser_snapshot`/`browser_click`).
+   - Asserts binaries on PATH (headroom, opencode, playwright-mcp, github-mcp-server), `opencode.json` generation (headroom MCP + plugin + provider override + `mcp.openrouter`/`mcp.playwright` entries), `headroom-proxy.service` healthcheck (`/livez`), stdio JSON-RPC MCP CCR compression roundtrip (`/etc/vm-mcp-probe.py`), a second stdio probe driving the Playwright MCP server (`initialize` → `tools/list`, asserting `browser_navigate`/`browser_snapshot`/`browser_click`), and a third stdio probe driving the `github-mcp-server-opencode` wrapper (PAT method with a fake `/etc/vm-github-pat` — a successful `tools/list` proves the PAT file was read and exported, since the server exits without it).
+   - A second lightweight user (`bob`) exercises the other exclusive auth branch: `mcp.github` must be the `remote` oauth entry (`https://api.githubcopilot.com/mcp/`).
 2. **`headroom-opencode-web-<sm|md|lg>`** (`vm-tests/headroom-opencode-web.nix`):
    - Tests a KubeVirt AI agent machine using the headless `netsa` profile (`profile-netsa-agent`).
    - Asserts headless dev tooling on `netsa`'s PATH, `opencode.json` generation (headroom MCP + plugin + `mcp.openrouter`/`mcp.playwright` entries), OpenCode Web HTTP access on port 4096 (`<title>OpenCode</title>`), Headroom proxy `/livez`, and MCP CCR roundtrip (`/etc/vm-mcp-probe.py`).
@@ -323,7 +387,8 @@ OpenCode web UI on port 4096, and the MCP CCR roundtrip.
 |---|---|
 | `flake-parts/packages/headroom.nix` | `headroom-ai` v0.37.0 (full `[all]`) + `headroom-slim` (core/proxy/code/mcp) packages |
 | `flake-parts/homeModules/headroom.nix` | headroom options + `headroom-proxy.service` user unit |
-| `flake-parts/homeModules/opencode.nix` | OpenCode settings: MCP (headroom, nixos, openrouter, playwright), plugin, baseURL routing, LSP, formatters; `enableDesktop`/`fullDevTools` trims; `enableNixMcp`/`enableOpenrouterMcp`/`enablePlaywrightMcp` toggles |
+| `flake-parts/homeModules/opencode.nix` | OpenCode settings: MCP (headroom, nixos, openrouter, playwright, github), plugin, baseURL routing, LSP, formatters; `enableDesktop`/`fullDevTools` trims; `enableNixMcp`/`enableOpenrouterMcp`/`enablePlaywrightMcp` toggles; `enableGithubMcp` + exclusive `githubMcpAuth` (`oauth`/`pat`) with `githubPatFile` wrapper |
+| `flake-parts/nixosModules/github-mcp.nix` | `hostSpec.programs.githubMcp` (`enable`/`user`/`auth`): clan vars PAT generator (shared, prompted, persisted, owner `user` mode `0400`) + home-manager wiring |
 | `flake-parts/homeModules/profiles/netsa-agent.nix` | Headless AI agent profile with developer toolings |
 | `flake-parts/packages/ai-agent.nix` | KubeVirt QCOW2 image (compressed), OCI containerdisk, Kubenix Kustomization package |
 | `flake-parts/apps/vm-test.nix` | `vm-test` app (sandboxed + driver modes) |

@@ -7,7 +7,11 @@
   name = "headroom-opencode";
   globalTimeout = 5 * 60;
 
-  nodes.machine = {pkgs, ...}: {
+  nodes.machine = {
+    pkgs,
+    lib,
+    ...
+  }: {
     imports = [
       inputs.clan-core.nixosModules.clanCore
       self.nixosModules.default
@@ -25,12 +29,26 @@
       extraGroups = ["wheel"];
       linger = true;
     };
+    users.users.bob = {
+      isNormalUser = true;
+      linger = true;
+    };
 
     environment.systemPackages = with pkgs; [
       curl
       jq
       python3
     ];
+
+    # GitHub MCP (PAT method) for alice: fake PAT deployed as a plain file
+    # instead of the clan var (no sops secret exists in the repo), proving
+    # the file -> env -> server-start wiring end to end.
+    hostSpec.programs.githubMcp = {
+      enable = true;
+      user = "alice";
+      auth = "pat";
+    };
+    environment.etc."vm-github-pat".text = "ghp-fake-vm-test-pat";
 
     home-manager.useGlobalPkgs = false;
     home-manager.useUserPackages = true;
@@ -53,7 +71,26 @@
             learn = false;
           };
         };
-        opencode.enable = true;
+        opencode = {
+          enable = true;
+          # PAT method wired to the fake file above (overrides the
+          # /run/secrets/... path set by hostSpec.programs.githubMcp).
+          githubPatFile = lib.mkForce "/etc/vm-github-pat";
+        };
+      };
+    };
+    # bob: GitHub MCP with the default oauth method (remote server, no
+    # secret) to exercise the other mutually-exclusive auth branch.
+    home-manager.users.bob = {
+      imports = [
+        self.homeModules.default
+      ];
+      home.stateVersion = "26.11";
+      homeSpec.programs.opencode = {
+        enable = true;
+        enableDesktop = false;
+        fullDevTools = false;
+        enableGithubMcp = true;
       };
     };
 
@@ -164,6 +201,42 @@
           except Exception:
               pass
           proc2.terminate()
+
+      # --- GitHub MCP probe (PAT method): drive the
+      # github-mcp-server-opencode wrapper over stdio JSON-RPC exactly as
+      # opencode does (mcp.github local server). The upstream server exits
+      # immediately when GITHUB_PERSONAL_ACCESS_TOKEN is unset, so a
+      # successful initialize/tools/list PROVES the wrapper read the PAT
+      # file and exported the env var (no network needed; the fake PAT is
+      # only rejected on actual API calls).
+      proc3 = subprocess.Popen(
+          ["github-mcp-server-opencode"],
+          stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+          stderr=subprocess.DEVNULL,
+      )
+      try:
+          send(proc3, {
+              "jsonrpc": "2.0", "id": 21, "method": "initialize",
+              "params": {
+                  "protocolVersion": "2024-11-05", "capabilities": {},
+                  "clientInfo": {"name": "vm-probe", "version": "0"},
+              },
+          })
+          init3 = recv(proc3, 21)
+          assert init3["result"]["serverInfo"]["name"] == "github-mcp-server", init3
+          send(proc3, {"jsonrpc": "2.0", "method": "notifications/initialized"})
+
+          send(proc3, {"jsonrpc": "2.0", "id": 22, "method": "tools/list"})
+          tools3 = {t["name"] for t in recv(proc3, 22)["result"]["tools"]}
+          assert {"get_me", "list_issues", "create_repository", "get_file_contents"} <= tools3, tools3
+
+          print("GITHUB_MCP_OK")
+      finally:
+          try:
+              proc3.stdin.close()
+          except Exception:
+              pass
+          proc3.terminate()
     '';
   };
 
@@ -190,6 +263,24 @@
     machine.succeed("su - alice -c 'jq -e .mcp.playwright.command ~/.config/opencode/opencode.json'")
     machine.succeed("su - alice -c 'playwright-mcp --version'")
 
+    # 2c. Verify the GitHub MCP server (PAT method) is enabled for alice:
+    # binary on PATH, local mcp entry with the wrapper command, and the
+    # wrapper can read the PAT file.
+    machine.succeed("su - alice -c 'github-mcp-server --version'")
+    machine.succeed("su - alice -c 'test -x ~/.nix-profile/bin/github-mcp-server-opencode || test -x /run/current-system/sw/bin/github-mcp-server-opencode || which github-mcp-server-opencode'")
+    machine.succeed("su - alice -c 'jq -e \".mcp.github.type == \\\"local\\\"\" ~/.config/opencode/opencode.json'")
+    machine.succeed("su - alice -c 'jq -e .mcp.github.command ~/.config/opencode/opencode.json'")
+    machine.succeed("su - alice -c 'cat /etc/vm-github-pat | grep -q ghp-fake-vm-test-pat'")
+
+    # 2d. Verify bob's GitHub MCP uses the default oauth method (remote
+    # server, no secret) — the other mutually-exclusive auth branch.
+    machine.wait_for_unit("user@1001.service")
+    machine.wait_until_succeeds(
+      "su - bob -c 'test -f ~/.config/opencode/opencode.json'", timeout=60
+    )
+    machine.succeed("su - bob -c 'jq -e \".mcp.github.type == \\\"remote\\\"\" ~/.config/opencode/opencode.json'")
+    machine.succeed("su - bob -c 'jq -e \".mcp.github.url == \\\"https://api.githubcopilot.com/mcp/\\\"\" ~/.config/opencode/opencode.json'")
+
     # 3. Verify the headroom-proxy user unit exists and start it.
     # The HM activation can race the user-manager boot (linger): the
     # daemon may reach default.target before the unit files land, so
@@ -212,9 +303,10 @@
     # 4. Verify Headroom MCP server CLI responds
     machine.succeed("su - alice -c 'headroom mcp --help'")
 
-    # 5. End-to-end MCP check: drive headroom mcp serve exactly as
-    # opencode would (stdio JSON-RPC) and exercise the CCR roundtrip
-    # (compress -> retrieve verbatim) through the running proxy.
+    # 5. End-to-end MCP check: drive headroom mcp serve, playwright-mcp
+    # and the github-mcp-server wrapper exactly as opencode would (stdio
+    # JSON-RPC): CCR roundtrip through the running proxy, tools/list for
+    # playwright, and PAT-file -> env proof for github.
     machine.succeed("su - alice -c 'python3 /etc/vm-mcp-probe.py'")
   '';
 }

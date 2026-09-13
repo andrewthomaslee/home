@@ -14,6 +14,18 @@
     headroomCfg = config.homeSpec.programs.headroom;
     headroomEnabled = config.homeSpec.programs.headroom.enable or false;
     headroomProxyUrl = "http://${headroomCfg.proxy.host}:${toString headroomCfg.proxy.port}/v1";
+    # Wrapper for the PAT auth method: reads the clan-var-deployed PAT file
+    # (githubPatFile) and exports GITHUB_PERSONAL_ACCESS_TOKEN before exec'ing
+    # the server. The github-mcp-server exits immediately when no PAT env is
+    # set, so a readable file is a hard requirement for the server to start.
+    githubMcpWrapper = pkgs.writeShellScriptBin "github-mcp-server-opencode" ''
+      ${lib.optionalString (cfg.githubPatFile != null) ''
+        if [ -r ${lib.escapeShellArg cfg.githubPatFile} ]; then
+          export GITHUB_PERSONAL_ACCESS_TOKEN="$(cat ${lib.escapeShellArg cfg.githubPatFile})"
+        fi
+      ''}
+      exec ${lib.getExe pkgs.unstable.github-mcp-server} stdio "$@"
+    '';
   in {
     options.homeSpec.programs.opencode = {
       enable = lib.mkEnableOption "default opencode configuration";
@@ -57,6 +69,34 @@
         default = true;
         description = "Enable the Playwright MCP server (nixpkgs playwright-mcp) in opencode settings.";
       };
+      # Enable the GitHub MCP server. The auth method is selected by
+      # `githubMcpAuth` and the two methods are mutually exclusive
+      # (enforced by assertions below).
+      enableGithubMcp = lib.mkOption {
+        type = lib.types.bool;
+        default = false;
+        description = "Enable the GitHub MCP server in opencode settings.";
+      };
+      githubMcpAuth = lib.mkOption {
+        type = lib.types.enum ["oauth" "pat"];
+        default = "oauth";
+        description = ''
+          GitHub MCP auth method (mutually exclusive):
+          - "oauth": remote hosted server (https://api.githubcopilot.com/mcp/);
+            opencode runs the browser OAuth flow on first use. No secret.
+          - "pat": local stdio server reading the PAT from `githubPatFile`
+            (usually the clan var at /run/secrets/vars/shared/github-mcp/pat).
+        '';
+      };
+      githubPatFile = lib.mkOption {
+        type = with lib.types;
+          nullOr str;
+        default = null;
+        description = ''
+          Path to a file containing the GitHub Personal Access Token.
+          Only used with githubMcpAuth = "pat"; must be null for "oauth".
+        '';
+      };
     };
     config = lib.mkIf cfg.enable {
       # add skills to config
@@ -90,7 +130,23 @@
         ]))
         ++ (lib.optionals cfg.enablePlaywrightMcp [
           pkgs.playwright-mcp
+        ])
+        ++ (lib.optionals cfg.enableGithubMcp [
+          pkgs.unstable.github-mcp-server
+        ])
+        ++ (lib.optionals (cfg.enableGithubMcp && cfg.githubMcpAuth == "pat") [
+          githubMcpWrapper
         ]);
+      assertions = [
+        {
+          assertion = cfg.githubMcpAuth == "pat" -> cfg.githubPatFile != null;
+          message = "opencode: githubMcpAuth = \"pat\" requires githubPatFile (usually /run/secrets/vars/shared/github-mcp/pat).";
+        }
+        {
+          assertion = cfg.githubMcpAuth == "oauth" -> cfg.githubPatFile == null;
+          message = "opencode: githubPatFile is only valid with githubMcpAuth = \"pat\" — the oauth and pat methods are mutually exclusive.";
+        }
+      ];
       programs.opencode = {
         enable = true;
         package = inputs.opencode.packages.${pkgs.stdenv.hostPlatform.system}.opencode;
@@ -128,6 +184,9 @@
           ]))
           ++ (lib.optionals cfg.enablePlaywrightMcp [
             pkgs.playwright-mcp
+          ])
+          ++ (lib.optionals cfg.enableGithubMcp [
+            pkgs.unstable.github-mcp-server
           ]);
         tui.theme = "tokyonight";
         settings = lib.mkMerge [
@@ -214,6 +273,28 @@
                 command = ["${lib.getExe pkgs.playwright-mcp}" "--headless"];
                 enabled = true;
               };
+            };
+          })
+          (lib.mkIf cfg.enableGithubMcp {
+            mcp = {
+              github =
+                if cfg.githubMcpAuth == "pat"
+                then {
+                  # Local stdio server with PAT auth: the wrapper reads the
+                  # clan-var-deployed PAT file and exports
+                  # GITHUB_PERSONAL_ACCESS_TOKEN at server start.
+                  type = "local";
+                  command = ["${githubMcpWrapper}/bin/github-mcp-server-opencode"];
+                  enabled = true;
+                }
+                else {
+                  # Remote hosted server: no local install, no PAT file.
+                  # opencode handles the browser OAuth flow automatically on
+                  # first tool use.
+                  type = "remote";
+                  url = "https://api.githubcopilot.com/mcp/";
+                  enabled = true;
+                };
             };
           })
           (lib.mkIf headroomEnabled {
