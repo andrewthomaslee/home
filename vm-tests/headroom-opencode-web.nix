@@ -151,6 +151,8 @@
     machine.succeed("su - netsa -c 'test -f ~/.config/opencode/opencode.json'")
     machine.succeed("su - netsa -c 'jq -e .mcp.headroom ~/.config/opencode/opencode.json'")
     machine.succeed("su - netsa -c 'jq -e .plugin ~/.config/opencode/opencode.json'")
+    machine.succeed("su - netsa -c 'jq -e .mcp.openrouter ~/.config/opencode/opencode.json'")
+    machine.succeed("su - netsa -c 'jq -e .mcp.playwright ~/.config/opencode/opencode.json'")
 
     # 3. Verify the headroom-proxy user unit exists, daemon-reload and start it
     machine.succeed("su - netsa -c 'test -f ~/.config/systemd/user/headroom-proxy.service'")

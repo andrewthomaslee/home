@@ -131,6 +131,39 @@
           except Exception:
               pass
           proc.terminate()
+
+      # --- Playwright MCP probe: drive the hermetic nixpkgs
+      # playwright-mcp server over stdio JSON-RPC exactly as opencode
+      # does (mcp.playwright local server). initialize -> tools/list
+      # only; no tool call, so no browser/X server is needed.
+      proc2 = subprocess.Popen(
+          ["playwright-mcp", "--headless"],
+          stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+          stderr=subprocess.DEVNULL,
+      )
+      try:
+          send(proc2, {
+              "jsonrpc": "2.0", "id": 11, "method": "initialize",
+              "params": {
+                  "protocolVersion": "2024-11-05", "capabilities": {},
+                  "clientInfo": {"name": "vm-probe", "version": "0"},
+              },
+          })
+          init2 = recv(proc2, 11)
+          assert "serverInfo" in init2["result"], init2
+          send(proc2, {"jsonrpc": "2.0", "method": "notifications/initialized"})
+
+          send(proc2, {"jsonrpc": "2.0", "id": 12, "method": "tools/list"})
+          tools2 = {t["name"] for t in recv(proc2, 12)["result"]["tools"]}
+          assert {"browser_navigate", "browser_snapshot", "browser_click"} <= tools2, tools2
+
+          print("PLAYWRIGHT_MCP_OK")
+      finally:
+          try:
+              proc2.stdin.close()
+          except Exception:
+              pass
+          proc2.terminate()
     '';
   };
 
@@ -148,6 +181,14 @@
     machine.succeed("su - alice -c 'jq -e .mcp.headroom ~/.config/opencode/opencode.json'")
     machine.succeed("su - alice -c 'jq -e .plugin ~/.config/opencode/opencode.json'")
     machine.succeed("su - alice -c 'jq -e .provider.deepseek ~/.config/opencode/opencode.json'")
+
+    # 2b. Verify the OpenRouter (remote) and Playwright (local) MCP
+    # servers are enabled in the generated opencode config.
+    machine.succeed("su - alice -c 'jq -e .mcp.openrouter ~/.config/opencode/opencode.json'")
+    machine.succeed("su - alice -c 'jq -e .mcp.openrouter.url ~/.config/opencode/opencode.json'")
+    machine.succeed("su - alice -c 'jq -e .mcp.playwright ~/.config/opencode/opencode.json'")
+    machine.succeed("su - alice -c 'jq -e .mcp.playwright.command ~/.config/opencode/opencode.json'")
+    machine.succeed("su - alice -c 'playwright-mcp --version'")
 
     # 3. Verify the headroom-proxy user unit exists and start it.
     # The HM activation can race the user-manager boot (linger): the

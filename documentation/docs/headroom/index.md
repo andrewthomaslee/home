@@ -102,6 +102,23 @@ home-manager config):
   point at `http://127.0.0.1:8787/v1` (the reliable fallback layer that
   works even without the plugin, e.g. `opencode --pure`).
 
+### Additional MCP servers
+
+The same module also declaratively adds two more MCP servers to
+`mcp.<name>`, each behind a defaulted toggle:
+
+| Option | Default | Server | Kind | Description |
+|---|---|---|---|---|
+| `enableNixMcp` | `true` | `mcp.nixos` | local | mcp-nixos flake package: NixOS / Home Manager / nix-darwin package & option search |
+| `enableOpenrouterMcp` | `true` | `mcp.openrouter` | remote | OpenRouter's hosted MCP server (`https://mcp.openrouter.ai/mcp`): live model catalog, pricing, credits, rankings, benchmarks, docs search. Nothing is installed locally — opencode runs the OAuth flow automatically on first use (minted key expires after 7 days, revocable in the OpenRouter dashboard) |
+| `enablePlaywrightMcp` | `true` | `mcp.playwright` | local | nixpkgs `playwright-mcp` package: browser automation via accessibility snapshots. Fully hermetic — the nixpkgs wrapper pins the browser bundle (`playwright-driver.browsers`) and the playwright node modules into `/nix/store`, so no npx/docker/uvx runtime downloads. Runs `--headless` so it works on displayless agents/VMs; chromium is the default browser |
+
+No docker image or `uvx` shim is needed anywhere: OpenRouter is remote-only,
+and Playwright comes from the pinned nixpkgs revision. `playwright-mcp` is
+also put on the user's PATH (`home.packages` — note that
+`programs.opencode.extraPackages` is *not* a user PATH mechanism) so the
+server binary can be probed/reused outside opencode.
+
 Providers NOT overridden (intentionally):
 
 - **openrouter / google gemini** — native OpenCode providers resolved from
@@ -122,7 +139,7 @@ Also configured declaratively in the same module:
 - **Formatters**: alejandra (`.nix`), ruff (`ruff format`, `.py`/`.pyi`),
   gleam — all with `"$FILE"` placeholders and dotted extensions (OpenCode
   requires both; see the VM test history).
-- **Compaction**: auto with `tail_turns = 3`.
+- **Compaction**: auto with `tail_turns = 32`.
 
 ## VM tests
 
@@ -145,10 +162,10 @@ Every VM test defined in `vm-tests/<test-name>.nix` automatically generates thre
 
 1. **`headroom-opencode-<sm|md|lg>`** (`vm-tests/headroom-opencode.nix`):
    - 1 KVM VM, home-manager profile with headroom + opencode enabled.
-   - Asserts binaries on PATH, `opencode.json` generation, `headroom-proxy.service` healthcheck (`/livez`), and stdio JSON-RPC MCP CCR compression roundtrip (`/etc/vm-mcp-probe.py`).
+   - Asserts binaries on PATH (headroom, opencode, playwright-mcp), `opencode.json` generation (headroom MCP + plugin + provider override + `mcp.openrouter`/`mcp.playwright` entries), `headroom-proxy.service` healthcheck (`/livez`), stdio JSON-RPC MCP CCR compression roundtrip (`/etc/vm-mcp-probe.py`), and a second stdio probe driving the Playwright MCP server (`initialize` → `tools/list`, asserting `browser_navigate`/`browser_snapshot`/`browser_click`).
 2. **`headroom-opencode-web-<sm|md|lg>`** (`vm-tests/headroom-opencode-web.nix`):
    - Tests a KubeVirt AI agent machine using the headless `netsa` profile (`profile-netsa-agent`).
-   - Asserts headless dev tooling on `netsa`'s PATH, `opencode.json` generation, OpenCode Web HTTP access on port 4096 (`<title>OpenCode</title>`), Headroom proxy `/livez`, and MCP CCR roundtrip (`/etc/vm-mcp-probe.py`).
+   - Asserts headless dev tooling on `netsa`'s PATH, `opencode.json` generation (headroom MCP + plugin + `mcp.openrouter`/`mcp.playwright` entries), OpenCode Web HTTP access on port 4096 (`<title>OpenCode</title>`), Headroom proxy `/livez`, and MCP CCR roundtrip (`/etc/vm-mcp-probe.py`).
 
 ### Running
 
@@ -306,7 +323,7 @@ OpenCode web UI on port 4096, and the MCP CCR roundtrip.
 |---|---|
 | `flake-parts/packages/headroom.nix` | `headroom-ai` v0.37.0 (full `[all]`) + `headroom-slim` (core/proxy/code/mcp) packages |
 | `flake-parts/homeModules/headroom.nix` | headroom options + `headroom-proxy.service` user unit |
-| `flake-parts/homeModules/opencode.nix` | OpenCode settings: MCP, plugin, baseURL routing, LSP, formatters; `enableDesktop`/`fullDevTools` trims |
+| `flake-parts/homeModules/opencode.nix` | OpenCode settings: MCP (headroom, nixos, openrouter, playwright), plugin, baseURL routing, LSP, formatters; `enableDesktop`/`fullDevTools` trims; `enableNixMcp`/`enableOpenrouterMcp`/`enablePlaywrightMcp` toggles |
 | `flake-parts/homeModules/profiles/netsa-agent.nix` | Headless AI agent profile with developer toolings |
 | `flake-parts/packages/ai-agent.nix` | KubeVirt QCOW2 image (compressed), OCI containerdisk, Kubenix Kustomization package |
 | `flake-parts/apps/vm-test.nix` | `vm-test` app (sandboxed + driver modes) |

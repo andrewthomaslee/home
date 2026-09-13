@@ -39,6 +39,24 @@
         default = true;
         description = "Enable the mcp-nixos MCP server in opencode settings.";
       };
+      # Enable the OpenRouter remote MCP server (live model catalog,
+      # pricing, credits, benchmarks, docs search). Nothing is installed
+      # locally: OpenRouter hosts it and opencode runs the OAuth flow on
+      # first use.
+      enableOpenrouterMcp = lib.mkOption {
+        type = lib.types.bool;
+        default = true;
+        description = "Enable the OpenRouter remote MCP server in opencode settings.";
+      };
+      # Enable the Playwright MCP server (browser automation via
+      # accessibility snapshots) using the hermetic nixpkgs playwright-mcp
+      # package: browsers are pinned in the store (PLAYWRIGHT_BROWSERS_PATH
+      # is set by the wrapper), so no npx/docker/uvx runtime downloads.
+      enablePlaywrightMcp = lib.mkOption {
+        type = lib.types.bool;
+        default = true;
+        description = "Enable the Playwright MCP server (nixpkgs playwright-mcp) in opencode settings.";
+      };
     };
     config = lib.mkIf cfg.enable {
       # add skills to config
@@ -69,7 +87,10 @@
           (lib.lowPrio k3s)
           rke2
           devpod
-        ]));
+        ]))
+        ++ (lib.optionals cfg.enablePlaywrightMcp [
+          pkgs.playwright-mcp
+        ]);
       programs.opencode = {
         enable = true;
         package = inputs.opencode.packages.${pkgs.stdenv.hostPlatform.system}.opencode;
@@ -104,7 +125,10 @@
             (lib.lowPrio k3s)
             rke2
             devpod
-          ]));
+          ]))
+          ++ (lib.optionals cfg.enablePlaywrightMcp [
+            pkgs.playwright-mcp
+          ]);
         tui.theme = "tokyonight";
         settings = lib.mkMerge [
           {
@@ -162,6 +186,32 @@
               nixos = {
                 type = "local";
                 command = ["${lib.getExe inputs.mcp-nixos.packages.${pkgs.stdenv.hostPlatform.system}.mcp-nixos}"];
+                enabled = true;
+              };
+            };
+          })
+          (lib.mkIf cfg.enableOpenrouterMcp {
+            mcp = {
+              openrouter = {
+                # Remote hosted server: no local install, no docker/uvx.
+                # opencode handles the OAuth login automatically on first
+                # tool use (minted key expires after 7 days).
+                type = "remote";
+                url = "https://mcp.openrouter.ai/mcp";
+                enabled = true;
+              };
+            };
+          })
+          (lib.mkIf cfg.enablePlaywrightMcp {
+            mcp = {
+              playwright = {
+                # Hermetic local server: the nixpkgs wrapper pins the
+                # browser bundle (playwright-driver.browsers) and the
+                # playwright node modules, so nothing is downloaded at
+                # runtime. --headless so it works on displayless agents;
+                # chromium is the nixpkgs default browser.
+                type = "local";
+                command = ["${lib.getExe pkgs.playwright-mcp}" "--headless"];
                 enabled = true;
               };
             };
