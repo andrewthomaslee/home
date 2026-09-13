@@ -14,5 +14,7 @@
     enableCloudflareBuildsMcp = lib.mkDefault true;
     enableCloudflareBrowserMcp = lib.mkDefault true;
     enableCloudflareContainersMcp = lib.mkDefault true;
+    # MDN Web Docs MCP: on for netsa dev machines
+    enableMdnMcp = lib.mkDefault true;
   };
 }

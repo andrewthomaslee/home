@@ -137,6 +137,13 @@
         default = false;
         description = "Enable the Cloudflare Container MCP server (spin up a sandbox development environment).";
       };
+      # MDN Web Docs remote MCP server (hosted by Mozilla; off by default,
+      # enabled via the netsa tag profile).
+      enableMdnMcp = lib.mkOption {
+        type = lib.types.bool;
+        default = false;
+        description = "Enable the MDN Web Docs MCP server (up-to-date web API/CSS/JS reference from Mozilla).";
+      };
     };
     config = lib.mkIf cfg.enable {
       # add skills to config
@@ -386,6 +393,16 @@
               cloudflare-containers = {
                 type = "remote";
                 url = "https://containers.mcp.cloudflare.com/mcp";
+                enabled = true;
+              };
+            };
+          })
+          (lib.mkIf cfg.enableMdnMcp {
+            mcp = {
+              # MDN Web Docs, hosted by Mozilla — no local install.
+              mdn = {
+                type = "remote";
+                url = "https://mcp.mdn.mozilla.net/";
                 enabled = true;
               };
             };

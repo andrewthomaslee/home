@@ -92,6 +92,8 @@
         enableCloudflareBuildsMcp = true;
         enableCloudflareBrowserMcp = true;
         enableCloudflareContainersMcp = true;
+        # MDN Web Docs remote MCP server
+        enableMdnMcp = true;
       };
     };
 
@@ -287,6 +289,10 @@
     # keys need bracket notation in jq ("." would parse as subtraction).
     machine.succeed("su - bob -c 'jq -e \"[.mcp.cloudflare.type, .mcp[\\\"cloudflare-docs\\\"].type, .mcp[\\\"cloudflare-bindings\\\"].type, .mcp[\\\"cloudflare-builds\\\"].type, .mcp[\\\"cloudflare-browser\\\"].type, .mcp[\\\"cloudflare-containers\\\"].type] | all(. == \\\"remote\\\")\" ~/.config/opencode/opencode.json'")
     machine.succeed("su - bob -c 'jq -e \"[.mcp.cloudflare.url, .mcp[\\\"cloudflare-docs\\\"].url, .mcp[\\\"cloudflare-bindings\\\"].url, .mcp[\\\"cloudflare-builds\\\"].url, .mcp[\\\"cloudflare-browser\\\"].url, .mcp[\\\"cloudflare-containers\\\"].url] == [\\\"https://mcp.cloudflare.com/mcp\\\", \\\"https://docs.mcp.cloudflare.com/mcp\\\", \\\"https://bindings.mcp.cloudflare.com/mcp\\\", \\\"https://builds.mcp.cloudflare.com/mcp\\\", \\\"https://browser.mcp.cloudflare.com/mcp\\\", \\\"https://containers.mcp.cloudflare.com/mcp\\\"]\" ~/.config/opencode/opencode.json'")
+
+    # 2f. Verify bob's MDN Web Docs remote MCP server entry.
+    machine.succeed("su - bob -c 'jq -e \".mcp.mdn.type == \\\"remote\\\"\" ~/.config/opencode/opencode.json'")
+    machine.succeed("su - bob -c 'jq -e \".mcp.mdn.url == \\\"https://mcp.mdn.mozilla.net/\\\"\" ~/.config/opencode/opencode.json'")
 
     # 3. Verify the headroom-proxy user unit exists and start it.
     # The HM activation can race the user-manager boot (linger): the
