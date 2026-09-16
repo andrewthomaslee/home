@@ -152,6 +152,18 @@
         default = false;
         description = "Enable the ArtifactHub MCP server (Helm chart info/values/templates from artifacthub.io) in opencode settings.";
       };
+      # Kubernetes MCP server (containers/kubernetes-mcp-server, hermetic
+      # Go build; stdio transport, default on). Reads the user's kubeconfig.
+      enableK8sMcp = lib.mkOption {
+        type = lib.types.bool;
+        default = true;
+        description = "Enable the Kubernetes MCP server in opencode settings.";
+      };
+      k8sMcpReadOnly = lib.mkOption {
+        type = lib.types.bool;
+        default = false;
+        description = "Run the Kubernetes MCP server in read-only mode (--read-only: only readOnlyHint tools exposed).";
+      };
     };
     config = lib.mkIf cfg.enable {
       # add skills to config
@@ -182,6 +194,16 @@
           (lib.lowPrio k3s)
           rke2
           devpod
+          kustomize
+          kubeconform
+          stern
+          kubectx
+          kubectl-neat
+          helm-docs
+          rancher
+          etcd
+          kubevirt
+          kubernetes-helmPlugins.helm-diff
         ]))
         ++ (lib.optionals cfg.enablePlaywrightMcp [
           pkgs.playwright-mcp
@@ -210,7 +232,11 @@
             uv
             nix
             pyrefly
-            nil
+            nixd
+            statix
+            deadnix
+            nix-output-monitor
+            yaml-language-server
             alejandra
             ruff
             python3
@@ -224,6 +250,8 @@
             docker
             kubernetes
           ])
+          # Overlay package (self.packages), not in nixpkgs-unstable.
+          ++ [pkgs.opencode-nixd-scaffold]
           ++ (lib.optionals cfg.fullDevTools (with pkgs.unstable; [
             podman
             gleam
@@ -235,6 +263,16 @@
             (lib.lowPrio k3s)
             rke2
             devpod
+            kustomize
+            kubeconform
+            stern
+            kubectx
+            kubectl-neat
+            helm-docs
+            rancher
+            etcd
+            kubevirt
+            kubernetes-helmPlugins.helm-diff
           ]))
           ++ (lib.optionals cfg.enablePlaywrightMcp [
             pkgs.playwright-mcp
@@ -273,9 +311,27 @@
               # pyright-langserver (non-hermetic on NixOS) and duplicate the
               # .py/.pyi LSP already provided by pyrefly.
               pyright.disabled = true;
-              nix = {
-                command = ["nil"];
+              # nixd replaces the previous `nil` entry. The settings key must
+              # be "nixd" (opencode's built-in nixd LSP) so this entry
+              # overrides the built-in instead of running two Nix servers.
+              # opencode spawns LSP servers with cwd = project root, so
+              # `toString ./.` anchors to the repo opencode was opened in:
+              # foreign flakes (e.g. borg) get their own nixpkgs. Non-flake
+              # dirs fall back to this repo's flake. Exact per-repo option
+              # trees are supplied by each repo's opencode.json.
+              nixd = {
+                command = ["nixd"];
                 extensions = [".nix"];
+                env.NIX_PATH = "nixpkgs=${inputs.nixpkgs}";
+                initialization.nixd.nixpkgs.expr = ''
+                  import (if builtins.pathExists ((toString ./.)) + "/flake.nix" then (builtins.getFlake (toString ./.)).inputs.nixpkgs else (builtins.getFlake "/home/netsa/home").inputs.nixpkgs) { }'';
+              };
+              # helm-ls: charts/templates diagnostics; it launches the
+              # installed yaml-language-server itself for non-template YAML
+              # (no separate `yaml` LSP entry — would double diagnostics).
+              helm_ls = {
+                command = ["helm_ls" "serve"];
+                extensions = [".yaml" ".yml"];
               };
               gleam = {
                 command = ["gleam" "lsp"];
@@ -429,6 +485,21 @@
               artifacthub = {
                 type = "local";
                 command = ["${lib.getExe pkgs.artifacthub-mcp}"];
+                enabled = true;
+              };
+            };
+          })
+          (lib.mkIf cfg.enableK8sMcp {
+            mcp = {
+              # Kubernetes MCP server (containers/kubernetes-mcp-server):
+              # hermetic Go build, stdio is the default transport (no
+              # --stdio flag). Uses the user's kubeconfig; optional
+              # --read-only restricts to readOnlyHint tools.
+              kubernetes = {
+                type = "local";
+                command =
+                  ["${lib.getExe pkgs.kubernetes-mcp-server}"]
+                  ++ lib.optional cfg.k8sMcpReadOnly "--read-only";
                 enabled = true;
               };
             };

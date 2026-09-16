@@ -138,16 +138,23 @@
               };
               nix = {
                 enableLanguageServer = true;
-                serverPath = "nil";
+                # nixd replaces nil: flake-aware option completion. The
+                # per-user exprs point at the home flake (safe default for
+                # arbitrary repos); per-repo .vscode/settings.json overrides
+                # per workspace (repo root carries one for this flake).
+                serverPath = "nixd";
                 formatterPath = "alejandra";
-                serverSettings.nil = {
+                serverSettings.nixd = {
                   formatting.command = ["alejandra"];
-                  nix = {
-                    maxMemoryMB = 6144;
-                    flake = {
-                      autoArchive = true;
-                      autoEvalInputs = false;
-                    };
+                  nixpkgs.expr = "import (builtins.getFlake \"/home/netsa/home\").inputs.nixpkgs { }";
+                  options = {
+                    # `''${` keeps the hostname selector as literal text for
+                    # nixd to evaluate at LSP time (machine-agnostic config).
+                    nixos.expr = ''
+                      (builtins.getFlake "/home/netsa/home").nixosConfigurations.''${builtins.replaceStrings ["\n"] [""] (builtins.readFile /etc/hostname)}.options'';
+                    home-manager.expr = ''
+                      (builtins.getFlake "/home/netsa/home").nixosConfigurations.''${builtins.replaceStrings ["\n"] [""] (builtins.readFile /etc/hostname)}.options.home-manager.users.type.getSubOptions []'';
+                    flake-parts.expr = "(builtins.getFlake \"/home/netsa/home\").debug.options";
                   };
                 };
               };
@@ -166,7 +173,7 @@
         alejandra
         devcontainer
         devpod
-        nil
+        nixd
         gleam
         nodejs
         kind

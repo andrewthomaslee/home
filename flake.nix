@@ -119,6 +119,11 @@
         "x86_64-linux"
       ];
 
+      # Expose flake.debug.options (module-system declarations) for nixd's
+      # "flake-parts" option provider and `nix repl` inspection.
+      # https://flake.parts/debug
+      debug = true;
+
       imports = [
         (inputs.import-tree ./flake-parts)
         inputs.mkdocs-flake.flakeModules.default

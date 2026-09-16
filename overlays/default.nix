@@ -24,6 +24,8 @@
   headroom = self.packages.${final.stdenv.hostPlatform.system}.headroom;
   headroom-slim = self.packages.${final.stdenv.hostPlatform.system}.headroom-slim;
   artifacthub-mcp = self.packages.${final.stdenv.hostPlatform.system}.artifacthub-mcp;
+  kubernetes-mcp-server = self.packages.${final.stdenv.hostPlatform.system}.kubernetes-mcp-server;
+  opencode-nixd-scaffold = self.packages.${final.stdenv.hostPlatform.system}.opencode-nixd-scaffold;
 
   apply-and-reboot = self.packages.${final.stdenv.hostPlatform.system}.apply-and-reboot;
   apply-to-reboot = self.packages.${final.stdenv.hostPlatform.system}.apply-to-reboot;

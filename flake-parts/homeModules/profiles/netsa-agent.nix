@@ -32,9 +32,8 @@
             package = pkgs.headroom-slim;
             proxy = {
               enable = true;
-              # memory/learn pull embedding models at startup, which blocks
-              # on a HF download in a fresh HOME (spawnable VMs boot offline).
-              memory = false;
+              # learn pulls embedding models at startup, blocked on a HF
+              # download in a fresh HOME (spawnable VMs boot offline).
               learn = false;
             };
           };

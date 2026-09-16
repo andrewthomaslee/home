@@ -38,8 +38,14 @@
         };
         memory = lib.mkOption {
           type = lib.types.bool;
-          default = true;
-          description = "Enable persistent cross-session memory.";
+          default = false;
+          description = ''
+            Enable persistent cross-session memory. Off by default: the
+            proxy-injected memory tools have no executor in opencode (its
+            client rejects unknown tools), so the flag only benefits
+            Claude-Code-style clients; it also pulls embedding models at
+            startup.
+          '';
         };
         learn = lib.mkOption {
           type = lib.types.bool;

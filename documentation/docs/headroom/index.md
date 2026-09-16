@@ -74,7 +74,7 @@ CPython 3.10–3.13), patched with `autoPatchelfHook` and propagated with the
 | `proxy.port` | `8787` | Proxy listen port |
 | `proxy.host` | `127.0.0.1` | Proxy bind host |
 | `proxy.mode` | `cache` | `cache` (prefix-cache friendly) or `token` (max compression) |
-| `proxy.memory` | `true` | Persistent cross-session memory |
+| `proxy.memory` | `false` | Persistent cross-session memory (off by default: proxy-injected memory tools have no executor in opencode; also pulls embedding models at startup) |
 | `proxy.learn` | `true` | Live traffic learning |
 | `proxy.extraArgs` | `[]` | Extra CLI args for `headroom proxy` |
 
@@ -121,6 +121,7 @@ The same module also declaratively adds three more MCP servers to
 | `enableCloudflareContainersMcp` | `false` | `mcp.cloudflare-containers` | remote | Cloudflare **Container** server (`https://containers.mcp.cloudflare.com/mcp`) — spin up a sandbox development environment |
 | `enableMdnMcp` | `false` | `mcp.mdn` | remote | MDN Web Docs server (`https://mcp.mdn.mozilla.net/`) — up-to-date web API/CSS/JS reference from Mozilla |
 | `enableArtifacthubMcp` | `false` | `mcp.artifacthub` | local | ArtifactHub MCP server — Helm-chart tools against artifacthub.io: chart info, default `values.yaml` (with fuzzy search), templates (with fuzzy search). Built hermetically from the `v1.1.1` source pin (`buildNpmPackage` in `flake-parts/packages/artifacthub-mcp.nix`), so no docker/`npx` runtime downloads |
+| `enableK8sMcp` | `true` | `mcp.kubernetes` | local | Kubernetes MCP server (`containers/kubernetes-mcp-server` v0.0.66, hermetic `buildGoModule` in `flake-parts/packages/kubernetes-mcp-server.nix`) — kubectl + helm + KubeVirt toolsets against the user's kubeconfig; stdio is the default transport. `k8sMcpReadOnly` (default `false`) adds `--read-only` (only `readOnlyHint` tools exposed) |
 
 All six Cloudflare servers, the MDN Web Docs server, and the ArtifactHub
 server are **off by
@@ -404,8 +405,11 @@ OpenCode web UI on port 4096, and the MCP CCR roundtrip.
 | File | Purpose |
 |---|---|
 | `flake-parts/packages/headroom.nix` | `headroom-ai` v0.37.0 (full `[all]`) + `headroom-slim` (core/proxy/code/mcp) packages |
+| `flake-parts/packages/kubernetes-mcp-server.nix` | `kubernetes-mcp-server` v0.0.66 package (hermetic `buildGoModule`, `doCheck = false`) |
+| `flake-parts/packages/opencode-nixd-scaffold.nix` + `.py` | `opencode-nixd-scaffold` package (`writers.writePython3Bin`): scaffolds per-repo `opencode.json` + `.vscode/settings.json` nixd overrides |
+| repo-root `opencode.json` / `.vscode/settings.json` | Per-repo nixd overrides for this flake (NixOS/home-manager/flake-parts option trees; machine-agnostic via `/etc/hostname` read at LSP eval time) |
 | `flake-parts/homeModules/headroom.nix` | headroom options + `headroom-proxy.service` user unit |
-| `flake-parts/homeModules/opencode.nix` | OpenCode settings: MCP (headroom, nixos, openrouter, playwright, github, cloudflare ×6, mdn, artifacthub), plugin, baseURL routing, LSP, formatters; `enableDesktop`/`fullDevTools` trims; `enableNixMcp`/`enableOpenrouterMcp`/`enablePlaywrightMcp`/`enableGithubMcp` toggles (github: exclusive `githubMcpAuth` `oauth`/`pat` + `githubPatFile` wrapper); `enableCloudflare*Mcp`/`enableMdnMcp`/`enableArtifacthubMcp` toggles (default off) |
+| `flake-parts/homeModules/opencode.nix` | OpenCode settings: MCP (headroom, nixos, openrouter, playwright, github, cloudflare ×6, mdn, artifacthub, kubernetes), plugin, baseURL routing, LSP (nixd with dynamic per-repo flake targeting, helm_ls+yaml-language-server, pyrefly, gleam), formatters; `enableDesktop`/`fullDevTools` trims; `enableNixMcp`/`enableOpenrouterMcp`/`enablePlaywrightMcp`/`enableGithubMcp` toggles (github: exclusive `githubMcpAuth` `oauth`/`pat` + `githubPatFile` wrapper); `enableCloudflare*Mcp`/`enableMdnMcp`/`enableArtifacthubMcp` toggles (default off); `enableK8sMcp` (default on) + `k8sMcpReadOnly` (default off) |
 | `flake-parts/nixosModules/github-mcp.nix` | Option-less module: derives the clan vars `github-mcp` PAT generator (shared, prompted, persisted, owner `<user>` mode `0400`) from each home-manager user's `githubMcpAuth = "pat"` opencode config |
 | `clanServices/tags/netsa.nix` | netsa tag profile: `githubMcpAuth = "pat"` + all six Cloudflare MCP toggles + MDN + ArtifactHub toggles for netsa's opencode on netsa-tagged dev machines |
 | `flake-parts/homeModules/profiles/netsa-agent.nix` | Headless AI agent profile with developer toolings |
@@ -416,5 +420,5 @@ OpenCode web UI on port 4096, and the MCP CCR roundtrip.
 | `vm-tests/headroom-opencode-web.nix` | KubeVirt machine Headroom + OpenCode Web VM test definition |
 | `.github/workflows/_oci.yml` | Reusable workflow to publish OCI containerdisks and Kustomize manifests |
 | `.github/workflows/oci.yml` | Manual dispatch workflow for OCI publishing |
-| `flake.nix` | `headroom` wheel input + `kubenix` input |
-| `overlays/default.nix` | `pkgs.headroom` + `pkgs.headroom-slim` |
+| `flake.nix` | `headroom` wheel input + `kubenix` input; `debug = true` (flake-parts, feeds nixd's `flake-parts` option provider) |
+| `overlays/default.nix` | `pkgs.headroom` + `pkgs.headroom-slim` + `pkgs.kubernetes-mcp-server` + `pkgs.opencode-nixd-scaffold` |
