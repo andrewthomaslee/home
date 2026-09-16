@@ -26,9 +26,5 @@
       perInstance.nixosModule = ./wan.nix;
       description = "wan";
     };
-    netsa = {
-      perInstance.nixosModule = ./netsa.nix;
-      description = "netsa dev machine (GitHub MCP via clan-var PAT)";
-    };
   };
 }

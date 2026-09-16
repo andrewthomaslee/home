@@ -7,6 +7,7 @@
         docker.enable = true;
         storagebox.enable = true;
         nix.enable = true;
+        nix-ld.enable = true;
       };
     };
 

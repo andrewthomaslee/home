@@ -54,7 +54,6 @@ in {
         intel.tags.intel = {};
         lan.tags.lan = {};
         wan.tags.wan = {};
-        netsa.tags.netsa = {};
       };
     };
 

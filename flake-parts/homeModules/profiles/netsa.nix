@@ -1,8 +1,4 @@
-{
-  self,
-  lib,
-  ...
-}: {
+{self, ...}: {
   # For Andrew's PCs
   flake.homeModules.profile-netsa = {pkgs, ...}: {
     imports = [self.homeModules.default];
@@ -39,23 +35,25 @@
               # generator + sops deployment is derived automatically by
               # nixosModules/github-mcp. Provision with:
               #   clan vars set github-mcp pat <machine>
-              github.auth = lib.mkDefault "pat";
+              github.auth = "pat";
               # Cloudflare remote MCP servers
-              cloudflare.enable = lib.mkDefault true;
-              "cloudflare-docs".enable = lib.mkDefault true;
-              "cloudflare-bindings".enable = lib.mkDefault true;
-              "cloudflare-builds".enable = lib.mkDefault true;
-              "cloudflare-browser".enable = lib.mkDefault true;
-              "cloudflare-containers".enable = lib.mkDefault true;
+              cloudflare.enable = true;
+              cloudflare-docs.enable = true;
+              cloudflare-bindings.enable = true;
+              cloudflare-builds.enable = true;
+              cloudflare-browser.enable = true;
+              cloudflare-containers.enable = true;
               # MDN Web Docs
-              mdn.enable = lib.mkDefault true;
+              mdn.enable = true;
               # ArtifactHub (Helm charts)
-              artifacthub.enable = lib.mkDefault true;
+              artifacthub.enable = true;
             };
             # Dev-profile plugins (off by module default)
-            plugins.opencode-mem.enable = true;
-            plugins.oh-my-openagent.enable = true;
-            plugins.devcontainers.enable = true;
+            plugins = {
+              opencode-mem.enable = true;
+              devcontainers.enable = true;
+              oh-my-openagent.enable = true;
+            };
           };
           headroom.enable = true;
         };
