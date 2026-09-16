@@ -1,4 +1,8 @@
-{self, ...}: {
+{
+  self,
+  lib,
+  ...
+}: {
   # For Andrew's PCs
   flake.homeModules.profile-netsa = {pkgs, ...}: {
     imports = [self.homeModules.default];
@@ -28,8 +32,27 @@
           vscode.enable = true;
           opencode = {
             enable = true;
+            mcp = {
+              # Dev-profile opt-ins (off by module default)
+              typeui.enable = true;
+              # GitHub MCP via the clan-var PAT method; the "github-mcp"
+              # generator + sops deployment is derived automatically by
+              # nixosModules/github-mcp. Provision with:
+              #   clan vars set github-mcp pat <machine>
+              github.auth = lib.mkDefault "pat";
+              # Cloudflare remote MCP servers
+              cloudflare.enable = lib.mkDefault true;
+              "cloudflare-docs".enable = lib.mkDefault true;
+              "cloudflare-bindings".enable = lib.mkDefault true;
+              "cloudflare-builds".enable = lib.mkDefault true;
+              "cloudflare-browser".enable = lib.mkDefault true;
+              "cloudflare-containers".enable = lib.mkDefault true;
+              # MDN Web Docs
+              mdn.enable = lib.mkDefault true;
+              # ArtifactHub (Helm charts)
+              artifacthub.enable = lib.mkDefault true;
+            };
             # Dev-profile plugins (off by module default)
-            mcp.typeui.enable = true;
             plugins.opencode-mem.enable = true;
             plugins.oh-my-openagent.enable = true;
             plugins.devcontainers.enable = true;
