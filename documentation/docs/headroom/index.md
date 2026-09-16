@@ -418,6 +418,13 @@ OpenCode web UI on port 4096, and the MCP CCR roundtrip.
 | `flake-parts/tests.nix` | VM test auto-discovery & dynamic 3x sizing engine |
 | `vm-tests/headroom-opencode.nix` | Headroom + OpenCode CLI/MCP VM test definition |
 | `vm-tests/headroom-opencode-web.nix` | KubeVirt machine Headroom + OpenCode Web VM test definition |
+
+!!! note "VM test machines need a sops key source"
+    Both test machines are **not in inventory** (no provisioned clan age
+    key), so clan-core's vars → sops-nix deployment fails evaluation with
+    "No key source configured for sops". Both nodes therefore set
+    `services.openssh.enable = true` — sops-nix derives its key from the
+    VM's SSH host key. Keep that line if you touch the test configs.
 | `.github/workflows/_oci.yml` | Reusable workflow to publish OCI containerdisks and Kustomize manifests |
 | `.github/workflows/oci.yml` | Manual dispatch workflow for OCI publishing |
 | `flake.nix` | `headroom` wheel input + `kubenix` input; `debug = true` (flake-parts, feeds nixd's `flake-parts` option provider) |

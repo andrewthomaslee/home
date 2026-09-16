@@ -20,6 +20,11 @@
 
     networking.hostName = "headroom-test";
 
+    # clan-core's vars -> sops-nix deployment needs a key source; the VM
+    # test machine is not in inventory so there is no provisioned age key.
+    # Enabling sshd lets sops-nix derive its host key from the SSH host key.
+    services.openssh.enable = true;
+
     users.users.alice = {
       isNormalUser = true;
       extraGroups = ["wheel"];
