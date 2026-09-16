@@ -5,18 +5,22 @@
   # by nixosModules/github-mcp from githubMcpAuth (only while opencode is
   # enabled for netsa). Provision the secret with:
   #   clan vars set github-mcp pat <machine>
+  # nix-ld for the netsa dev machines (nixos, kamrui-h1, ghost): lets
+  # prebuilt native binaries (e.g. opencode-mem's onnxruntime-node) run.
+  hostSpec.services.nix-ld.enable = true;
+
   home-manager.users.netsa.homeSpec.programs.opencode = {
-    githubMcpAuth = lib.mkDefault "pat";
+    mcp.github.auth = lib.mkDefault "pat";
     # Cloudflare MCP servers: on for netsa dev machines
-    enableCloudflareMcp = lib.mkDefault true;
-    enableCloudflareDocsMcp = lib.mkDefault true;
-    enableCloudflareBindingsMcp = lib.mkDefault true;
-    enableCloudflareBuildsMcp = lib.mkDefault true;
-    enableCloudflareBrowserMcp = lib.mkDefault true;
-    enableCloudflareContainersMcp = lib.mkDefault true;
+    mcp.cloudflare.enable = lib.mkDefault true;
+    mcp."cloudflare-docs".enable = lib.mkDefault true;
+    mcp."cloudflare-bindings".enable = lib.mkDefault true;
+    mcp."cloudflare-builds".enable = lib.mkDefault true;
+    mcp."cloudflare-browser".enable = lib.mkDefault true;
+    mcp."cloudflare-containers".enable = lib.mkDefault true;
     # MDN Web Docs MCP: on for netsa dev machines
-    enableMdnMcp = lib.mkDefault true;
+    mcp.mdn.enable = lib.mkDefault true;
     # ArtifactHub MCP (Helm charts): on for netsa dev machines
-    enableArtifacthubMcp = lib.mkDefault true;
+    mcp.artifacthub.enable = lib.mkDefault true;
   };
 }

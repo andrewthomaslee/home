@@ -47,6 +47,10 @@
     # clan var generator is derived automatically by
     # nixosModules/github-mcp from alice's githubMcpAuth = "pat" below.
     environment.etc."vm-github-pat".text = "ghp-fake-vm-test-pat";
+    # Fake Morph API key: proves the opencode wrapper -> MORPH_API_KEY env
+    # -> plugin wiring end to end (same pattern as the github PAT above;
+    # the clan var generator stays inert because apiKeyFile is overridden).
+    environment.etc."vm-morph-key".text = "morph-fake-vm-test-key";
 
     home-manager.useGlobalPkgs = false;
     home-manager.useUserPackages = true;
@@ -73,8 +77,8 @@
           enable = true;
           # PAT method with the fake file above as PAT source (defaults to
           # the clan var path /run/secrets/vars/shared/github-mcp/pat).
-          githubMcpAuth = "pat";
-          githubPatFile = "/etc/vm-github-pat";
+          mcp.github.auth = "pat";
+          mcp.github.patFile = "/etc/vm-github-pat";
         };
       };
     };
@@ -91,14 +95,19 @@
         enable = true;
         enableDesktop = false;
         fullDevTools = false;
-        enableCloudflareMcp = true;
-        enableCloudflareDocsMcp = true;
-        enableCloudflareBindingsMcp = true;
-        enableCloudflareBuildsMcp = true;
-        enableCloudflareBrowserMcp = true;
-        enableCloudflareContainersMcp = true;
+        # Morph Fast Apply with the fake key file above: exercises the
+        # morph-api-key clan var generator declaration, the opencode
+        # wrapper (MORPH_API_KEY export) and the plugin entry.
+        plugins."morph-fast-apply".enable = true;
+        plugins."morph-fast-apply".apiKeyFile = "/etc/vm-morph-key";
+        mcp.cloudflare.enable = true;
+        mcp."cloudflare-docs".enable = true;
+        mcp."cloudflare-bindings".enable = true;
+        mcp."cloudflare-builds".enable = true;
+        mcp."cloudflare-browser".enable = true;
+        mcp."cloudflare-containers".enable = true;
         # MDN Web Docs remote MCP server
-        enableMdnMcp = true;
+        mcp.mdn.enable = true;
       };
     };
 
@@ -288,6 +297,16 @@
     )
     machine.succeed("su - bob -c 'jq -e \".mcp.github.type == \\\"remote\\\"\" ~/.config/opencode/opencode.json'")
     machine.succeed("su - bob -c 'jq -e \".mcp.github.url == \\\"https://api.githubcopilot.com/mcp/\\\"\" ~/.config/opencode/opencode.json'")
+
+    # 2d+. Verify bob's Morph plugin: store-path entry in the plugin list
+    # and the opencode wrapper exporting MORPH_API_KEY from the key file.
+    machine.succeed(
+      # HM wraps cfg.package once more (wrapProgram): bin/opencode is a
+      # shim exec'ing the hidden .opencode-wrapped symlink, which resolves
+      # to the morph-key wrapper exporting MORPH_API_KEY.
+      "su - bob -c 'inner=$(dirname $(readlink -f $(which opencode)))/.opencode-wrapped; test -e \"$inner\" && grep -q MORPH_API_KEY \"$(readlink -f \"$inner\")\"'"
+    )
+    machine.succeed("su - bob -c 'cat /etc/vm-morph-key | grep -q morph-fake-vm-test-key'")
 
     # 2e. Verify bob's six Cloudflare remote MCP servers are generated
     # with the correct URLs (enabled via the opt-in toggles). Hyphenated

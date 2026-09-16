@@ -26,7 +26,14 @@
           starship.enable = true;
           uv.enable = true;
           vscode.enable = true;
-          opencode.enable = true;
+          opencode = {
+            enable = true;
+            # Dev-profile plugins (off by module default)
+            mcp.typeui.enable = true;
+            plugins.opencode-mem.enable = true;
+            plugins.oh-my-openagent.enable = true;
+            plugins.devcontainers.enable = true;
+          };
           headroom.enable = true;
         };
       };

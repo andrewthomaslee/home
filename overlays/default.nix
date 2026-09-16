@@ -26,6 +26,11 @@
   artifacthub-mcp = self.packages.${final.stdenv.hostPlatform.system}.artifacthub-mcp;
   kubernetes-mcp-server = self.packages.${final.stdenv.hostPlatform.system}.kubernetes-mcp-server;
   opencode-nixd-scaffold = self.packages.${final.stdenv.hostPlatform.system}.opencode-nixd-scaffold;
+  # OpenCode plugins (hermetic builds; entries referenced by store path).
+  cc-safety-net = self.packages.${final.stdenv.hostPlatform.system}.cc-safety-net;
+  opencode-morph-fast-apply = self.packages.${final.stdenv.hostPlatform.system}.opencode-morph-fast-apply;
+  opencode-mem = self.packages.${final.stdenv.hostPlatform.system}.opencode-mem;
+  opencode-devcontainers = self.packages.${final.stdenv.hostPlatform.system}.opencode-devcontainers;
 
   apply-and-reboot = self.packages.${final.stdenv.hostPlatform.system}.apply-and-reboot;
   apply-to-reboot = self.packages.${final.stdenv.hostPlatform.system}.apply-to-reboot;
