@@ -29,7 +29,18 @@
 ### ❄️ **NixOS**
 `Determinate Systems` • `Clan.lol` • `flake-parts` • `dendritic` • `home-manager` • `Tailscale` • `Modded Minecraft Server` • `KDE` • `Wayland`
 
+## Machines
 
+| Machine           | Role                                            |
+| ----------------- | ----------------------------------------------- |
+| `nixos`           | Intel desktop — dev + NVIDIA gaming (jovian)    |
+| `kamrui-h1`       | AMD dev + gaming desktop — KDE/Wayland (jovian) |
+| `ghost`           | Intel desktop — dev                             |
+| `hp-notebook`     | Wife's Intel laptop                             |
+| `nixos-installer` | ISO installer image                             |
+
+Steam/gaming is part of the `jovian` NixOS module (`hostSpec.system.jovian.*`); every
+jovian-enabled machine runs the Valve jovian kernel.
 
 ## Project layout
 
@@ -72,17 +83,23 @@
 
 ```console
 $ nix flake show
+warning: unknown setting 'lazy-trees'
+warning: Git tree '/home/netsa/home' is dirty
+git+file:///home/netsa/home
+├───allSystems: unknown
 ├───apps
 │   └───x86_64-linux
 │       ├───apply-and-reboot: app: Apply latest NixOS configuration + delayed reboot to allow Terraform/SSH to exit cleanly
 │       ├───fetch-kubeconfig: app: no description
 │       ├───get-keys: app: no description
 │       ├───update-flake-show: app: no description
+│       ├───vm-test: app: no description
 │       └───watch-documentation: app: Run mkdocs in watch mode over your documentation folder. Automatically rebuilds your docs on changes.
 ├───clan: unknown
 ├───clanInternals: unknown
 ├───darwinConfigurations: unknown
 ├───darwinModules: unknown
+├───debug: unknown
 ├───devShells
 │   └───x86_64-linux
 │       └───default: development environment 'nix-shell'
@@ -90,9 +107,13 @@ $ nix flake show
 │   └───x86_64-linux: package 'alejandra-4.0.0'
 ├───homeConfigurations: unknown
 ├───homeModules: unknown
+├───legacyPackages
+│   └───x86_64-linux omitted (use '--legacy' to show)
 ├───nixosConfigurations
 │   ├───ghost: NixOS configuration
 │   ├───hp-notebook: NixOS configuration
+│   ├───kamrui-h1: NixOS configuration
+│   ├───kubevirt-agent: NixOS configuration
 │   ├───nixos: NixOS configuration
 │   └───nixos-installer: NixOS configuration
 ├───nixosModules
@@ -101,16 +122,19 @@ $ nix flake show
 │   ├───clan: NixOS module
 │   ├───clan-machine-ghost: NixOS module
 │   ├───clan-machine-hp-notebook: NixOS module
+│   ├───clan-machine-kamrui-h1: NixOS module
 │   ├───clan-machine-nixos: NixOS module
 │   ├───clan-machine-nixos-installer: NixOS module
 │   ├───default: NixOS module
 │   ├───docker: NixOS module
 │   ├───flatpak: NixOS module
+│   ├───github-mcp: NixOS module
 │   ├───intel: NixOS module
 │   ├───jovian: NixOS module
 │   ├───kde: NixOS module
 │   ├───lan: NixOS module
 │   ├───longhorn: NixOS module
+│   ├───morph-api-key: NixOS module
 │   ├───motd: NixOS module
 │   ├───nix: NixOS module
 │   ├───nix-ld: NixOS module
@@ -118,7 +142,7 @@ $ nix flake show
 │   ├───openssh: NixOS module
 │   ├───rancher: NixOS module
 │   ├───sound: NixOS module
-│   ├───steam: NixOS module
+│   ├───splashtop-streamer: NixOS module
 │   ├───storagebox: NixOS module
 │   ├───tailscale: NixOS module
 │   ├───wan: NixOS module
@@ -128,16 +152,29 @@ $ nix flake show
 │   └───default: Nixpkgs overlay
 ├───packages
 │   └───x86_64-linux
+│       ├───ai-agent: package 'docker-image-ai-agent.tar.gz'
+│       ├───ai-agent-oci: package 'ai-agent-oci'
 │       ├───apply-and-reboot: package 'apply-and-reboot'
 │       ├───apply-dry-activate: package 'apply-dry-activate'
 │       ├───apply-now: package 'apply-now'
 │       ├───apply-test: package 'apply-test'
 │       ├───apply-to-boot: package 'apply-to-reboot'
+│       ├───artifacthub-mcp: package 'artifacthub-mcp-1.1.1'
+│       ├───cc-safety-net: package 'cc-safety-net-2.4.1'
 │       ├───devShell: package 'nix-shell'
 │       ├───documentation: package 'mkdocs-flake-documentation'
 │       ├───get-keys: package 'get-keys'
 │       ├───hcloud-ip: package 'hcloud-ip-v0.0.1'
+│       ├───headroom: package 'headroom-ai-0.37.0'
+│       ├───headroom-slim: package 'headroom-ai-0.37.0'
+│       ├───kubernetes-mcp-server: package 'kubernetes-mcp-server-0.0.66'
+│       ├───kubevirt-image: package 'nixos-disk-image'
 │       ├───longhornctl: package 'longhornctl-v1.12.0'
+│       ├───opencode-devcontainers: package 'opencode-devcontainers-0.5.1'
+│       ├───opencode-mem: package 'opencode-mem-2.26.0'
+│       ├───opencode-morph-fast-apply: package 'opencode-morph-fast-apply-1.11.0'
+│       ├───opencode-nixd-scaffold: package 'opencode-nixd-scaffold'
+│       ├───splashtop-streamer: package 'splashtop-streamer-3.8.2.0'
 │       ├───tfctl: package 'tfctl-0.16.4'
 │       └───vcluster: package 'vcluster-v0.36.1'
 └───templates

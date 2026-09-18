@@ -1,11 +1,10 @@
 {pkgs, ...}: {
   hostSpec = {
-    hardware.jovian.enable = true;
+    system.jovian.enable = true;
     services = {
       motd.sshMotd = builtins.readFile ./sshMotd.sh;
       flatpak.enable = true;
     };
-    programs.steam.enable = true;
   };
 
   nixpkgs.config = {

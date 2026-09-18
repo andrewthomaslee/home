@@ -1,8 +1,10 @@
 # AGENTS.md
 
 Dendritic Nix flake (flake-parts + clan.lol + Determinate Nix) for the owner's NixOS machines
-(`nixos`, `kamrui-h1`, `ghost`, `hp-notebook`, `nixos-installer`) and Kubernetes tooling.
-Public repo — secrets never go in git; they live in sops / clan vars (`vars/`).
+and Kubernetes tooling. Machines: `nixos` (Intel desktop, NVIDIA gaming), `kamrui-h1` (AMD dev
++ gaming desktop — KDE/Wayland, not a k8s box), `ghost` (Intel dev desktop), `hp-notebook`
+(wife's Intel laptop), `nixos-installer` (ISO image). Public repo — secrets never go in git;
+they live in sops / clan vars (`vars/`).
 
 ## Environment
 - Work inside `nix develop`. Its shellHook loads `.env` via varlock (`bunx varlock load`), exporting
@@ -28,6 +30,8 @@ Public repo — secrets never go in git; they live in sops / clan vars (`vars/`)
 - Option namespaces: NixOS modules (`flake-parts/nixosModules/`) use `hostSpec.*`; home-manager modules (`flake-parts/homeModules/`) use `homeSpec.*`. The `default` modules auto-import everything except `profile-*` (per-user profiles in `flake-parts/homeModules/profiles/`, wired in `users/<user>/default.nix`).
 - `lib.custom.relativeToRoot` resolves paths from repo root (`lib/`, exposed as `customLib`).
 - `overlays/default.nix` adds `pkgs.unstable` (nixos-unstable) and pins (k3s/rke2 1.35); route new flake-input packages through it if machines need them as `pkgs.<name>`.
+- Steam/gaming lives in `nixosModules/jovian.nix` (`hostSpec.system.jovian.*`) — there is no separate steam module: steam is assumed with jovian, and every jovian machine runs the Valve jovian kernel (`pkgs.linuxPackages_jovian`).
+- kamrui-h1 pins `linux-firmware` to the `nixpkgs-unstable` input (20260810) via a machine-scoped overlay: the 20260910 firmware's `yellow_carp_dmcub.bin` is rejected by PSP on its DCN 3.1.2 GPU (black screen; upstream reverted in 20260916, RH bug 2532947). Remove the overlay once clan-core's nixpkgs refreshes past 20260916.
 - Secrets are clan vars: `vars/shared/`, `vars/per-machine/<machine>/`, produced by `clan.core.vars.generators` in the nixosModules. Use the `clan` CLI (e.g. `clan vars upload <machine>`); don't hand-edit encrypted `secret` files.
 
 ## Workflow
