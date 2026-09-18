@@ -62,7 +62,6 @@
           kubefetch
           curl
           jq
-          ripgrep
           fd
           python3
         ]

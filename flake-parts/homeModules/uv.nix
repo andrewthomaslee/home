@@ -14,7 +14,7 @@
   in {
     options.homeSpec.programs.uv.enable = lib.mkEnableOption "default uv configuration";
     config = lib.mkIf cfg.enable {
-      home.packages = [pkgs.unstable.python314];
+      home.packages = [pkgs.python314];
       programs.uv = {
         enable = true;
         package = pkgs.unstable.uv;

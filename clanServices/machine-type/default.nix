@@ -56,7 +56,7 @@
       time.timeZone = "America/Chicago";
 
       # Services
-      services.journald.extraConfig = "SystemMaxUse=1G";
+      services.journald.settings.Journal.SystemMaxUse = "1G";
 
       # Hardware
       hardware = {

@@ -89,7 +89,7 @@ in {
       # Services
       services = {
         # Limit log size for journal
-        journald.extraConfig = lib.mkDefault "SystemMaxUse=3G";
+        journald.settings.Journal.SystemMaxUse = lib.mkDefault "3G";
         # Automatically update firmware
         fwupd.enable = lib.mkDefault true;
         # Enable ACPI
