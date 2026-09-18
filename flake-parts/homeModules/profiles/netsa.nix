@@ -47,12 +47,14 @@
               mdn.enable = true;
               # ArtifactHub (Helm charts)
               artifacthub.enable = true;
+              # Kubernetes MCP — exits without a kubeconfig, so the module
+              # default is off; dev machines provision one.
+              kubernetes.enable = true;
             };
             # Dev-profile plugins (off by module default)
             plugins = {
               opencode-mem.enable = true;
               devcontainers.enable = true;
-              oh-my-openagent.enable = true;
             };
           };
           headroom.enable = true;

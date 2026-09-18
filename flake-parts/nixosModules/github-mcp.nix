@@ -3,7 +3,7 @@
   # Self-configuring GitHub MCP support. All user-facing options live under
   # homeSpec.programs.opencode (homeModules/opencode.nix) — this module has
   # none of its own. For every home-manager user whose opencode config has
-  # enableGithubMcp + githubMcpAuth = "pat", it declares the clan vars
+  # mcp.github.enable + mcp.github.auth = "pat", it declares the clan vars
   # generator provisioning the PAT; sops-nix deploys it to
   #   /run/secrets/vars/shared/github-mcp/pat
   # (owner = user, mode 0400, neededFor = services), where the opencode
@@ -11,6 +11,12 @@
   #
   # Provisioning (interactive, no fake values in the repo):
   #   clan vars set github-mcp pat <machine>   (or: clan vars generate)
+  #
+  # NOTE: this scan mirrors the option paths in homeModules/opencode.nix by
+  # hand (defensive `or` access to avoid fixpoint recursion). If you rename
+  # or restructure those options, update BOTH places — a stale scan
+  # silently stops declaring the generator (regression seen when the flat
+  # githubMcpAuth option was renamed to mcp.github.auth).
   #
   # NOTE: assumes at most one pat-mode user per machine (shared generator);
   # conflicting owners would fail the merge at eval time.
@@ -27,14 +33,18 @@
       (
         userName: hmUser: let
           oc = hmUser.homeSpec.programs.opencode or null;
+          gh =
+            if oc != null
+            then (oc.mcp or {}).github or {}
+            else {};
         in
           lib.mkIf
           (
             oc
             != null
             && (oc.enable or false)
-            && (oc.enableGithubMcp or false)
-            && ((oc.githubMcpAuth or "oauth") == "pat")
+            && (gh.enable or false)
+            && ((gh.auth or "oauth") == "pat")
           )
           {
             "github-mcp" = {

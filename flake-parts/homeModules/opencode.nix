@@ -56,12 +56,6 @@
       ++ lib.optional cfg.plugins."cc-safety-net".enable "${pkgs.cc-safety-net}/share/opencode-plugins/cc-safety-net/dist/index.js"
       ++ lib.optional cfg.plugins."morph-fast-apply".enable "${pkgs.opencode-morph-fast-apply}/share/opencode-plugins/opencode-morph-fast-apply/index.ts"
       ++ lib.optional cfg.plugins.opencode-mem.enable "${pkgs.opencode-mem}/share/opencode-plugins/opencode-mem/dist/plugin.js"
-      # oh-my-openagent: npm-name entry — opencode installs it into its own
-      # plugin cache at first launch. Upstream's hermetic build materializes
-      # git submodules (network-bound), so the npm path is the pragmatic
-      # choice for this opt-in dev plugin. Telemetry is hard-off via
-      # ~/.omo/omo.jsonc below.
-      ++ lib.optional cfg.plugins.oh-my-openagent.enable "oh-my-openagent"
       ++ lib.optional cfg.plugins.devcontainers.enable "${pkgs.opencode-devcontainers}/share/opencode-plugins/opencode-devcontainers/plugin/index.js";
   in {
     options.homeSpec.programs.opencode = {
@@ -185,8 +179,8 @@
         # kubeconfig.
         kubernetes.enable = lib.mkOption {
           type = lib.types.bool;
-          default = true;
-          description = "Enable the Kubernetes MCP server in opencode settings.";
+          default = false;
+          description = "Enable the Kubernetes MCP server in opencode settings. Off by default: it exits at startup without a kubeconfig (~/.kube/config); enable per profile/machine once cluster credentials exist.";
         };
         kubernetes.readOnly = lib.mkOption {
           type = lib.types.bool;
@@ -250,14 +244,6 @@
           default = false;
           description = "Enable the opencode-mem persistent memory plugin (memory tool + web UI).";
         };
-        # oh-my-openagent: multi-agent orchestration (ultrawork, Team Mode,
-        # 11 agents, 54+ hooks). INVASIVE: it overrides the default agent.
-        # Telemetry is hard-disabled; runtime config at ~/.omo/omo.jsonc.
-        oh-my-openagent.enable = lib.mkOption {
-          type = lib.types.bool;
-          default = false;
-          description = "Enable the oh-my-openagent multi-agent orchestration plugin (overrides the default agent).";
-        };
         # opencode-devcontainers: isolated branch workspaces via
         # devcontainers or git worktrees (/devcontainer, /worktree,
         # /workspaces commands). Needs the devcontainer CLI (fullDevTools)
@@ -275,16 +261,6 @@
       # so agents reliably pick morph_edit over native edit.
       xdg.configFile."opencode/instructions/morph-tools.md" = lib.mkIf cfg.plugins."morph-fast-apply".enable {
         source = "${pkgs.opencode-morph-fast-apply}/share/opencode-plugins/opencode-morph-fast-apply/instructions/morph-tools.md";
-      };
-
-      # oh-my-openagent: declarative runtime config — telemetry hard-off.
-      home.file.".omo/omo.jsonc" = lib.mkIf cfg.plugins.oh-my-openagent.enable {
-        text = ''
-          {
-            // Declaratively managed by home-manager (flake homeModules/opencode).
-            "telemetry": false
-          }
-        '';
       };
 
       xdg.configFile."opencode/skills".source = inputs.agents.lib.mkSkills {

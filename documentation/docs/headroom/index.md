@@ -121,26 +121,23 @@ The same module also declaratively adds three more MCP servers to
 | `mcp."cloudflare-containers".enable` | `false` | `mcp.cloudflare-containers` | remote | Cloudflare **Container** server (`https://containers.mcp.cloudflare.com/mcp`) — spin up a sandbox development environment |
 | `mcp.mdn.enable` | `false` | `mcp.mdn` | remote | MDN Web Docs server (`https://mcp.mdn.mozilla.net/`) — up-to-date web API/CSS/JS reference from Mozilla |
 | `mcp.artifacthub.enable` | `false` | `mcp.artifacthub` | local | ArtifactHub MCP server — Helm-chart tools against artifacthub.io: chart info, default `values.yaml` (with fuzzy search), templates (with fuzzy search). Built hermetically from the `v1.1.1` source pin (`buildNpmPackage` in `flake-parts/packages/artifacthub-mcp.nix`), so no docker/`npx` runtime downloads |
-| `mcp.kubernetes.enable` | `true` | `mcp.kubernetes` | local | Kubernetes MCP server (`containers/kubernetes-mcp-server` v0.0.66, hermetic `buildGoModule` in `flake-parts/packages/kubernetes-mcp-server.nix`) — kubectl + helm + KubeVirt toolsets against the user's kubeconfig; stdio is the default transport. `mcp.kubernetes.readOnly` (default `false`) adds `--read-only` (only `readOnlyHint` tools exposed) |
+| `mcp.kubernetes.enable` | `true` | `mcp.kubernetes` | local | Kubernetes MCP server (`containers/kubernetes-mcp-server` v0.0.66, hermetic `buildGoModule` in `flake-parts/packages/kubernetes-mcp-server.nix`) — kubectl + helm + KubeVirt toolsets against the user's kubeconfig; stdio is the default transport. **Off by default** (`mcp.kubernetes.enable`, default `false`): the server exits at startup without a kubeconfig (`~/.kube/config` or `KUBECONFIG`), so enable it per profile/machine once cluster credentials exist — the dev profile (netsa machines) enables it. `mcp.kubernetes.readOnly` (default `false`) adds `--read-only` (only `readOnlyHint` tools exposed) |
 | `mcp.typeui.enable` | `false` | `mcp.typeui` | remote | TypeUI hosted design-skills MCP (`https://mcp.typeui.sh/mcp`, OAuth on first use): design systems, UI prompts and layout guidance for AI-first UI work. Enabled for the dev profile |
 
 
 ### Plugins
 
 OpenCode plugins are wired through `settings.plugin` with **absolute store
-paths** (nothing is fetched from npm at runtime), except oh-my-openagent
-which uses opencode's own plugin install (upstream's hermetic build
-materializes network-bound git submodules).
+paths** (nothing is fetched from npm at runtime).
 
 | Option | Default | Description |
 |---|---|---|
 | `plugins."cc-safety-net".enable` | `true` | CC Safety Net — pre-tool-call guard blocking destructive commands (`git reset --hard`, `rm -rf` on dangerous targets, ...) and secret access (SSH keys, `.env`, `~/.aws`). Policy tuning is runtime state via `cc-safety-net gui`; broken config never blocks |
 | `plugins."morph-fast-apply".enable` | `false` | Morph Fast Apply — `morph_edit` tool (lazy edit markers, ~10k tok/s merges). Needs a Morph API key: the `morph-api-key` clan var generator (nixosModules/morph-api-key) deploys it, the opencode wrapper exports it as `MORPH_API_KEY`; `apiKeyFile` overrides the var path, `model` selects `morph-v3-fast`/`morph-v3-large`/`auto` |
 | `plugins.opencode-mem.enable` | `false` | opencode-mem — persistent project memory with local vector search (embedded libSQL + onnxruntime, autoPatchelf'd for NixOS). Default embedding model downloads from Hugging Face on first use; web UI on `127.0.0.1:4747`; runtime config at `~/.config/opencode/opencode-mem.jsonc` |
-| `plugins.oh-my-openagent.enable` | `false` | oh-my-openagent — multi-agent orchestration (ultrawork, Team Mode, 11 agents). **Invasive: overrides the default agent.** Telemetry hard-off via `~/.omo/omo.jsonc` |
 | `plugins.devcontainers.enable` | `false` | opencode-devcontainers — isolated branch workspaces via devcontainers/git worktrees (`/devcontainer`, `/worktree`, `/workspaces`). Needs `devcontainer` CLI (fullDevTools) + docker/podman |
 
-The four opt-in plugins are enabled for the **dev profile**
+The three opt-in plugins are enabled for the **dev profile**
 (`flake-parts/homeModules/profiles/netsa.nix`), which pairs with
 `hostSpec.services.nix-ld.enable = true` on the netsa-tagged dev machines
 (nixos, kamrui-h1, ghost) so prebuilt native binaries (onnxruntime) run.
@@ -160,8 +157,7 @@ artifacthub.io API.
 ### GitHub MCP server
 
 `mcp.github` is **on by default** (`mcp.github.enable`, default `true`) and
-supports two **mutually exclusive** auth methods, selected by
-`homeSpec.programs.opencode.githubMcpAuth`:
+supports two **mutually exclusive** auth methods, selected by `mcp.github.auth`:
 
 | `mcp.github.auth` | `mcp.github` entry | Secret |
 |---|---|---|
@@ -180,10 +176,10 @@ is a hard requirement for the `"pat"` method to work.
 
 #### Clan vars provisioning (`flake-parts/nixosModules/github-mcp.nix`)
 
-All githubMcp options live under `homeSpec.programs.opencode` — there is no
+All github options live under `homeSpec.programs.opencode.mcp.github` — there is no
 separate NixOS option tree. The option-less NixOS module
 `nixosModules.github-mcp` scans every home-manager user's opencode config
-and, for each user with `mcp.github.enable` + `githubMcpAuth = "pat"`
+and, for each user with `mcp.github.enable` + `mcp.github.auth = "pat"`
 (and opencode enabled), declares the shared clan vars generator:
 
 ```nix
@@ -211,11 +207,12 @@ sops-nix then deploys the secret to
 the wrapper picks it up on every MCP server start. Machines using the
 default `"oauth"` method declare no generator and need no secret at all.
 
-The netsa dev machines opt into `"pat"` via the **netsa tag profile**
-(`clanServices/tags/netsa.nix`, wired to machines tagged `netsa` through the
-`tags` clan service in `inventory.nix`), which just sets
-`home-manager.users.netsa.homeSpec.programs.opencode.githubMcpAuth = "pat"`.
-No per-machine configuration is needed anywhere.
+The netsa dev machines opt into `"pat"` via the **dev profile**
+(`flake-parts/homeModules/profiles/netsa.nix`, applied to netsa on
+netsa-tagged machines through the users clan service in `inventory.nix`),
+which sets `mcp.github.auth = "pat"`. No per-machine configuration is
+needed anywhere. The netsa tag (`clanServices/tags/netsa.nix`) itself only
+carries machine-level `hostSpec` options (nix-ld).
 
 No docker image or `uvx` shim is needed anywhere: OpenRouter is remote-only,
 and Playwright comes from the pinned nixpkgs revision. `playwright-mcp` is
@@ -431,12 +428,13 @@ OpenCode web UI on port 4096, and the MCP CCR roundtrip.
 | `flake-parts/packages/opencode-nixd-scaffold.nix` + `.py` | `opencode-nixd-scaffold` package (`writers.writePython3Bin`): scaffolds per-repo `opencode.json` + `.vscode/settings.json` nixd overrides |
 | repo-root `opencode.json` / `.vscode/settings.json` | Per-repo nixd overrides for this flake (NixOS/home-manager/flake-parts option trees; machine-agnostic via `/etc/hostname` read at LSP eval time) |
 | `flake-parts/homeModules/headroom.nix` | headroom options + `headroom-proxy.service` user unit |
-| `flake-parts/homeModules/opencode.nix` | OpenCode settings: MCP under `mcp.<name>.enable` (headroom, nixos, openrouter, playwright, github, cloudflare ×6, mdn, artifacthub, kubernetes, typeui), plugins under `plugins.<name>.enable` (cc-safety-net, morph-fast-apply, opencode-mem, oh-my-openagent, devcontainers), plugin/baseURL routing, LSP (nixd, helm_ls, pyrefly, gleam), formatters; `enableDesktop`/`fullDevTools` trims; `mcp.github.auth` `oauth`/`pat` + `mcp.github.patFile` wrapper; morph key wrapper + `~/.omo/omo.jsonc` telemetry-off config |
+| `flake-parts/homeModules/opencode.nix` | OpenCode settings: MCP under `mcp.<name>.enable` — defaults on: nix, openrouter, playwright, github, cc-safety-net plugin; defaults off: cloudflare ×6, mdn, artifacthub, typeui, kubernetes (needs kubeconfig), morph-fast-apply (needs key), opencode-mem, devcontainers; plugins under `plugins.<name>.enable`; dev profile (profiles/netsa.nix) opts into typeui, kubernetes, github pat, cloudflare ×6, mdn, artifacthub, opencode-mem, devcontainers; LSP (nixd, helm_ls, pyrefly, gleam), formatters; `enableDesktop`/`fullDevTools` trims; `mcp.github.auth` `oauth`/`pat` + `mcp.github.patFile` wrapper; morph key wrapper |
 | `flake-parts/packages/opencode-plugins.nix` | Hermetic OpenCode plugin packages: `cc-safety-net` (dist committed, zero deps), `opencode-morph-fast-apply` + `opencode-devcontainers` (bun FOD + source), `opencode-mem` (bun FODs + tsc/vite build + autoPatchelf); entries live under `share/opencode-plugins/<name>/` |
 | `flake-parts/nixosModules/morph-api-key.nix` | Clan vars generator for the Morph API key (mirrors github-mcp; inert until `plugins."morph-fast-apply".enable`) |
-| `flake-parts/nixosModules/github-mcp.nix` | Option-less module: derives the clan vars `github-mcp` PAT generator (shared, prompted, persisted, owner `<user>` mode `0400`) from each home-manager user's `githubMcpAuth = "pat"` opencode config |
-| `clanServices/tags/netsa.nix` | netsa tag profile: `githubMcpAuth = "pat"` + all six Cloudflare MCP toggles + MDN + ArtifactHub toggles for netsa's opencode on netsa-tagged dev machines |
+| `flake-parts/nixosModules/github-mcp.nix` | Option-less module: derives the clan vars `github-mcp` PAT generator (shared, prompted, persisted, owner `<user>` mode `0400`) from each home-manager user's `mcp.github.enable` + `mcp.github.auth = "pat"` opencode config |
+| `clanServices/tags/netsa.nix` | netsa tag: machine-level `hostSpec` options only (`nix-ld` for prebuilt native binaries); all opencode opt-ins live in the dev profile (`flake-parts/homeModules/profiles/netsa.nix`) |
 | `flake-parts/homeModules/profiles/netsa-agent.nix` | Headless AI agent profile with developer toolings |
+| `flake-parts/homeModules/profiles/netsa.nix` | Dev profile for netsa PCs: opencode MCP/plugin opt-ins (typeui, kubernetes, github pat, cloudflare ×6, mdn, artifacthub, opencode-mem, devcontainers) |
 | `flake-parts/packages/ai-agent.nix` | KubeVirt QCOW2 image (compressed), OCI containerdisk, Kubenix Kustomization package |
 | `flake-parts/apps/vm-test.nix` | `vm-test` app (sandboxed + driver modes) |
 | `flake-parts/tests.nix` | VM test auto-discovery & dynamic 3x sizing engine |
