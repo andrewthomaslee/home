@@ -1065,6 +1065,7 @@
         "opencode": "opencode",
         "plasma-manager": "plasma-manager",
         "skills-anthropic": "skills-anthropic",
+        "skills-payloadcms": "skills-payloadcms",
         "splashtop-streamer": "splashtop-streamer",
         "zen-browser": "zen-browser"
       }
@@ -1081,6 +1082,22 @@
       },
       "original": {
         "owner": "anthropics",
+        "repo": "skills",
+        "type": "github"
+      }
+    },
+    "skills-payloadcms": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1783443347,
+        "narHash": "sha256-kX3WMREQpWSr3CeJVUMkyKGWJaryEeUNPHFuwakjDZc=",
+        "owner": "payloadcms",
+        "repo": "skills",
+        "rev": "832d5bc4258ae784f08cb7f03a3a674d6b2fa5f1",
+        "type": "github"
+      },
+      "original": {
+        "owner": "payloadcms",
         "repo": "skills",
         "type": "github"
       }

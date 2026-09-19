@@ -106,6 +106,13 @@
       flake = false;
     };
 
+    # Payload CMS AI agent skills (opencode skills; source tree, not a
+    # flake). Root `skills/` dir with `payload` and `cms-migration`.
+    skills-payloadcms = {
+      url = "github:payloadcms/skills";
+      flake = false;
+    };
+
     # Splashtop Streamer — remote-access daemon, Ubuntu amd64 tarball containing the .deb
     splashtop-streamer = {
       url = "https://download.splashtop.com/linux/STB_CSRS_Ubuntu_v3.8.2.0_amd64.tar.gz";

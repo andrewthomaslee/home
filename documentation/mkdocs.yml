@@ -10,6 +10,7 @@ nav:
       - Overview: architecture/index.md
       - ADR 0001 - Multi-Host Deployment: architecture/adr/0001-multi-host-deployment-strategy.md
   - OpenCode:
+      - Skills: opencode-skills.md
       - Nix/K8s Upgrade Sheet: opencode-upgrade.md
   - Headroom:
       - Overview: headroom/index.md

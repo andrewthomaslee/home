@@ -256,21 +256,27 @@
       };
     };
     config = lib.mkIf cfg.enable {
-      # add skills to config
       # Morph Fast Apply: ship the packaged always-on routing instruction
       # so agents reliably pick morph_edit over native edit.
       xdg.configFile."opencode/instructions/morph-tools.md" = lib.mkIf cfg.plugins."morph-fast-apply".enable {
         source = "${pkgs.opencode-morph-fast-apply}/share/opencode-plugins/opencode-morph-fast-apply/instructions/morph-tools.md";
       };
 
+      # Skills: repo-local custom skills (../../skills) + external skill
+      # sources, merged into ~/.config/opencode/skills by
+      # inputs.agents.lib.mkSkills (a linkFarm of per-skill symlinks).
+      # Custom skills override externals on name collision; among externals,
+      # earlier entries in the list win. Plain relative path (not
+      # relativeToRoot): customLib is not in home-module args, and relative
+      # paths resolve inside this flake's source for external consumers.
       xdg.configFile."opencode/skills".source = inputs.agents.lib.mkSkills {
         inherit pkgs;
-        customSkills = "${inputs.skills-anthropic}/skills";
+        customSkills = ../../skills;
         externalSkills = [
-          # Include all skills from anthropics/skills
-          # {src = inputs.skills-anthropic;}
-          # Or cherry-pick specific skills:
-          # { src = inputs.skills-anthropic; selectSkills = [ "mcp-builder" ]; }
+          # Claude skills from anthropics/skills (all skills under skills/)
+          {src = inputs.skills-anthropic;}
+          # Payload CMS skills (payload, cms-migration)
+          {src = inputs.skills-payloadcms;}
         ];
       };
 
