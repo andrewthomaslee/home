@@ -3,6 +3,10 @@
   # assumed with jovian (see flake-parts/nixosModules/jovian.nix).
   hostSpec.system.jovian.enable = true;
 
+  # Push-to-talk speech-to-text (whisper.cpp, Vulkan on the AMD iGPU).
+  # Hotkey: hold Ctrl+Period. C270 webcam mic is the recording source.
+  hostSpec.services.whisper-dictation.enable = true;
+
   nixpkgs.overlays = [
     (final: prev: {
       # linux-firmware 20260910 (in clan-core's nixpkgs aff8a0b) ships a

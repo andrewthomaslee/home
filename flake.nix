@@ -97,6 +97,9 @@
       flake = false;
     };
 
+    # Whisper Dictation — local push-to-talk speech-to-text daemon (whisper.cpp)
+    whisper-dictation.url = "github:jacopone/whisper-dictation";
+
     agents = {
       url = "git+https://code.m3ta.dev/m3tam3re/AGENTS";
       inputs.nixpkgs.follows = "nixpkgs-unstable";

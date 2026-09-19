@@ -147,7 +147,8 @@ git+file:///home/netsa/home
 │   ├───tailscale: NixOS module
 │   ├───wan: NixOS module
 │   ├───warp: NixOS module
-│   └───wayland: NixOS module
+│   ├───wayland: NixOS module
+│   └───whisper-dictation: NixOS module
 ├───overlays
 │   └───default: Nixpkgs overlay
 ├───packages

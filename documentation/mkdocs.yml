@@ -14,6 +14,8 @@ nav:
       - Nix/K8s Upgrade Sheet: opencode-upgrade.md
   - Headroom:
       - Overview: headroom/index.md
+  - Whisper Dictation:
+      - Overview: whisper-dictation/index.md
   - Minecraft:
       - Overview: minecraft/index.md
       - mc.andrewlee.fun: minecraft/mc-andrewlee-fun.md
