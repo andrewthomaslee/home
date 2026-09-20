@@ -23,16 +23,21 @@
 
     # Upstream's wrapper omits glib's typelib dir from GI_TYPELIB_PATH, so
     # pygobject cannot import Gtk (ui.py, imported at daemon startup).
-    # Re-wrap; use upstream's own pinned nixpkgs glib for consistency.
+    # Re-wrap with the full Gtk-4.0 typelib closure; use upstream's own
+    # pinned nixpkgs for consistency. Missing dirs are harmless.
     upstreamPkgs =
       inputs.whisper-dictation.inputs.nixpkgs.legacyPackages.${pkgs.stdenv.hostPlatform.system};
     package = pkgs.symlinkJoin {
       name = "whisper-dictation-vulkan";
       paths = [inputs.whisper-dictation.packages.${pkgs.stdenv.hostPlatform.system}.whisper-dictation-vulkan];
       nativeBuildInputs = [pkgs.makeWrapper];
-      postBuild = ''
+      postBuild = let
+        typelibDirs =
+          map (a: "${upstreamPkgs.${a}.out}/lib/girepository-1.0")
+          ["glib" "graphene" "pango" "gdk-pixbuf" "cairo" "harfbuzz"];
+      in ''
         wrapProgram $out/bin/whisper-dictation \
-          --prefix GI_TYPELIB_PATH : "${upstreamPkgs.glib.out}/lib/girepository-1.0"
+          --prefix GI_TYPELIB_PATH : "${lib.concatStringsSep ":" typelibDirs}"
       '';
     };
   in {
