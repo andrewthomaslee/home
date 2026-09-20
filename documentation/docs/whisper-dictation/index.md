@@ -16,77 +16,75 @@ The daemon (`systemd --user` unit `whisper-dictation`) starts automatically
 with the KDE Wayland session. Desktop notifications show recording /
 transcribing / success states.
 
-## Enabling
+## What the module does
 
-```nix
-# machines/<name>/configuration.nix
-hostSpec.services.whisper-dictation.enable = true;
-```
+`hostSpec.services.whisper-dictation.enable = true;` wires only the
+NixOS-specific glue (everything else is upstream stock):
 
-The module (`flake-parts/nixosModules/whisper-dictation.nix`, gated behind
-`hostSpec.services.whisper-dictation.*`) wires everything:
-
-- `programs.ydotool.enable` — system `ydotoold` (uinput text insertion)
+- `programs.ydotool.enable` — system `ydotoold` (uinput text insertion,
+  socket `/run/ydotoold/socket`)
 - `boot.kernelModules = ["uinput"]`
 - Adds the user to the `input` (evdev hotkey capture) and `ydotool` groups
-- Provisions the Whisper model into the Nix store and symlinks it to
-  `~/.local/share/whisper/models/`
-- Seeds `~/.config/whisper-dictation/config.yaml` **only if missing** — edit
-  freely afterwards; rebuilds never overwrite your changes
-- Runs `whisper-dictation-vulkan` as a user service gated to `netsa`
-  (`ConditionUser`)
+- Runs `whisper-dictation-vulkan` as a user service gated to the user
+  (`ConditionUser`) with `YDOTOOL_SOCKET=/run/ydotoold/socket`
+- Re-wraps upstream's package with glib's GI typelib dir — upstream's wrapper
+  omits it, which breaks the Gtk import at daemon startup in clean sessions
 
-## Options
+Options: `enable`, `user` (default `netsa`).
 
-| Option | Default | Description |
-| --- | --- | --- |
-| `enable` | `false` | Enable the daemon + integrations |
-| `package` | `whisper-dictation-vulkan` | Vulkan build uses the GPU (RADV on AMD); `pkgs.whisper-dictation` for CPU-only |
-| `user` | `"netsa"` | User running the daemon (gets `input` + `ydotool` groups) |
-| `model` | `"small"` | ggml model: `tiny`, `base`, `small`, `medium`, `large-v3` |
-| `modelHash` | *(sha256 of `small`)* | Set alongside `model` (`nix store prefetch-file --hash-type sha256 --json <url>`) |
-| `language` | `"en"` | Transcription language code, or `auto` |
-| `hotkey.modifiers` | `["ctrl"]` | Push-to-talk modifiers (`super`, `ctrl`, `alt`, `shift`) |
-| `hotkey.key` | `"period"` | Push-to-talk key (`period`, `comma`, `space`, `slash`, `semicolon`) |
-| `inputDevice` | `null` | Evdev keyboard NAME substring to pin the hotkey device; `null` = auto-detect |
+## Manual configuration (`~/.config/whisper-dictation/config.yaml`)
 
-### Model sizes
+Edit freely and restart the unit (`systemctl --user restart
+whisper-dictation`) after changes. Key settings:
+
+- `input_device: /dev/input/event1` — **pin the push-to-talk keyboard**. On
+  kamrui-h1 `event1` is the wired Logitech keyboard's typing interface. If
+  dictation ever goes silent after a reboot/replug (node renumbering), check
+  `readlink -f /dev/input/by-id/usb-Logitech_LogiG_MKeyboard-event-kbd` and
+  update the pin. Do not pin a bare name like `Logitech` (matches the mouse)
+  or the dongle's phantom `Wireless Keyboard PID:4023` (never emits keys).
+- `hotkey` — `ctrl` + `period` (default; `super`+`period` collides with the
+  KDE Plasma emoji picker)
+- `whisper.model` — `small` (provisioned), `tiny`, `base`, `medium`
+- `whisper.language` — `en` (or `auto`)
+
+## Model
+
+`~/.local/share/whisper/models/ggml-small.bin` is a symlink into the Nix
+store (provisioned during the initial deployment). To switch models:
+
+```console
+$ curl -L -o ~/.local/share/whisper/models/ggml-base.bin \
+    https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-base.bin
+```
+
+then set `whisper.model: base` in config.yaml.
 
 | Model | Size | Accuracy | Notes |
 | --- | --- | --- | --- |
 | tiny | 39 MB | ~60% | Fastest, noisy output |
 | base | 142 MB | ~70% | Upstream's speed pick |
-| **small** | 466 MB | ~80% | Default here — good balance with iGPU Vulkan |
+| small | 466 MB | ~80% | Default here — good balance with iGPU Vulkan |
 | medium | 1.5 GB | ~85% | Slower on an iGPU |
-| large-v3 | 3 GB | ~90% | Needs `modelHash` change |
 
 ## Devices on kamrui-h1
 
 - **Microphone**: the Logitech C270 webcam's mic ("Webcam C270 Mono") is the
   PipeWire default source — recording uses it automatically.
-- **Hotkey keyboard**: auto-detected (daemon prefers evdev devices whose name
-  contains "keyboard" — currently the wired `Logitech LogiG MKeyboard`). To
-  pin it, set in `~/.config/whisper-dictation/config.yaml`:
-  `input_device: "LogiG MKeyboard"` (wired) or
-  `input_device: "Wireless Keyboard PID:4023"` (wireless). Use an exact name
-  substring — a bare `Logitech` matches the mouse, and by-id paths never
-  match.
-
-## Tweaks
-
-Edit `~/.config/whisper-dictation/config.yaml` (seeded once by the module,
-yours afterwards): hotkey, language, model, typing speed, filler-word
-removal. Command-line overrides also exist when running the binary manually.
+- **Push-to-talk keyboard**: the wired `Logitech LogiG MKeyboard`, pinned via
+  `input_device` in config.yaml (see above).
+- Text insertion goes through the system `ydotoold` (`/run/ydotoold/socket`).
 
 ## Troubleshooting
 
 - **Daemon logs**: `journalctl --user -u whisper-dictation -f`
-- **Hotkey does nothing**: check the daemon found a keyboard in the logs; a
-  session predating the `ydotool` group needs one re-login; only the pinned
-  (or auto-detected) keyboard triggers push-to-talk
+- **Verbose run** (shows hotkey detection and recording):
+  `systemctl --user stop whisper-dictation && whisper-dictation --verbose`
+  (restart the unit afterwards)
+- **Hotkey does nothing**: confirm the daemon watches `/dev/input/event1`
+  (`Found configured device: … at /dev/input/event1` in the journal); verify
+  the by-id mapping if nodes renumbered; only the pinned keyboard triggers
 - **No text appears**: `systemctl status ydotoold` must be active
-  (socket `/run/ydotoold/socket`)
 - **No audio recorded**: confirm `Webcam C270 Mono` is the default source
   (`wpctl status`)
-- **Slow transcription**: lower `whisper.model` (small → base → tiny), or
-  force CPU with `whisper.use_gpu: false`
+- **Slow transcription**: lower `whisper.model` (small → base → tiny)

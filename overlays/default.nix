@@ -17,10 +17,6 @@
   k3s = inputs.nixpkgs-unstable.legacyPackages.${final.stdenv.hostPlatform.system}.k3s_1_35;
   rke2 = inputs.nixpkgs-unstable.legacyPackages.${final.stdenv.hostPlatform.system}.rke2_1_35;
 
-  # Whisper Dictation — speech-to-text (vulkan variant uses the GPU via RADV)
-  whisper-dictation = inputs.whisper-dictation.packages.${final.stdenv.hostPlatform.system}.default;
-  whisper-dictation-vulkan = inputs.whisper-dictation.packages.${final.stdenv.hostPlatform.system}.whisper-dictation-vulkan;
-
   tfctl = self.packages.${final.stdenv.hostPlatform.system}.tfctl;
   longhornctl = self.packages.${final.stdenv.hostPlatform.system}.longhornctl;
   vcluster = self.packages.${final.stdenv.hostPlatform.system}.vcluster;
