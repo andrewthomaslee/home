@@ -29,6 +29,11 @@
 ### ❄️ **NixOS**
 `Determinate Systems` • `Clan.lol` • `flake-parts` • `dendritic` • `home-manager` • `Tailscale` • `Modded Minecraft Server` • `KDE` • `Wayland`
 
+Networking (`flake-parts/nixosModules/networking.nix`): WAN TCP BBR congestion
+control + `fq` qdisc with 16M send buffers for lossy long-RTT uplinks, WiFi
+power-save off (NetworkManager `wifi.powersave=2`), and rtw89 low-power /
+PCIe-PM disables.
+
 ## Machines
 
 | Machine           | Role                                            |

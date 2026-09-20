@@ -27,8 +27,11 @@ NixOS-specific glue (everything else is upstream stock):
 - Adds the user to the `input` (evdev hotkey capture) and `ydotool` groups
 - Runs `whisper-dictation-vulkan` as a user service gated to the user
   (`ConditionUser`) with `YDOTOOL_SOCKET=/run/ydotoold/socket`
-- Re-wraps upstream's package with glib's GI typelib dir — upstream's wrapper
-  omits it, which breaks the Gtk import at daemon startup in clean sessions
+- Re-wraps upstream's package with the full Gtk-4.0 typelib closure
+  (`glib`, `graphene`, `pango`, `gdk-pixbuf`, `cairo`, `harfbuzz`) —
+  upstream's wrapper omits `GI_TYPELIB_PATH` entirely, and
+  `Gtk-4.0.typelib` resolves all of those namespaces; with glib alone the
+  daemon crash-loops on `Typelib namespace Graphene not found`
 
 Options: `enable`, `user` (default `netsa`).
 
