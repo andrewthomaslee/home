@@ -253,6 +253,15 @@ Run this loop before claiming any Nix work is done — in order:
 5. nix build .#<thing-you-touched> -L   # real build, -L = logs
 ```
 
+Filtering check output: result lines are plain UTF-8 (✅ pass, ❌ fail),
+so a literal grep works — `2>&1` is required, the lines go to stderr:
+
+```
+nix flake check --show-trace 2>&1 | grep -E "^✅|^❌"   # results only
+nix flake check 2>&1 | grep -cE "^✅"                   # count passes
+nix flake check 2>&1 | grep -E "❌|error:" -A 5          # failures + trace
+```
+
 `--fail` on deadnix makes findings fatal; `-e`/`--edit` removes them and
 writes the files — run it, review the diff, keep or revert. In module-heavy
 repos, unused module args are common; `deadnix -l -L --fail .` tolerates
