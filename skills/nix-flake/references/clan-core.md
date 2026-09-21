@@ -6,6 +6,10 @@ that provides that toolset: a flake-parts module (`clan` option), the
 `clan` CLI, a library of prebuilt services, a secrets system (vars), and
 clanLib. Load this reference when a flake has a `clan-core` input.
 
+Worked examples are from the home repo (`andrewthomaslee/home`, the
+public flake this skill ships in) — the patterns are generic; substitute
+your repo's names.
+
 Load [clan-vars.md](clan-vars.md) alongside this one when working with
 secrets or generators.
 
@@ -71,7 +75,7 @@ Community flake inputs must follow the same clan-core instance:
 
 The `clan` option then configures the fleet. Upstream examples put
 everything inline (`clan.meta.name`, `clan.machines.<name> = {...}`,
-`clan.inventory`); this repo keeps the tree modular instead:
+`clan.inventory`); the home repo keeps the tree modular instead:
 
 ```nix
 # flake-parts/default.nix (flake output section)
@@ -89,8 +93,8 @@ clan = {
 ```
 
 `clan.meta.name` and `clan.meta.domain` are required and must be unique
-across the clans you manage (set inside `inventory.nix` here, as
-`inventory.meta`).
+across the clans you manage (the home repo sets them inside
+`inventory.nix`, as `inventory.meta`).
 
 ## How clan evaluates a flake
 
@@ -107,8 +111,8 @@ across the clans you manage (set inside `inventory.nix` here, as
 
 Machine NixOS modules receive the args configured in
 `clan.specialArgs`. If specialArgs are not threaded through, machine
-evals die with `attribute '<arg>' missing` (this repo passes `customLib`
-there; see the circularity exception in
+evals die with `attribute '<arg>' missing` (the home repo passes its
+`customLib` there; see the circularity exception in
 [SKILL.md](../SKILL.md#repo-root-paths) before adding module args to a
 machine module).
 
@@ -179,7 +183,7 @@ inventory.instances = {
 
 Upstream docs put inventory in a `clan.nix` file; the option is
 `clan.inventory`, so a repo may split it into its own `inventory.nix`
-(dendritic style — this repo does) or inline it.
+(dendritic style — the home repo does) or inline it.
 
 ## clanServices
 
@@ -219,19 +223,19 @@ declaring roles and the NixOS config each role applies:
   role in an instance; `perMachine.nixosModule` applies to all machines
   of the service regardless of role.
 - Registration: the service lives at a repo path and is registered in
-  `flake.clan.modules` under a scoped `@org/name` name (this repo's
+  `flake.clan.modules` under a scoped `@org/name` name (the home repo's
   convention, mirroring community flakes). Inventory instances then set
   `module.name = "@andrewthomaslee/machine-type"` and
   `module.input = "self"`.
-- Inside a service module, normal NixOS module rules apply: import the
-  repo's own modules (`self.nixosModules.default`), flip the repo's
-  option namespace (`hostSpec.*`), and declare
+- Inside a service module, normal NixOS module rules apply: import your
+  repo's own modules (`self.nixosModules.default` in the home repo), flip
+  the repo's option namespace (`hostSpec.*` in the home repo), and declare
   `clan.core.vars.generators` when the service needs secrets
   ([clan-vars.md](clan-vars.md)).
 
 ### The tag-service pattern
 
-This repo attaches config to tags with one clanService whose roles are
+The home repo attaches config to tags with one clanService whose roles are
 the tags themselves:
 
 ```nix
@@ -271,8 +275,8 @@ its config — no service edit, no machine edit beyond the tags.
 Official services ship in clan-core (see the [services
 reference](https://clan.lol/docs/26.05/services/definition)). Community
 flakes (e.g. [clan-community](https://git.clan.lol/clan/clan-community))
-add more; they must follow the repo's clan-core input. This repo imports
-a community service's interface directly:
+add more; they must follow the repo's clan-core input. The home repo
+imports a community service's interface directly:
 
 ```nix
 # inherit exportInterfaces from a community service flake-module
@@ -285,7 +289,7 @@ inherit
 ## The clan CLI
 
 The CLI is the fleet's control plane. It needs `CLAN_DIR` pointing at the
-repo root (this repo's devShell shellHook sets it via varlock) and the
+repo root (the home repo's devShell shellHook sets it via varlock) and the
 flake must be in the git tree.
 
 | Command | What it does |
@@ -305,17 +309,20 @@ Scripting notes:
 
 - The CLI prints lines like `warning: unknown setting 'eval-cores'` on
   stdout. Filter any line starting with `warning:` before feeding output
-  to a parser. This repo's `get-keys` app
+  to a parser. The home repo's `get-keys` app
   (`flake-parts/apps/get-keys.nix`) wraps the CLI in Python with that
   filter to extract machine age keys for provisioning.
 - The CLI is available as a package: `inputs'.clan-core.packages.clan-cli`
   (use it in devShell `runtimeInputs` or apps).
-- Deployment style is orthogonal: this repo deploys pull-based from
+- Deployment style is orthogonal: the home repo deploys pull-based from
   FlakeHub (`fh apply`; machines run `apply-*` packages), not `clan
   machines update`. The inventory, tags, and vars remain the source of
   truth regardless of how config reaches the machine.
 
-## This repo's clan layout
+## Worked example: the home repo's clan layout
+
+All examples above come from the home repo (`andrewthomaslee/home`);
+this table maps its files so you can translate to your own tree:
 
 | Path | Role |
 |---|---|
@@ -345,7 +352,7 @@ Mixing them up double-loads or mis-classifies modules.
 - **Machine-eval arg circularity** — machine modules get args via
   `clan.specialArgs`, but a module's *config value* cannot use them (see
   the `relativeToRoot` exception in [SKILL.md](../SKILL.md#repo-root-paths)).
-- **`deployment.requireExplicitUpdate`** — this repo sets it
+- **`deployment.requireExplicitUpdate`** — the home repo sets it
   (`flake-parts/nixosModules/clan.nix`) so machines refuse implicit
   remote updates; pull-based deployment instead.
 

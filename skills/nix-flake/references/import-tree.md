@@ -1,8 +1,9 @@
 # import-tree
 
-How flake-parts auto-import works in this repo: every `.nix` file under
-`flake-parts/` is loaded automatically — there is no import list to
-update, ever.
+How flake-parts auto-import works: every `.nix` file under `flake-parts/`
+is loaded automatically — there is no import list to update, ever. The
+wiring example is from the home repo (`andrewthomaslee/home`, the public
+flake this skill ships in); the mechanics are universal.
 
 ## What it is, where it comes from
 
@@ -47,7 +48,7 @@ the list of every `.nix` file found recursively under `./dir`:
   module semantics apply — two files setting the same plain attribute is
   an eval conflict; use distinct attribute names or `lib.mkMerge`.
 
-## Wiring in this repo (`flake.nix`)
+## Wiring example: the home repo (`flake.nix`)
 
 ```nix
 outputs = inputs:
@@ -73,7 +74,8 @@ outputs = inputs:
 Directory structure is purely organizational: subdirectories do **not**
 map to attribute paths. Each file declares its own output attribute
 inside itself; import-tree never derives names. Keep the filename in
-sync with the attribute it defines:
+sync with the attribute it defines. The layout below is the home repo's
+(`andrewthomaslee/home`):
 
 ```nix
 # flake-parts/nixosModules/docker.nix — declares its own output attr
@@ -117,10 +119,12 @@ to the attribute name.
 `default.nix` is not special: it is imported like any other file in the
 tree; it just happens to hold the global wiring.
 
-Composition filters live in `default.nix`: `nixosModules.default` /
-`homeModules.default` pull in all `self.nixosModules` / `self.homeModules`
-**except** attrs prefixed `profile-` (both) or `clan-` (nixos only) —
-those are opt-in and wired elsewhere (user profiles, clan services).
+Composition filters (if a repo wants opt-in modules) live in
+`default.nix`: the home repo's `nixosModules.default` /
+`homeModules.default` pull in all `self.nixosModules` /
+`self.homeModules` **except** attrs prefixed `profile-` (both) or
+`clan-` (nixos only) — those are opt-in and wired elsewhere (user
+profiles, clan services).
 
 Machine configurations (`machines/<hostname>/`) are **not** part of this
 tree — clan imports those directly; the clan flakeModule is an explicit

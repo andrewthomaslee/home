@@ -13,11 +13,15 @@ flake checkout is self-contained. Load this reference with
 [clan-core.md](clan-core.md); the vars workflow assumes the clan CLI and
 `CLAN_DIR` are set up.
 
+Worked examples are from the home repo (`andrewthomaslee/home`, the
+public flake this skill ships in) — the patterns are generic; substitute
+your repo's names.
+
 ## Declaring generators
 
-Declared in NixOS module land, anywhere a module evaluates — this repo
-declares them in `flake-parts/nixosModules/*.nix`, next to the config
-that consumes them:
+Declared in NixOS module land, anywhere a module evaluates — the home
+repo declares them in `flake-parts/nixosModules/*.nix`, next to the
+config that consumes them:
 
 ```nix
 # flake-parts/nixosModules/tailscale.nix
@@ -64,8 +68,8 @@ Generator option anatomy:
 
 Two generators with the same name from different modules must merge —
 declare with `config.clan.core.vars.generators = lib.mkMerge (...)`
-(this repo does that in `github-mcp.nix` and `morph-api-key.nix`, where
-generators are conditionally created per user).
+(the home repo does that in `github-mcp.nix` and `morph-api-key.nix`,
+where generators are conditionally created per user).
 
 ## Storage layout
 
@@ -119,7 +123,7 @@ clan vars list <machine>              # secrets shown as ********
 clan vars get <machine> <generator>/<file>   # decrypt and print one value
 
 # 3. deploy (or push vars directly)
-clan machines update <machine>        # this repo: fh apply instead
+clan machines update <machine>        # home repo: fh apply instead
 clan vars upload <machine>            # push generated vars to a machine
 ```
 
@@ -153,14 +157,17 @@ clan vars upload <machine>            # push generated vars to a machine
   repo exports it via varlock from `.env` in the devShell shellHook; on
   GitHub Actions, store it as a secret and set the env var directly.
 - The CLI prints lines like `warning: unknown setting 'eval-cores'` on
-  stdout — filter any line starting with `warning:` before parsing. This
-  repo's `get-keys` app (`flake-parts/apps/get-keys.nix`) wraps the CLI
-  in Python with that filter to build a machine → age-key JSON map for
-  provisioning.
+  stdout — filter any line starting with `warning:` before parsing. The
+  home repo's `get-keys` app (`flake-parts/apps/get-keys.nix`) wraps the
+  CLI in Python with that filter to build a machine → age-key JSON map
+  for provisioning.
 - When a machine key is extracted into CI, mask it
   (`echo "::add-mask::$KEY"` in Actions) so it never lands in logs.
 
-## This repo's vars
+## Example: the home repo's vars
+
+All examples above are from the home repo (`andrewthomaslee/home`); this
+table maps its generators so you can translate to your own tree:
 
 | Vars | Generator | Consumer |
 |---|---|---|

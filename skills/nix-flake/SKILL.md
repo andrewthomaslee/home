@@ -5,7 +5,10 @@ description: Conventions and style guide for working in Nix flake repos — Dete
 
 # Nix Flake Conventions
 
-Generic conventions for any flake-based repo. The user runs Determinate Nix
+Generic conventions for any flake-based repo. Worked examples name the
+home repo (`andrewthomaslee/home`, the public flake this skill ships in);
+every rule applies to any flake-based repo — substitute your repo's own
+names. The user runs Determinate Nix
 (everywhere: workstations, CI runners, machines), publishes to
 [FlakeHub](https://docs.determinate.systems/flakehub/), and builds and ships
 artifacts with GitHub Actions, primarily as `nix build .#<thing>`. Assume
@@ -142,37 +145,42 @@ statix's `manual_inherit_from` lint converts `x = cfg.x;` into `inherit
 
 ### Repo-root paths
 
-Reference repo-root paths through `customLib.custom.relativeToRoot`
-(`relativeToRoot "skills"`), never through fragile `../../` chains in
-module code, and never by defining a local
-`relativeToRoot = lib.path.append ../../.` clone. Scope: NixOS modules get
-`customLib` via `_module.args` (set in `nixosModules/default`);
-home-manager modules get it via `home-manager.extraSpecialArgs`, set once
-in `nixosModules/default` — not per clan service, or non-clan consumers
-(KubeVirt VM packages, test VMs) lose it.
+Reference repo-root paths through a single repo-provided helper, never
+through fragile `../../` chains in module code, and never by defining a
+local `relativeToRoot = lib.path.append ../../.` clone. If the repo has no
+such helper, define one once (typically as `customLib` in flake-parts) and
+thread it everywhere: NixOS modules get it via `_module.args`, home-manager
+modules via `home-manager.extraSpecialArgs` — set both once in the default
+module, not per clan service, or consumers outside clan's module set
+(packages, VM tests) lose it.
+
+Home repo example: `customLib.custom.relativeToRoot`
+(`relativeToRoot "skills"`), exposed as `customLib` via `_module.args` and
+`home-manager.extraSpecialArgs`, both set in `nixosModules/default`.
 
 One hard exception: a NixOS module whose **config value** needs a
-repo-root path cannot take `customLib` as a module arg — args are
+repo-root path cannot take the helper as a module arg — args are
 resolved lazily through `config._module.args`, which is circular while
 `config` itself is being evaluated (clan machine evals die with
-`attribute 'customLib' missing`). There, read the file with a direct path
+`attribute '<helper>' missing`). There, read the file with a direct path
 literal and comment why:
 
 ```nix
-# machines.json lives at the repo root; a module arg here would be
-# circular (config._module.args lookup while config is evaluating)
+# home repo example: machines.json lives at the repo root; a module arg
+# here would be circular (config._module.args lookup while config
+# is evaluating)
 machinesJson = builtins.fromJSON (builtins.readFile ./../../machines.json);
 ```
 
 Home-manager modules are unaffected — `extraSpecialArgs` is a separate
-eval channel, so `relativeToRoot` is always safe there.
+eval channel, so the helper is always safe there.
 
 ### Module system
 
 - Options: `lib.mkEnableOption` for booleans; `lib.mkOption` always with
   `type`, `default`, and a `description` (write it for the next reader).
-- Option namespaces: use one namespace per concern (`hostSpec.*`,
-  `homeSpec.*`, or the repo's equivalent) so modules compose without
+- Option namespaces: use one namespace per concern (`hostSpec.*`/`homeSpec.*`
+  in the home repo — or the repo's equivalent) so modules compose without
   collisions.
 - Set values with `lib.mkIf`, `lib.mkDefault`, `lib.mkMerge`, and
   `lib.mkForce` (sparingly — `mkForce` is a smell in library code). Use
@@ -334,12 +342,12 @@ results. "It should work" is not verification.
 - [vm-tests.md](references/vm-tests.md) — hermetic NixOS VM tests: writing,
   running, size variants, driver mode, agent iteration loop.
 - [import-tree.md](references/import-tree.md) — how flake-parts
-  auto-import via import-tree works: provenance, mechanics, this repo's
-  tree layout and conventions.
+  auto-import via import-tree works: provenance, mechanics, the home
+  repo's tree layout and conventions.
 - [clan-core.md](references/clan-core.md) — clan-core as a flake: what it
   adds (fleet registry, tag-driven config, services, tooling), input
   wiring, the inventory (machines/instances/roles/tags), clanServices,
-  the clan CLI, this repo's clan layout.
+  the clan CLI, with the home repo as worked example.
 - [clan-vars.md](references/clan-vars.md) — clan vars: declaring
   generators, vars/ storage layout, age/sops backends, generate/get
   workflow, CI and scripted key extraction.
