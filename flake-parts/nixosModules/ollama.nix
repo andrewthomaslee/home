@@ -35,8 +35,7 @@ _: {
         inherit (cfg) package;
         openFirewall = true;
         syncModels = true;
-        inherit (cfg) port;
-        inherit (cfg) loadModels;
+        inherit (cfg) port loadModels;
       };
 
       users.users.ollama.extraGroups = ["video"];

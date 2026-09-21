@@ -1,6 +1,7 @@
 {lib, ...}: let
   relativeToRoot = lib.path.append ../../.;
-  inherit ((builtins.fromJSON (builtins.readFile (relativeToRoot "machines.json")))) machines;
+  machinesJson = builtins.fromJSON (builtins.readFile (relativeToRoot "machines.json"));
+  inherit (machinesJson) machines;
 in {
   # ------ NixOS Modules ------ #
   flake.nixosModules = {
