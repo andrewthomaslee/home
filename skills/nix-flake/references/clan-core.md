@@ -289,8 +289,9 @@ inherit
 ## The clan CLI
 
 The CLI is the fleet's control plane. It needs `CLAN_DIR` pointing at the
-repo root (the home repo's devShell shellHook sets it via varlock) and the
-flake must be in the git tree.
+repo root (the home repo's devShell shellHook sets it via varlock — see
+[SKILL.md → DevShell and the agent](../SKILL.md#devshell-and-the-agent))
+and the flake must be in the git tree.
 
 | Command | What it does |
 |---|---|

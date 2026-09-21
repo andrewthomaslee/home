@@ -260,7 +260,9 @@ them (ignores unused lambda args/attrset-pattern names) if the repo's
 convention accepts them — follow the repo's `AGENTS.md`/gate, not taste.
 
 If a tool is not in the environment, run it through nixpkgs instead of
-skipping:
+skipping — but check first whether you are actually outside the devShell
+(see [DevShell and the agent](#devshell-and-the-agent)); tools missing
+from PATH usually means you wrapped when you didn't need to:
 
 ```
 nix run nixpkgs#statix -- check .
@@ -280,6 +282,39 @@ remains (e.g. `{...}:` → `_:`), and alejandra settles formatting last.
 
 Paste the last failing/passing command and its exit status when reporting
 results. "It should work" is not verification.
+
+## DevShell and the agent
+
+Flake repos gate tooling and tokens behind their devShell. The agent
+process (opencode) is spawned inside `nix develop` 98% of the time —
+the formatter, linters, and repo tooling are already on PATH, and any
+secrets/tokens the repo injects are already exported. When inside, do
+NOT wrap commands in `nix develop -c "command"`: it re-evaluates the
+flake, spawns a nested shell, and can double-run shellHook side effects.
+
+How to tell you are inside:
+
+- nix sets `IN_NIX_SHELL` itself, however the shell was entered
+  (`nix develop`, direnv `use flake`, `-c`): `impure` for a default
+  shell, `pure` for `--pure`. Verify with `printenv IN_NIX_SHELL`.
+- Secondary signals: the repo shellHook's exported markers and the
+  devShell closure on PATH (`/nix/store/...-nix-shell-env/bin`).
+
+Invocation rule: if `IN_NIX_SHELL` is set, run tools directly
+(`nix fmt .`, `statix check .`, `clan ...`). Reach for
+`nix develop -c '...'` or `nix run nixpkgs#tool` only when verification
+shows you are NOT inside — fresh CI checkout, bare SSH session,
+non-interactive wrapper.
+
+Secret injection (home repo example): the devShell shellHook sets
+`CLAN_DIR=$REPO_ROOT` and runs `eval "$(bunx varlock load --format
+shell)"`, which loads the gitignored `.env` (schema `.env.schema`) and
+exports `SOPS_AGE_KEY`, `SOPS_AGE_PUBLIC_KEY`, `GITHUB_TOKEN`, and
+`TF_VAR_flakehub_token` — sops, clan vars, and GitHub tooling work
+without extra setup. The generic pattern: repos inject the tokens their
+tooling needs (sops, clan vars, CI) into the devShell. Assume present;
+verify with `printenv <NAME>` (presence, not value), never echo secret
+values into output or logs, and never manually source or re-load them.
 
 ## Flake layout
 
