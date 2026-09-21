@@ -1,6 +1,6 @@
 ---
 name: nix-flake
-description: Conventions and style guide for working in Nix flake repos — Determinate Nix, FlakeHub, GitHub Actions with self-hosted runners, nix build .#<thing>, alejandra/statix/deadnix, and hermetic NixOS VM tests. Use when editing any .nix file, adding flake inputs/outputs/packages/modules, wiring CI for a flake, or creating and running VM tests.
+description: Conventions and style guide for working in Nix flake repos — Determinate Nix, FlakeHub, GitHub Actions with self-hosted runners, nix build .#<thing>, alejandra/statix/deadnix, hermetic NixOS VM tests, and clan-core fleet management (inventory, clanServices, vars, clan CLI). Use when editing any .nix file, adding flake inputs/outputs/packages/modules, wiring CI for a flake, creating and running VM tests, or working in a flake that uses clan inputs.
 ---
 
 # Nix Flake Conventions
@@ -24,7 +24,8 @@ install-script workarounds, channel setup, or `nix-env` advice.
   `nix flake check` — untracked files do not exist to Nix.
 - No secrets in Nix source or the store (it is world-readable). Secrets come
   from a provisioning layer (sops-nix, clan vars, CI OIDC, GitHub
-  Actions secrets), never from expressions.
+  Actions secrets), never from expressions — clan vars:
+  [clan-vars.md](references/clan-vars.md).
 - Never reach for `--impure`, `--no-sandbox`, `sandbox = false`, or
   `builtins.readFile /etc/...` to make something build. Impurity hides bugs,
   breaks FlakeHub Cache reproducibility, and fails on CI. If something needs
@@ -300,7 +301,8 @@ results. "It should work" is not verification.
 - Deduplicate big inputs with `follows`
   (`nixpkgs.follows = "clan-core/nixpkgs";`) so one nixpkgs instance serves
   the whole graph. Surface a second channel as `pkgs.unstable` via an
-  overlay, not by re-importing nixpkgs ad hoc.
+  overlay, not by re-importing nixpkgs ad hoc. Full clan-core input
+  wiring: [clan-core.md](references/clan-core.md).
 - Pin binary artifacts (tarballs, wheels) as `flake = false` inputs so
   `flake.lock` carries the hash:
   `artifacthub-mcp = { url = "github:owner/repo?ref=v1.1.1"; flake = false; }`.
@@ -334,3 +336,10 @@ results. "It should work" is not verification.
 - [import-tree.md](references/import-tree.md) — how flake-parts
   auto-import via import-tree works: provenance, mechanics, this repo's
   tree layout and conventions.
+- [clan-core.md](references/clan-core.md) — clan-core as a flake: what it
+  adds (fleet registry, tag-driven config, services, tooling), input
+  wiring, the inventory (machines/instances/roles/tags), clanServices,
+  the clan CLI, this repo's clan layout.
+- [clan-vars.md](references/clan-vars.md) — clan vars: declaring
+  generators, vars/ storage layout, age/sops backends, generate/get
+  workflow, CI and scripted key extraction.
