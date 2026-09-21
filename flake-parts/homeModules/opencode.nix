@@ -9,6 +9,10 @@
     pkgs,
     config,
     customLib,
+    # The NixOS config this home-manager user runs on (null only for
+    # standalone home-manager evals, which never happens here). Used to
+    # identify the machine for the per-machine context file below.
+    osConfig,
     ...
   }: let
     cfg = config.homeSpec.programs.opencode;
@@ -59,6 +63,135 @@
       ++ lib.optional cfg.plugins.morph-fast-apply.enable "${pkgs.opencode-morph-fast-apply}/share/opencode-plugins/opencode-morph-fast-apply/index.ts"
       ++ lib.optional cfg.plugins.opencode-mem.enable "${pkgs.opencode-mem}/share/opencode-plugins/opencode-mem/dist/plugin.js"
       ++ lib.optional cfg.plugins.devcontainers.enable "${pkgs.opencode-devcontainers}/share/opencode-plugins/opencode-devcontainers/plugin/index.js";
+    # ---- Machine context (per-machine system-prompt instruction) ---- #
+    # Home-manager runs as a NixOS module here, so osConfig carries the
+    # machine this user is on. From it, the machine's nixos-facter report
+    # (machines/<host>/facter.json) is read at eval time and summarized
+    # into ~/.config/opencode/instructions/machine-<host>.md, wired into
+    # settings.instructions below — opencode injects instruction files
+    # into the system prompt of every session on that machine.
+    hostName =
+      if osConfig == null
+      then ""
+      else osConfig.networking.hostName;
+    facterFile = relativeToRoot "machines/${hostName}/facter.json";
+    # Not every opencode consumer has a facter report (the installer ISO
+    # has none, KubeVirt agent VMs have a hostname without a machines/
+    # entry), so the facter-derived content is optional and everything
+    # below stays lazy: nothing is read unless this user enables opencode.
+    hasFacter = hostName != "" && builtins.pathExists facterFile;
+    facterReport =
+      if hasFacter
+      then builtins.fromJSON (builtins.readFile facterFile)
+      else {};
+    # Best-effort accessors: facter reports differ per machine and facter
+    # version (absent keys, null values, generic PCI class strings) — any
+    # missing fact is skipped rather than failing the build.
+    facterList = value:
+      if lib.isList value
+      then value
+      else [];
+    facterFirst = list:
+      if list != []
+      then lib.head list
+      else null;
+    facterLine = prefix: parts:
+      if parts == []
+      then null
+      else "- ${prefix}: ${lib.concatStringsSep ", " parts}";
+    # facterGet walks an attrset path (["hardware" "cpu"]), returning null
+    # for any missing step; facterAttr reads one attribute off a possibly
+    # null/missing object. Both are null-safe instead of throwing.
+    facterGet = path: lib.attrByPath path null facterReport;
+    facterAttr = set: name:
+      if lib.isAttrs set
+      then set.${name} or null
+      else null;
+    cpuEntry = facterFirst (facterList (facterGet ["hardware" "cpu"]));
+    cpuModel = facterAttr cpuEntry "model_name";
+    cpuThreads = facterAttr cpuEntry "units";
+    gpuEntry = facterFirst (facterList (facterGet ["hardware" "graphics_card"]));
+    gpuVendor = facterAttr (facterAttr gpuEntry "vendor") "name";
+    gpuDriver = facterAttr gpuEntry "driver";
+    diskModels =
+      lib.unique
+      (lib.remove null
+        (lib.map (d: facterAttr d "model")
+          (facterList (facterGet ["hardware" "disk"]))));
+    memDevices =
+      lib.filter (d: lib.isAttrs d && ((d.size or 0) > 0))
+      (facterList (facterGet ["smbios" "memory_device"]));
+    # memory_device sizes are reported in KiB; empty DIMM slots are 0 and
+    # filtered out above.
+    memGiB = builtins.div (lib.foldl' (sum: d: sum + (d.size or 0)) 0 memDevices) (1024 * 1024);
+    memVendor =
+      if memDevices == []
+      then null
+      else (lib.head memDevices).manufacturer or null;
+    # Token-lean rendering: the first word is enough for a DIMM
+    # manufacturer ("Micron Technology" -> "Micron").
+    memVendorShort =
+      if memVendor == null
+      then null
+      else lib.head (lib.splitString " " memVendor);
+    machineContextHardware = lib.remove null [
+      (facterLine "CPU"
+        (lib.remove null [
+          cpuModel
+          (
+            if cpuThreads == null
+            then null
+            else "${toString cpuThreads} threads"
+          )
+        ]))
+      (facterLine "GPU"
+        (lib.remove null [
+          gpuVendor
+          (
+            if gpuDriver == null
+            then null
+            else "driver ${gpuDriver}"
+          )
+        ]))
+      (facterLine "Memory"
+        (lib.remove null [
+          (
+            if memDevices == []
+            then null
+            else "${toString memGiB} GiB${lib.optionalString (memVendorShort != null) " (${toString (lib.length memDevices)}x ${memVendorShort} DIMMs)"}"
+          )
+        ]))
+      (facterLine "Disk" diskModels)
+    ];
+    # Plain, matter-of-fact and token-lean machine descriptor (no markdown
+    # decoration) — injected into the system prompt of every opencode
+    # session on this machine: what the machine is, what hardware it has
+    # and where the facts about it live. The read-only rule and the
+    # AGENTS.md rule apply on every machine; the hardware and facts paths
+    # only when a facter report exists (installer ISO, KubeVirt agent VMs
+    # have none).
+    machineContextLines =
+      [
+        "Machine: ${hostName} (NixOS ${pkgs.stdenv.hostPlatform.system})"
+        ""
+      ]
+      ++ lib.optionals (machineContextHardware != [])
+      (["Hardware:"] ++ machineContextHardware ++ [""])
+      ++ [
+        "Repo: github.com/${cfg.machineContext.repoOwner}/${cfg.machineContext.repoName} (local: ${config.home.homeDirectory}/${cfg.machineContext.repoPath})"
+      ]
+      ++ lib.optionals hasFacter [
+        "Machine facts: machines/${hostName}/facter.json, disko.nix, configuration.nix"
+      ]
+      ++ [
+        "Machine config is strictly read-only: changes only by repo owner ${cfg.machineContext.repoOwner}, or when instructed to while working in the home repo."
+        ""
+        "Read a repo's AGENTS.md before working in it."
+      ]
+      ++ lib.optionals (cfg.machineContext.extraText != null)
+      ([""]
+        ++ lib.filter (line: line != "")
+        (lib.splitString "\n" cfg.machineContext.extraText));
   in {
     options.homeSpec.programs.opencode = {
       enable = lib.mkEnableOption "default opencode configuration";
@@ -76,6 +209,38 @@
         type = lib.types.bool;
         default = true;
         description = "Install the full heavy dev toolset in opencode extraPackages.";
+      };
+      # Per-machine system-prompt context (machineContext.*): generates
+      # ~/.config/opencode/instructions/machine-<hostname>.md with the
+      # hostname, hardware facts from the machine's facter.json and
+      # pointers to where machine facts live, then loads it into every
+      # opencode session via settings.instructions.
+      machineContext = {
+        enable = lib.mkOption {
+          type = lib.types.bool;
+          default = true;
+          description = "Generate the per-machine context instruction file (hostname + hardware facts from machines/<hostname>/facter.json).";
+        };
+        repoPath = lib.mkOption {
+          type = lib.types.str;
+          default = "home";
+          description = "Directory name of the home flake repo relative to the user's home directory, written into the generated file.";
+        };
+        repoOwner = lib.mkOption {
+          type = lib.types.str;
+          default = "andrewthomaslee";
+          description = "Owner of the remote flake repo, written into the generated file's Remote line.";
+        };
+        repoName = lib.mkOption {
+          type = lib.types.str;
+          default = "home";
+          description = "Name of the remote flake repo, written into the generated file's Remote line.";
+        };
+        extraText = lib.mkOption {
+          type = with lib.types; nullOr str;
+          default = null;
+          description = "Optional per-machine notes appended to the generated file (set from machines/<hostname>/configuration.nix).";
+        };
       };
       # ---- MCP servers: homeSpec.programs.opencode.mcp.<name>.enable ---- #
       mcp = {
@@ -264,27 +429,36 @@
       };
     };
     config = lib.mkIf cfg.enable {
-      # Morph Fast Apply: ship the packaged always-on routing instruction
-      # so agents reliably pick morph_edit over native edit.
-      xdg.configFile."opencode/instructions/morph-tools.md" = lib.mkIf cfg.plugins.morph-fast-apply.enable {
-        source = "${pkgs.opencode-morph-fast-apply}/share/opencode-plugins/opencode-morph-fast-apply/instructions/morph-tools.md";
-      };
+      xdg.configFile = {
+        # Morph Fast Apply: ship the packaged always-on routing instruction
+        # so agents reliably pick morph_edit over native edit.
+        "opencode/instructions/morph-tools.md" = lib.mkIf cfg.plugins.morph-fast-apply.enable {
+          source = "${pkgs.opencode-morph-fast-apply}/share/opencode-plugins/opencode-morph-fast-apply/instructions/morph-tools.md";
+        };
 
-      # Skills: repo-local custom skills + external skill sources, merged
-      # into ~/.config/opencode/skills by inputs.agents.lib.mkSkills (a
-      # linkFarm of per-skill symlinks). Custom skills override externals
-      # on name collision; among externals, earlier entries in the list
-      # win. customLib (and thus relativeToRoot) reaches home modules via
-      # home-manager.extraSpecialArgs, set once in nixosModules/default.
-      xdg.configFile."opencode/skills".source = inputs.agents.lib.mkSkills {
-        inherit pkgs;
-        customSkills = relativeToRoot "skills";
-        externalSkills = [
-          # Claude skills from anthropics/skills (all skills under skills/)
-          {src = inputs.skills-anthropic;}
-          # Payload CMS skills (payload, cms-migration)
-          {src = inputs.skills-payloadcms;}
-        ];
+        # Per-machine context file (built above from osConfig + facter.json):
+        # opencode expands the ~/ path in settings.instructions and injects
+        # the file into the system prompt of every session on this machine.
+        "opencode/instructions/machine-${hostName}.md" = lib.mkIf (cfg.machineContext.enable && hostName != "") {
+          text = lib.concatStringsSep "\n" machineContextLines + "\n";
+        };
+
+        # Skills: repo-local custom skills + external skill sources, merged
+        # into ~/.config/opencode/skills by inputs.agents.lib.mkSkills (a
+        # linkFarm of per-skill symlinks). Custom skills override externals
+        # on name collision; among externals, earlier entries in the list
+        # win. customLib (and thus relativeToRoot) reaches home modules via
+        # home-manager.extraSpecialArgs, set once in nixosModules/default.
+        "opencode/skills".source = inputs.agents.lib.mkSkills {
+          inherit pkgs;
+          customSkills = relativeToRoot "skills";
+          externalSkills = [
+            # Claude skills from anthropics/skills (all skills under skills/)
+            {src = inputs.skills-anthropic;}
+            # Payload CMS skills (payload, cms-migration)
+            {src = inputs.skills-payloadcms;}
+          ];
+        };
       };
 
       home.packages =
@@ -421,6 +595,7 @@
                 "/nix/store/**" = "allow";
                 "/tmp/**" = "allow";
                 "/home/netsa/.config/opencode/" = "allow";
+                "/etc/hostname" = "allow";
               };
               external_directory = {
                 "/nix/store/**" = "allow";
@@ -661,6 +836,12 @@
           # (packaged file synced to the xdg path above).
           (lib.mkIf cfg.plugins.morph-fast-apply.enable {
             instructions = ["~/.config/opencode/instructions/morph-tools.md"];
+          })
+          # Per-machine context file (generated above). Only wired when a
+          # facter report exists for this hostname — the installer ISO and
+          # KubeVirt agent VMs have none, so they skip it.
+          (lib.mkIf (cfg.machineContext.enable && hasFacter) {
+            instructions = ["~/.config/opencode/instructions/machine-${hostName}.md"];
           })
           # TypeUI: hosted design-skills MCP (OAuth on first use).
           (lib.mkIf cfg.mcp.typeui.enable {

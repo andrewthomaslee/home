@@ -19,6 +19,11 @@ modules extend the harness:
 | `enable` | `false` | Enable OpenCode + the declarative configuration below |
 | `enableDesktop` | `true` | Install `opencode-desktop` (Electron GUI). Disable for headless machines — saves ~2.4 GB (Electron + GTK stack) |
 | `fullDevTools` | `true` | Install the full heavy dev toolset (`k3s`, `rke2`, `k3d`, `devpod`, `devcontainer`, `podman`, `gleam`, `terraform-ls`, `helm-ls`, `go_latest`). Disable for slim headless agents — keeps `docker`, `kubectl`, `helm` |
+| `machineContext.enable` | `true` | Generate `~/.config/opencode/instructions/machine-<hostname>.md` — a per-machine system-prompt file (see below) |
+| `machineContext.repoPath` | `home` | Directory name of the local flake checkout relative to the user's home directory, written into the generated file |
+| `machineContext.repoOwner` | `andrewthomaslee` | Owner of the remote flake repo, written into the generated file's `Remote:` line |
+| `machineContext.repoName` | `home` | Name of the remote flake repo, written into the generated file's `Remote:` line |
+| `machineContext.extraText` | `null` | Optional per-machine notes appended to the generated file (set from `machines/<hostname>/configuration.nix`) |
 
 The packaging trims are what made the KubeVirt agent image drop from
 ~12 GB to ~2 GB — see [KubeVirt AI Agent](kubevirt-agent.md#image-optimization-trim-compress).
@@ -56,7 +61,27 @@ The packaging trims are what made the KubeVirt agent image drop from
 - **Formatters**: alejandra (`.nix`), ruff (`ruff format`, `.py`/`.pyi`),
   gleam — all with `"$FILE"` placeholders and dotted extensions (OpenCode
   requires both; see the VM test history).
-- **Compaction**: auto with `tail_turns = 32`.
+- **Compaction**: auto with `tail_turns = 12`.
+- **Machine context** — a compact, matter-of-fact machine descriptor
+  (no markdown decoration, token-lean) injected into the system prompt
+  of every opencode session on the machine. One shared home module
+  renders it per machine: the hostname comes from `osConfig`
+  (home-manager runs as a NixOS module) and the machine's
+  `machines/<hostname>/facter.json` is read at eval time to bake
+  hardware facts (CPU/GPU/RAM/disk, best-effort — missing fields are
+  skipped). The file `~/.config/opencode/instructions/machine-<hostname>.md`
+  contains one identity line (`Machine: <host> (NixOS <platform>)`), a
+  `Hardware:` list, a one-line repo reference
+  (`Repo: github.com/<repoOwner>/<repoName> (local: <checkout>)`), a
+  one-line `Machine facts:` path list (`facter.json`, `disko.nix`,
+  `configuration.nix` under `machines/<hostname>/`), a read-only rule
+  (machine config may only be changed by the repo owner, or by an agent
+  instructed to while working in the home repo) and one generic rule:
+  read a repo's AGENTS.md before working in it. It is wired into
+  `settings.instructions`, so it applies to sessions in any project (a
+  project's own AGENTS.md still auto-loads on top when working in that
+  project). Consumers without a facter report (the installer ISO,
+  KubeVirt agent VMs) get the identity/repo/rules lines only.
 - **Wrapper scripts** — `github-mcp-server-opencode` (exports the GitHub
   PAT, see [MCP Servers](mcp-servers.md#github-mcp-server)) and the Morph
   key wrapper (exports `MORPH_API_KEY`, see [Plugins](plugins.md)).
@@ -93,7 +118,7 @@ The packaging trims are what made the KubeVirt agent image drop from
 
 | File | Purpose |
 |---|---|
-| `flake-parts/homeModules/opencode.nix` | everything on this page: MCP under `mcp.<name>.enable`, plugins under `plugins.<name>.enable`, LSP (nixd, helm_ls, pyrefly, gleam), formatters, compaction, `enableDesktop`/`fullDevTools` trims, PAT + Morph wrappers |
+| `flake-parts/homeModules/opencode.nix` | everything on this page: MCP under `mcp.<name>.enable`, plugins under `plugins.<name>.enable`, LSP (nixd, helm_ls, pyrefly, gleam), formatters, compaction, `enableDesktop`/`fullDevTools` trims, machine context (`machineContext.*`), PAT + Morph wrappers |
 | `flake-parts/homeModules/headroom.nix` | headroom options + `headroom-proxy.service` user unit — see [Headroom](headroom.md) |
 | `flake-parts/homeModules/profiles/netsa.nix` | dev profile: opencode MCP/plugin opt-ins |
 | `flake-parts/homeModules/profiles/netsa-agent.nix` | headless AI agent profile |
