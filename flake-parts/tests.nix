@@ -71,7 +71,7 @@ in {
         testSpec = callWith rawTest {
           inherit inputs self system lib;
           pkgs = testPkgs;
-          testPkgs = testPkgs;
+          inherit testPkgs;
           size = sizeInfo;
           sizeName = sizeSuffix;
         };
@@ -88,9 +88,11 @@ in {
               requiredFeatures.kvm = lib.mkDefault true;
               qemu.forceAccel = lib.mkDefault true;
               defaults = {
-                virtualisation.cores = lib.mkDefault sizeConfig.cores;
-                virtualisation.memorySize = lib.mkDefault sizeConfig.memorySize;
-                virtualisation.diskSize = lib.mkDefault sizeConfig.diskSize;
+                virtualisation = {
+                  cores = lib.mkDefault sizeConfig.cores;
+                  memorySize = lib.mkDefault sizeConfig.memorySize;
+                  diskSize = lib.mkDefault sizeConfig.diskSize;
+                };
               };
             }
           ];

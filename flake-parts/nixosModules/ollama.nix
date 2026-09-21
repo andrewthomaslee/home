@@ -1,4 +1,4 @@
-{...}: {
+_: {
   # ------ NixOS Modules ------ #
   flake.nixosModules.ollama = {
     config,
@@ -32,11 +32,11 @@
         enable = true;
         user = "ollama";
         group = "ollama";
-        package = cfg.package;
+        inherit (cfg) package;
         openFirewall = true;
         syncModels = true;
-        port = cfg.port;
-        loadModels = cfg.loadModels;
+        inherit (cfg) port;
+        inherit (cfg) loadModels;
       };
 
       users.users.ollama.extraGroups = ["video"];

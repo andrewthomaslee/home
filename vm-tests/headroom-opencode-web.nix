@@ -1,7 +1,6 @@
 {
   inputs,
   self,
-  pkgs,
   ...
 }: {
   name = "headroom-opencode-web";
@@ -43,12 +42,14 @@
     };
     security.sudo.wheelNeedsPassword = false;
 
-    home-manager.useGlobalPkgs = false;
-    home-manager.useUserPackages = true;
-    home-manager.sharedModules = [
-      inputs.plasma-manager.homeModules.plasma-manager
-    ];
-    home-manager.users.netsa = self.homeModules.profile-netsa-agent;
+    home-manager = {
+      useGlobalPkgs = false;
+      useUserPackages = true;
+      sharedModules = [
+        inputs.plasma-manager.homeModules.plasma-manager
+      ];
+      users.netsa = self.homeModules.profile-netsa-agent;
+    };
 
     # OpenCode Web server unit for netsa user
     systemd.user.services.opencode-web = {

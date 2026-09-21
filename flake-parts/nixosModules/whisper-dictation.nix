@@ -1,8 +1,4 @@
-{
-  inputs,
-  lib,
-  ...
-}: {
+{inputs, ...}: {
   # ------ NixOS Modules ------ #
   # Whisper Dictation — local push-to-talk speech-to-text (whisper.cpp).
   # https://github.com/jacopone/whisper-dictation

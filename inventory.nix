@@ -1,8 +1,4 @@
-{
-  self,
-  inputs,
-  customLib,
-}: let
+{customLib}: let
   inherit (customLib.custom) relativeToRoot;
 in {
   meta = {

@@ -21,28 +21,30 @@
         SSH_ASKPASS = ksshaskpass;
         SSH_ASKPASS_REQUIRE = "prefer";
       };
-      xdg.configFile."autostart/ssh-add.desktop".text = lib.mkAfter ''
-        [Desktop Entry]
-        Exec=env SSH_ASKPASS="${ksshaskpass}" SSH_ASKPASS_REQUIRE=prefer ssh-add -q
-        Name=ssh-add
-        Type=Application
-        X-KDE-autostart-after=panel
-      '';
-      xdg.configFile."plasma-workspace/env/ssh-agent-startup.sh" = {
-        text = ''
-          #!/bin/sh
-          export SSH_ASKPASS="${ksshaskpass}"
-          export SSH_ASKPASS_REQUIRE="prefer"
-          [ -n "$SSH_AGENT_PID" ] || eval "$(ssh-agent -s)"
+      xdg.configFile = {
+        "autostart/ssh-add.desktop".text = lib.mkAfter ''
+          [Desktop Entry]
+          Exec=env SSH_ASKPASS="${ksshaskpass}" SSH_ASKPASS_REQUIRE=prefer ssh-add -q
+          Name=ssh-add
+          Type=Application
+          X-KDE-autostart-after=panel
         '';
-        executable = true;
-      };
-      xdg.configFile."plasma-workspace/shutdown/ssh-agent-shutdown.sh" = {
-        text = ''
-          #!/bin/sh
-          [ -z "$SSH_AGENT_PID" ] || eval "$(ssh-agent -k)"
-        '';
-        executable = true;
+        "plasma-workspace/env/ssh-agent-startup.sh" = {
+          text = ''
+            #!/bin/sh
+            export SSH_ASKPASS="${ksshaskpass}"
+            export SSH_ASKPASS_REQUIRE="prefer"
+            [ -n "$SSH_AGENT_PID" ] || eval "$(ssh-agent -s)"
+          '';
+          executable = true;
+        };
+        "plasma-workspace/shutdown/ssh-agent-shutdown.sh" = {
+          text = ''
+            #!/bin/sh
+            [ -z "$SSH_AGENT_PID" ] || eval "$(ssh-agent -k)"
+          '';
+          executable = true;
+        };
       };
     };
   };

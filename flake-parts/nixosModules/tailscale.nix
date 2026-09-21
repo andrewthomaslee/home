@@ -24,7 +24,7 @@
       };
 
       services.tailscale = {
-        enable = cfg.enable;
+        inherit (cfg) enable;
         package = pkgs.unstable.tailscale;
         openFirewall = true;
         authKeyFile = config.clan.core.vars.generators.tailscale.files.auth_key.path;

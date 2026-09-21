@@ -1,7 +1,6 @@
 {
   inputs,
   self,
-  pkgs,
   ...
 }: {
   name = "headroom-opencode";
@@ -35,79 +34,66 @@
       linger = true;
     };
 
-    environment.systemPackages = with pkgs; [
-      curl
-      jq
-      python3
-    ];
-
-    # GitHub MCP (PAT method) for alice: fake PAT deployed as a plain file
-    # instead of the clan var (no sops secret exists in the repo), proving
-    # the file -> env -> server-start wiring end to end. The "github-mcp"
-    # clan var generator is derived automatically by
-    # nixosModules/github-mcp from alice's githubMcpAuth = "pat" below.
-    environment.etc."vm-github-pat".text = "ghp-fake-vm-test-pat";
-    # Fake Morph API key: proves the opencode wrapper -> MORPH_API_KEY env
-    # -> plugin wiring end to end (same pattern as the github PAT above;
-    # the clan var generator stays inert because apiKeyFile is overridden).
-    environment.etc."vm-morph-key".text = "morph-fake-vm-test-key";
-
-    home-manager.useGlobalPkgs = false;
-    home-manager.useUserPackages = true;
-    home-manager.sharedModules = [
-      inputs.plasma-manager.homeModules.plasma-manager
-    ];
-    home-manager.users.alice = {
-      imports = [
-        self.homeModules.default
+    home-manager = {
+      useGlobalPkgs = false;
+      useUserPackages = true;
+      sharedModules = [
+        inputs.plasma-manager.homeModules.plasma-manager
       ];
-      home.stateVersion = "26.11";
-      homeSpec.programs = {
-        headroom = {
-          enable = true;
-          proxy = {
+      users.alice = {
+        imports = [
+          self.homeModules.default
+        ];
+        home.stateVersion = "26.11";
+        homeSpec.programs = {
+          headroom = {
             enable = true;
-            # Minimal smoke test: memory/learn pull embedding models at
-            # startup, which blocks on a HF download in a fresh HOME.
-            memory = false;
-            learn = false;
+            proxy = {
+              enable = true;
+              # Minimal smoke test: memory/learn pull embedding models at
+              # startup, which blocks on a HF download in a fresh HOME.
+              memory = false;
+              learn = false;
+            };
+          };
+          opencode = {
+            enable = true;
+            # PAT method with the fake file above as PAT source (defaults to
+            # the clan var path /run/secrets/vars/shared/github-mcp/pat).
+            mcp.github.auth = "pat";
+            mcp.github.patFile = "/etc/vm-github-pat";
           };
         };
-        opencode = {
-          enable = true;
-          # PAT method with the fake file above as PAT source (defaults to
-          # the clan var path /run/secrets/vars/shared/github-mcp/pat).
-          mcp.github.auth = "pat";
-          mcp.github.patFile = "/etc/vm-github-pat";
-        };
       };
-    };
-    # bob: GitHub MCP with the default method (oauth remote server, no
-    # secret) to exercise the other mutually-exclusive auth branch —
-    # enableGithubMcp itself also defaults to true. All six Cloudflare
-    # remote MCP servers are enabled to exercise the opt-in path.
-    home-manager.users.bob = {
-      imports = [
-        self.homeModules.default
-      ];
-      home.stateVersion = "26.11";
-      homeSpec.programs.opencode = {
-        enable = true;
-        enableDesktop = false;
-        fullDevTools = false;
-        # Morph Fast Apply with the fake key file above: exercises the
-        # morph-api-key clan var generator declaration, the opencode
-        # wrapper (MORPH_API_KEY export) and the plugin entry.
-        plugins."morph-fast-apply".enable = true;
-        plugins."morph-fast-apply".apiKeyFile = "/etc/vm-morph-key";
-        mcp.cloudflare.enable = true;
-        mcp."cloudflare-docs".enable = true;
-        mcp."cloudflare-bindings".enable = true;
-        mcp."cloudflare-builds".enable = true;
-        mcp."cloudflare-browser".enable = true;
-        mcp."cloudflare-containers".enable = true;
-        # MDN Web Docs remote MCP server
-        mcp.mdn.enable = true;
+      # bob: GitHub MCP with the default method (oauth remote server, no
+      # secret) to exercise the other mutually-exclusive auth branch —
+      # enableGithubMcp itself also defaults to true. All six Cloudflare
+      # remote MCP servers are enabled to exercise the opt-in path.
+      users.bob = {
+        imports = [
+          self.homeModules.default
+        ];
+        home.stateVersion = "26.11";
+        homeSpec.programs.opencode = {
+          enable = true;
+          enableDesktop = false;
+          fullDevTools = false;
+          # Morph Fast Apply with the fake key file above: exercises the
+          # morph-api-key clan var generator declaration, the opencode
+          # wrapper (MORPH_API_KEY export) and the plugin entry.
+          plugins."morph-fast-apply".enable = true;
+          plugins."morph-fast-apply".apiKeyFile = "/etc/vm-morph-key";
+          mcp = {
+            cloudflare.enable = true;
+            "cloudflare-docs".enable = true;
+            "cloudflare-bindings".enable = true;
+            "cloudflare-builds".enable = true;
+            "cloudflare-browser".enable = true;
+            "cloudflare-containers".enable = true;
+            # MDN Web Docs remote MCP server
+            mdn.enable = true;
+          };
+        };
       };
     };
 
@@ -115,146 +101,166 @@
     # JSON-RPC exactly as opencode does (mcp.headroom local server) and
     # exercises the CCR roundtrip: initialize -> tools/list ->
     # compress -> retrieve (verbatim roundtrip).
-    environment.etc."vm-mcp-probe.py".source = pkgs.writeText "vm-mcp-probe.py" ''
-      import json
-      import subprocess
-      import sys
+    environment = {
+      systemPackages = with pkgs; [
+        curl
+        jq
+        python3
+      ];
 
-      PROXY = "http://127.0.0.1:8787"
+      # GitHub MCP (PAT method) for alice: fake PAT deployed as a plain file
+      # instead of the clan var (no sops secret exists in the repo), proving
+      # the file -> env -> server-start wiring end to end. The "github-mcp"
+      # clan var generator is derived automatically by
+      # nixosModules/github-mcp from alice's githubMcpAuth = "pat" below.
+      etc = {
+        "vm-github-pat".text = "ghp-fake-vm-test-pat";
+        # Fake Morph API key: proves the opencode wrapper -> MORPH_API_KEY env
+        # -> plugin wiring end to end (same pattern as the github PAT above;
+        # the clan var generator stays inert because apiKeyFile is overridden).
+        "vm-morph-key".text = "morph-fake-vm-test-key";
+        "vm-mcp-probe.py".source = pkgs.writeText "vm-mcp-probe.py" ''
+          import json
+          import subprocess
+          import sys
 
-      def send(proc, obj):
-          proc.stdin.write((json.dumps(obj) + "\n").encode())
-          proc.stdin.flush()
+          PROXY = "http://127.0.0.1:8787"
 
-      def recv(proc, want_id):
-          while True:
-              line = proc.stdout.readline()
-              if not line:
-                  raise SystemExit("MCP probe: server closed stdout")
-              msg = json.loads(line)
-              if msg.get("id") == want_id:
-                  return msg
+          def send(proc, obj):
+              proc.stdin.write((json.dumps(obj) + "\n").encode())
+              proc.stdin.flush()
 
-      def call(proc, id, name, arguments):
-          send(proc, {
-              "jsonrpc": "2.0", "id": id, "method": "tools/call",
-              "params": {"name": name, "arguments": arguments},
-          })
-          return recv(proc, id)
+          def recv(proc, want_id):
+              while True:
+                  line = proc.stdout.readline()
+                  if not line:
+                      raise SystemExit("MCP probe: server closed stdout")
+                  msg = json.loads(line)
+                  if msg.get("id") == want_id:
+                      return msg
 
-      proc = subprocess.Popen(
-          ["headroom", "mcp", "serve", "--proxy-url", PROXY],
-          stdin=subprocess.PIPE, stdout=subprocess.PIPE,
-          stderr=subprocess.DEVNULL,
-      )
-      try:
-          # 1. initialize
-          send(proc, {
-              "jsonrpc": "2.0", "id": 1, "method": "initialize",
-              "params": {
-                  "protocolVersion": "2024-11-05", "capabilities": {},
-                  "clientInfo": {"name": "vm-probe", "version": "0"},
-              },
-          })
-          init = recv(proc, 1)
-          assert init["result"]["serverInfo"]["name"] == "headroom", init
-          send(proc, {"jsonrpc": "2.0", "method": "notifications/initialized"})
+          def call(proc, id, name, arguments):
+              send(proc, {
+                  "jsonrpc": "2.0", "id": id, "method": "tools/call",
+                  "params": {"name": name, "arguments": arguments},
+              })
+              return recv(proc, id)
 
-          # tools/list
-          send(proc, {"jsonrpc": "2.0", "id": 2, "method": "tools/list"})
-          tools = {t["name"] for t in recv(proc, 2)["result"]["tools"]}
-          assert {"headroom_compress", "headroom_retrieve", "headroom_stats"} <= tools, tools
-
-          # compress -> hash
-          content = "\n".join(f"line {i}: some tool output content" for i in range(200))
-          resp = call(proc, 3, "headroom_compress", {"content": content})
-          body = json.loads(resp["result"]["content"][0]["text"])
-          assert "error" not in body, body
-          hash_key = body["hash"]
-          assert hash_key and body["original_tokens"] >= body["compressed_tokens"], body
-
-          # retrieve -> verbatim roundtrip
-          resp = call(proc, 4, "headroom_retrieve", {"hash": hash_key})
-          retrieved = json.loads(resp["result"]["content"][0]["text"])
-          assert retrieved.get("original_content") == content, "retrieve mismatch"
-
-          print("MCP_E2E_OK")
-      finally:
+          proc = subprocess.Popen(
+              ["headroom", "mcp", "serve", "--proxy-url", PROXY],
+              stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+              stderr=subprocess.DEVNULL,
+          )
           try:
-              proc.stdin.close()
-          except Exception:
-              pass
-          proc.terminate()
+              # 1. initialize
+              send(proc, {
+                  "jsonrpc": "2.0", "id": 1, "method": "initialize",
+                  "params": {
+                      "protocolVersion": "2024-11-05", "capabilities": {},
+                      "clientInfo": {"name": "vm-probe", "version": "0"},
+                  },
+              })
+              init = recv(proc, 1)
+              assert init["result"]["serverInfo"]["name"] == "headroom", init
+              send(proc, {"jsonrpc": "2.0", "method": "notifications/initialized"})
 
-      # --- Playwright MCP probe: drive the hermetic nixpkgs
-      # playwright-mcp server over stdio JSON-RPC exactly as opencode
-      # does (mcp.playwright local server). initialize -> tools/list
-      # only; no tool call, so no browser/X server is needed.
-      proc2 = subprocess.Popen(
-          ["playwright-mcp", "--headless"],
-          stdin=subprocess.PIPE, stdout=subprocess.PIPE,
-          stderr=subprocess.DEVNULL,
-      )
-      try:
-          send(proc2, {
-              "jsonrpc": "2.0", "id": 11, "method": "initialize",
-              "params": {
-                  "protocolVersion": "2024-11-05", "capabilities": {},
-                  "clientInfo": {"name": "vm-probe", "version": "0"},
-              },
-          })
-          init2 = recv(proc2, 11)
-          assert "serverInfo" in init2["result"], init2
-          send(proc2, {"jsonrpc": "2.0", "method": "notifications/initialized"})
+              # tools/list
+              send(proc, {"jsonrpc": "2.0", "id": 2, "method": "tools/list"})
+              tools = {t["name"] for t in recv(proc, 2)["result"]["tools"]}
+              assert {"headroom_compress", "headroom_retrieve", "headroom_stats"} <= tools, tools
 
-          send(proc2, {"jsonrpc": "2.0", "id": 12, "method": "tools/list"})
-          tools2 = {t["name"] for t in recv(proc2, 12)["result"]["tools"]}
-          assert {"browser_navigate", "browser_snapshot", "browser_click"} <= tools2, tools2
+              # compress -> hash
+              content = "\n".join(f"line {i}: some tool output content" for i in range(200))
+              resp = call(proc, 3, "headroom_compress", {"content": content})
+              body = json.loads(resp["result"]["content"][0]["text"])
+              assert "error" not in body, body
+              hash_key = body["hash"]
+              assert hash_key and body["original_tokens"] >= body["compressed_tokens"], body
 
-          print("PLAYWRIGHT_MCP_OK")
-      finally:
+              # retrieve -> verbatim roundtrip
+              resp = call(proc, 4, "headroom_retrieve", {"hash": hash_key})
+              retrieved = json.loads(resp["result"]["content"][0]["text"])
+              assert retrieved.get("original_content") == content, "retrieve mismatch"
+
+              print("MCP_E2E_OK")
+          finally:
+              try:
+                  proc.stdin.close()
+              except Exception:
+                  pass
+              proc.terminate()
+
+          # --- Playwright MCP probe: drive the hermetic nixpkgs
+          # playwright-mcp server over stdio JSON-RPC exactly as opencode
+          # does (mcp.playwright local server). initialize -> tools/list
+          # only; no tool call, so no browser/X server is needed.
+          proc2 = subprocess.Popen(
+              ["playwright-mcp", "--headless"],
+              stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+              stderr=subprocess.DEVNULL,
+          )
           try:
-              proc2.stdin.close()
-          except Exception:
-              pass
-          proc2.terminate()
+              send(proc2, {
+                  "jsonrpc": "2.0", "id": 11, "method": "initialize",
+                  "params": {
+                      "protocolVersion": "2024-11-05", "capabilities": {},
+                      "clientInfo": {"name": "vm-probe", "version": "0"},
+                  },
+              })
+              init2 = recv(proc2, 11)
+              assert "serverInfo" in init2["result"], init2
+              send(proc2, {"jsonrpc": "2.0", "method": "notifications/initialized"})
 
-      # --- GitHub MCP probe (PAT method): drive the
-      # github-mcp-server-opencode wrapper over stdio JSON-RPC exactly as
-      # opencode does (mcp.github local server). The upstream server exits
-      # immediately when GITHUB_PERSONAL_ACCESS_TOKEN is unset, so a
-      # successful initialize/tools/list PROVES the wrapper read the PAT
-      # file and exported the env var (no network needed; the fake PAT is
-      # only rejected on actual API calls).
-      proc3 = subprocess.Popen(
-          ["github-mcp-server-opencode"],
-          stdin=subprocess.PIPE, stdout=subprocess.PIPE,
-          stderr=subprocess.DEVNULL,
-      )
-      try:
-          send(proc3, {
-              "jsonrpc": "2.0", "id": 21, "method": "initialize",
-              "params": {
-                  "protocolVersion": "2024-11-05", "capabilities": {},
-                  "clientInfo": {"name": "vm-probe", "version": "0"},
-              },
-          })
-          init3 = recv(proc3, 21)
-          assert init3["result"]["serverInfo"]["name"] == "github-mcp-server", init3
-          send(proc3, {"jsonrpc": "2.0", "method": "notifications/initialized"})
+              send(proc2, {"jsonrpc": "2.0", "id": 12, "method": "tools/list"})
+              tools2 = {t["name"] for t in recv(proc2, 12)["result"]["tools"]}
+              assert {"browser_navigate", "browser_snapshot", "browser_click"} <= tools2, tools2
 
-          send(proc3, {"jsonrpc": "2.0", "id": 22, "method": "tools/list"})
-          tools3 = {t["name"] for t in recv(proc3, 22)["result"]["tools"]}
-          assert {"get_me", "list_issues", "create_repository", "get_file_contents"} <= tools3, tools3
+              print("PLAYWRIGHT_MCP_OK")
+          finally:
+              try:
+                  proc2.stdin.close()
+              except Exception:
+                  pass
+              proc2.terminate()
 
-          print("GITHUB_MCP_OK")
-      finally:
+          # --- GitHub MCP probe (PAT method): drive the
+          # github-mcp-server-opencode wrapper over stdio JSON-RPC exactly as
+          # opencode does (mcp.github local server). The upstream server exits
+          # immediately when GITHUB_PERSONAL_ACCESS_TOKEN is unset, so a
+          # successful initialize/tools/list PROVES the wrapper read the PAT
+          # file and exported the env var (no network needed; the fake PAT is
+          # only rejected on actual API calls).
+          proc3 = subprocess.Popen(
+              ["github-mcp-server-opencode"],
+              stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+              stderr=subprocess.DEVNULL,
+          )
           try:
-              proc3.stdin.close()
-          except Exception:
-              pass
-          proc3.terminate()
-    '';
+              send(proc3, {
+                  "jsonrpc": "2.0", "id": 21, "method": "initialize",
+                  "params": {
+                      "protocolVersion": "2024-11-05", "capabilities": {},
+                      "clientInfo": {"name": "vm-probe", "version": "0"},
+                  },
+              })
+              init3 = recv(proc3, 21)
+              assert init3["result"]["serverInfo"]["name"] == "github-mcp-server", init3
+              send(proc3, {"jsonrpc": "2.0", "method": "notifications/initialized"})
+
+              send(proc3, {"jsonrpc": "2.0", "id": 22, "method": "tools/list"})
+              tools3 = {t["name"] for t in recv(proc3, 22)["result"]["tools"]}
+              assert {"get_me", "list_issues", "create_repository", "get_file_contents"} <= tools3, tools3
+
+              print("GITHUB_MCP_OK")
+          finally:
+              try:
+                  proc3.stdin.close()
+              except Exception:
+                  pass
+              proc3.terminate()
+        '';
+      };
+    };
   };
 
   testScript = ''

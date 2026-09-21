@@ -1,4 +1,4 @@
-{...}: {
+_: {
   # ------ NixOS Modules ------ #
   flake.nixosModules.nix-ld = {
     config,

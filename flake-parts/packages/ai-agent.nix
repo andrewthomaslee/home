@@ -1,7 +1,6 @@
 {
   inputs,
   self,
-  lib,
   ...
 }: let
   # VM resource sizing for the KubeVirt Kustomization overlays.
@@ -53,9 +52,11 @@
           boot.loader.grub.efiInstallAsRemovable = lib.mkForce false;
 
           # Headless agent VM: no manpages/docs (shrinks the image closure).
-          documentation.enable = lib.mkDefault false;
-          documentation.nixos.enable = lib.mkDefault false;
-          documentation.man.enable = lib.mkDefault false;
+          documentation = {
+            enable = lib.mkDefault false;
+            nixos.enable = lib.mkDefault false;
+            man.enable = lib.mkDefault false;
+          };
 
           # Compressed qcow2 (zlib clusters): ~50-60% smaller image and OCI
           # layer with no KubeVirt incompatibility. Overrides the
@@ -67,9 +68,11 @@
           });
 
           # KubeVirt guest integration & cloud-init
-          services.qemuGuest.enable = true;
-          services.cloud-init.enable = true;
-          services.openssh.enable = true;
+          services = {
+            qemuGuest.enable = true;
+            cloud-init.enable = true;
+            openssh.enable = true;
+          };
 
           # Modified netsa user as headless AI agent
           users.users.netsa = {
@@ -83,12 +86,14 @@
           };
           security.sudo.wheelNeedsPassword = false;
 
-          home-manager.useGlobalPkgs = false;
-          home-manager.useUserPackages = true;
-          home-manager.sharedModules = [
-            inputs.plasma-manager.homeModules.plasma-manager
-          ];
-          home-manager.users.netsa = self.homeModules.profile-netsa-agent;
+          home-manager = {
+            useGlobalPkgs = false;
+            useUserPackages = true;
+            sharedModules = [
+              inputs.plasma-manager.homeModules.plasma-manager
+            ];
+            users.netsa = self.homeModules.profile-netsa-agent;
+          };
 
           # OpenCode Web server service for netsa
           systemd.user.services.opencode-web = {
@@ -153,109 +158,113 @@ in {
       module = {kubenix, ...}: {
         imports = [kubenix.modules.k8s];
 
-        kubernetes.customTypes = [
-          {
-            group = "kubevirt.io";
-            version = "v1";
-            kind = "VirtualMachine";
-            attrName = "virtualmachines";
-          }
-        ];
+        kubernetes = {
+          customTypes = [
+            {
+              group = "kubevirt.io";
+              version = "v1";
+              kind = "VirtualMachine";
+              attrName = "virtualmachines";
+            }
+          ];
 
-        kubernetes.resources.virtualmachines."ai-agent" = {
-          metadata = {
-            name = "ai-agent";
-            labels = {
-              "app.kubernetes.io/name" = "ai-agent";
-              "app.kubernetes.io/instance" = "ai-agent";
-              "app.kubernetes.io/size" = "sm";
-            };
-          };
-          spec = {
-            running = true;
-            template = {
-              metadata.labels.app = "ai-agent";
+          resources = {
+            virtualmachines."ai-agent" = {
+              metadata = {
+                name = "ai-agent";
+                labels = {
+                  "app.kubernetes.io/name" = "ai-agent";
+                  "app.kubernetes.io/instance" = "ai-agent";
+                  "app.kubernetes.io/size" = "sm";
+                };
+              };
               spec = {
-                domain = {
-                  cpu.cores = sizes.sm.cores;
-                  resources.requests = {
-                    cpu = "${toString sizes.sm.cores}";
-                    memory = sizes.sm.memory;
-                  };
-                  resources.limits = {
-                    cpu = "${toString sizes.sm.cores}";
-                    memory = sizes.sm.memory;
-                  };
-                  devices = {
-                    disks = [
+                running = true;
+                template = {
+                  metadata.labels.app = "ai-agent";
+                  spec = {
+                    domain = {
+                      cpu.cores = sizes.sm.cores;
+                      resources.requests = {
+                        cpu = "${toString sizes.sm.cores}";
+                        memory = sizes.sm.memory;
+                      };
+                      resources.limits = {
+                        cpu = "${toString sizes.sm.cores}";
+                        memory = sizes.sm.memory;
+                      };
+                      devices = {
+                        disks = [
+                          {
+                            name = "containerdisk";
+                            disk.bus = "virtio";
+                          }
+                          {
+                            name = "cloudinitdisk";
+                            disk.bus = "virtio";
+                          }
+                        ];
+                        interfaces = [
+                          {
+                            name = "default";
+                            masquerade = {};
+                          }
+                        ];
+                      };
+                    };
+                    networks = [
+                      {
+                        name = "default";
+                        pod = {};
+                      }
+                    ];
+                    volumes = [
                       {
                         name = "containerdisk";
-                        disk.bus = "virtio";
+                        containerDisk.image = "${imageName}:latest";
                       }
                       {
                         name = "cloudinitdisk";
-                        disk.bus = "virtio";
-                      }
-                    ];
-                    interfaces = [
-                      {
-                        name = "default";
-                        masquerade = {};
+                        cloudInitNoCloud.userData = ''
+                          #cloud-config
+                          write_files:
+                            - path: /etc/default/opencode-web
+                              permissions: "0644"
+                              content: |
+                                # Runtime overrides for opencode-web.service (EnvironmentFile).
+                                # OPENCODE_SERVER_PASSWORD=<set-me-for-public-access>
+                                OPENCODE_ENABLE_WEB=true
+                                OPENCODE_PORT=4096
+                        '';
                       }
                     ];
                   };
                 };
-                networks = [
+              };
+            };
+
+            services."ai-agent" = {
+              metadata = {
+                name = "ai-agent";
+                labels.app = "ai-agent";
+              };
+              spec = {
+                type = "ClusterIP";
+                selector.app = "ai-agent";
+                ports = [
                   {
-                    name = "default";
-                    pod = {};
+                    name = "opencode-web";
+                    port = 4096;
+                    targetPort = 4096;
                   }
-                ];
-                volumes = [
                   {
-                    name = "containerdisk";
-                    containerDisk.image = "${imageName}:latest";
-                  }
-                  {
-                    name = "cloudinitdisk";
-                    cloudInitNoCloud.userData = ''
-                      #cloud-config
-                      write_files:
-                        - path: /etc/default/opencode-web
-                          permissions: "0644"
-                          content: |
-                            # Runtime overrides for opencode-web.service (EnvironmentFile).
-                            # OPENCODE_SERVER_PASSWORD=<set-me-for-public-access>
-                            OPENCODE_ENABLE_WEB=true
-                            OPENCODE_PORT=4096
-                    '';
+                    name = "ssh";
+                    port = 22;
+                    targetPort = 22;
                   }
                 ];
               };
             };
-          };
-        };
-
-        kubernetes.resources.services."ai-agent" = {
-          metadata = {
-            name = "ai-agent";
-            labels.app = "ai-agent";
-          };
-          spec = {
-            type = "ClusterIP";
-            selector.app = "ai-agent";
-            ports = [
-              {
-                name = "opencode-web";
-                port = 4096;
-                targetPort = 4096;
-              }
-              {
-                name = "ssh";
-                port = 22;
-                targetPort = 22;
-              }
-            ];
           };
         };
       };
@@ -306,11 +315,11 @@ in {
           cpu.cores = sizeCfg.cores;
           resources.requests = {
             cpu = "${toString sizeCfg.cores}";
-            memory = sizeCfg.memory;
+            inherit (sizeCfg) memory;
           };
           resources.limits = {
             cpu = "${toString sizeCfg.cores}";
-            memory = sizeCfg.memory;
+            inherit (sizeCfg) memory;
           };
         };
       };

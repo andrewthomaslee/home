@@ -1,4 +1,4 @@
-{...}: {
+_: {
   # Dev + gaming desktop: KDE/Wayland, Steam and the Valve jovian kernel are
   # assumed with jovian (see flake-parts/nixosModules/jovian.nix).
   hostSpec.system.jovian.enable = true;
@@ -10,7 +10,7 @@
   hostSpec.services.whisper-dictation.enable = true;
 
   nixpkgs.overlays = [
-    (final: prev: {
+    (final: _prev: {
       # linux-firmware 20260910 (in clan-core's nixpkgs aff8a0b) ships a
       # yellow_carp_dmcub.bin that PSP rejects on this DCN 3.1.2 GPU:
       # "failed to load ucode DMCUB(0x3D)" -> black screen after vconsole.

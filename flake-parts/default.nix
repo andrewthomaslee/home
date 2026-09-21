@@ -5,15 +5,13 @@
   ...
 }: let
   # Define custom lib accessable as `customLib.custom`
-  customLib = lib.extend (self: super: {custom = import ../lib {inherit lib;};});
+  customLib = lib.extend (_self: _super: {custom = import ../lib {inherit lib;};});
   inherit (customLib.custom) relativeToRoot;
 in {
   # ------ Per-System ------ #
   perSystem = {
     pkgs,
     system,
-    config,
-    self',
     ...
   }: {
     _module.args = {
@@ -34,7 +32,7 @@ in {
 
   flake = {
     # ------ NixOS Modules ------ #
-    nixosModules.default = {pkgs, ...}: {
+    nixosModules.default = {...}: {
       # args passed to all modules
       _module.args = {inherit customLib;};
 
@@ -115,7 +113,7 @@ in {
 
     # --- Clan Configuration ------ #
     clan = {
-      inventory = import (relativeToRoot "inventory.nix") {inherit self inputs customLib;};
+      inventory = import (relativeToRoot "inventory.nix") {inherit customLib;};
       specialArgs = {inherit customLib inputs self;};
       inherit ((import "${inputs.clan-community}/services/rancher/flake-module.nix" {}).clan) exportInterfaces;
       modules = {

@@ -11,9 +11,13 @@
 
     config = lib.mkIf cfg.enable {
       # nixos config for longhorn
-      services.openiscsi = {
-        enable = true;
-        name = "iqn.2016-04.com.open-iscsi:${config.networking.hostName}";
+      services = {
+        openiscsi = {
+          enable = true;
+          name = "iqn.2016-04.com.open-iscsi:${config.networking.hostName}";
+        };
+        rke2.nodeLabel = ["storage=longhorn" "longhorn=true"];
+        k3s.nodeLabel = ["storage=longhorn" "longhorn=true"];
       };
       environment.systemPackages = with pkgs; [
         cifs-utils
@@ -24,9 +28,6 @@
         "L+ /usr/local/bin - - - - /run/current-system/sw/bin/"
       ];
       boot.kernelModules = ["dm_crypt"];
-
-      services.rke2.nodeLabel = ["storage=longhorn" "longhorn=true"];
-      services.k3s.nodeLabel = ["storage=longhorn" "longhorn=true"];
     };
   };
 }

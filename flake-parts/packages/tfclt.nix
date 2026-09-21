@@ -1,4 +1,4 @@
-{...}: {
+_: {
   # ------ Per-System ------ #
   perSystem = {pkgs, ...}: {
     packages.tfctl = pkgs.stdenv.mkDerivation rec {

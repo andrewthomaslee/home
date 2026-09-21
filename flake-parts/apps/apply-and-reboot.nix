@@ -1,4 +1,4 @@
-{...}: {
+_: {
   # ------ Per-System ------ #
   perSystem = {
     lib,

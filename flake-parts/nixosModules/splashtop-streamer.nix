@@ -1,4 +1,4 @@
-{lib, ...}: {
+_: {
   flake.nixosModules.splashtop-streamer = {
     pkgs,
     config,

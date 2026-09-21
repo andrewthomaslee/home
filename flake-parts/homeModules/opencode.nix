@@ -101,30 +101,32 @@
         # GitHub: auth method selected by `auth`; the two methods are
         # mutually exclusive (enum + assertion below). pat-mode derives the
         # clan vars generator via nixosModules/github-mcp.
-        github.enable = lib.mkOption {
-          type = lib.types.bool;
-          default = true;
-          description = "Enable the GitHub MCP server in opencode settings.";
-        };
-        github.auth = lib.mkOption {
-          type = lib.types.enum ["oauth" "pat"];
-          default = "oauth";
-          description = ''
-            GitHub MCP auth method (mutually exclusive):
-            - "oauth": remote hosted server (https://api.githubcopilot.com/mcp/);
-              opencode runs the browser OAuth flow on first use. No secret.
-            - "pat": local stdio server reading the PAT from `patFile`
-              (usually the clan var at /run/secrets/vars/shared/github-mcp/pat).
-          '';
-        };
-        github.patFile = lib.mkOption {
-          type = with lib.types;
-            nullOr str;
-          default = null;
-          description = ''
-            Path to a file containing the GitHub Personal Access Token.
-            Only used with mcp.github.auth = "pat"; must be null for "oauth".
-          '';
+        github = {
+          enable = lib.mkOption {
+            type = lib.types.bool;
+            default = true;
+            description = "Enable the GitHub MCP server in opencode settings.";
+          };
+          auth = lib.mkOption {
+            type = lib.types.enum ["oauth" "pat"];
+            default = "oauth";
+            description = ''
+              GitHub MCP auth method (mutually exclusive):
+              - "oauth": remote hosted server (https://api.githubcopilot.com/mcp/);
+                opencode runs the browser OAuth flow on first use. No secret.
+              - "pat": local stdio server reading the PAT from `patFile`
+                (usually the clan var at /run/secrets/vars/shared/github-mcp/pat).
+            '';
+          };
+          patFile = lib.mkOption {
+            type = with lib.types;
+              nullOr str;
+            default = null;
+            description = ''
+              Path to a file containing the GitHub Personal Access Token.
+              Only used with mcp.github.auth = "pat"; must be null for "oauth".
+            '';
+          };
         };
         # Cloudflare remote MCP servers (hosted by Cloudflare; OAuth on
         # first use, the docs server is public). Off by default, enabled

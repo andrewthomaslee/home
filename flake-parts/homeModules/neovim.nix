@@ -5,11 +5,7 @@
   ...
 }: {
   # ------ Home-manager Modules ------ #
-  flake.homeModules.neovim = {
-    pkgs,
-    config,
-    ...
-  }: let
+  flake.homeModules.neovim = {config, ...}: let
     cfg = config.homeSpec.programs.neovim;
   in {
     options.homeSpec.programs.neovim.enable = lib.mkEnableOption "default neovim configuration";

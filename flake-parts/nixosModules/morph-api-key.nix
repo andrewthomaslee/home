@@ -1,4 +1,4 @@
-{lib, ...}: {
+_: {
   # ------ NixOS Modules ------ #
   # Self-configuring Morph Fast Apply API key provisioning, mirroring
   # nixosModules/github-mcp. For every home-manager user whose opencode

@@ -102,19 +102,30 @@ into the devShell and one of:
 already runs):
 
 ```nix
-perSystem = {pkgs, self', ...}: {
-  checks.lint = pkgs.runCommand "lint" {} ''
-    ${pkgs.alejandra}/bin/alejandra --check ${self'}
-    ${pkgs.statix}/bin/statix check ${self'}
-    ${pkgs.deadnix}/bin/deadnix --fail ${self'}
-    touch $out
-  '';
-};
+{
+  self,
+  lib,
+  ...
+}: {
+  perSystem = {pkgs, ...}: {
+    checks.lint = pkgs.runCommand "lint" {
+      nativeBuildInputs = with pkgs; [alejandra statix deadnix];
+    } ''
+      cd ${lib.sources.sourceFilesBySuffices self [".nix"]}
+      alejandra --check .
+      statix check .
+      deadnix --fail .
+      touch $out
+    '';
+  };
+}
 ```
 
-(Verify exact flags per tool version: `deadnix --help`, `statix check -h`;
-alejandra's check mode is `--check <path>`, deadnix fails on findings with
-`--fail` or via non-zero scan exit.)
+Filtering the source to `.nix` files keeps docs/asset changes from
+invalidating the check and keeps secrets out of its closure. If the repo
+gains a `statix.toml`, add it to the suffix list or statix won't see it.
+(Verify exact flags per tool version: `deadnix --help`,
+`statix check --help`; deadnix fails on findings with `--fail`.)
 
 **Option B — dedicated CI step** (fast feedback before the full check):
 
@@ -123,7 +134,7 @@ alejandra's check mode is `--check <path>`, deadnix fails on findings with
 - run: |
     nix run nixpkgs#alejandra -- --check .
     nix run nixpkgs#statix -- check .
-    nix run nixpkgs#deadnix -- .
+    nix run nixpkgs#deadnix -- --fail .
 ```
 
 `flake-checker` (`DeterminateSystems/flake-checker-action@main`) runs

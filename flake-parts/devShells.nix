@@ -1,8 +1,6 @@
-{...}: {
+_: {
   perSystem = {
     pkgs,
-    lib,
-    inputs',
     self',
     ...
   }:
@@ -16,9 +14,12 @@
             clan-cli
           ]
           ++ (with unstable; [
+            alejandra
             bash
             bun
+            deadnix
             disko
+            statix
           ]);
         shellHook = ''
           export REPO_ROOT

@@ -1,4 +1,4 @@
-{...}: {
+_: {
   # ------ NixOS Modules ------ #
   flake.nixosModules.amd = {
     config,

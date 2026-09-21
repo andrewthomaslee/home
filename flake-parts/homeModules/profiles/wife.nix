@@ -1,5 +1,5 @@
 {self, ...}: {
-  flake.homeModules.profile-wife = {pkgs, ...}: {
+  flake.homeModules.profile-wife = {...}: {
     imports = [self.homeModules.default];
     config = {
       # homeSpec options

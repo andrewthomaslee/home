@@ -1,7 +1,7 @@
 {
   inputs,
   self,
-}: final: prev: {
+}: final: _prev: {
   # add unstable branch of nixpkgs accessable as `pkgs.unstable`
   unstable = import inputs.nixpkgs-unstable {
     inherit (final.stdenv.hostPlatform) system;

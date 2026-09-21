@@ -20,9 +20,11 @@
             detect_env_vars = ["KUBECONFIG"];
           };
           git_branch.style = "242";
-          directory.style = "bold blue";
-          directory.truncate_to_repo = true;
-          directory.truncation_length = 10;
+          directory = {
+            style = "bold blue";
+            truncate_to_repo = true;
+            truncation_length = 10;
+          };
           direnv.disabled = false;
           python.disabled = false;
           ruby.disabled = true;

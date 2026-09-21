@@ -116,17 +116,23 @@ Run this loop before claiming any Nix work is done — in order:
 ```
 1. nix fmt .                      # format
 2. statix check .                 # lint (anti-patterns)
-3. deadnix -f .                   # unused bindings (f = fix, -e = keep lambdas)
+3. deadnix --fail .               # dead code; --fail exits 1 on findings
 4. nix flake check --show-trace   # eval every output
 5. nix build .#<thing-you-touched> -L   # real build, -L = logs
 ```
 
-`-f` on deadnix writes fixes; run it, review the diff, keep or revert. If a
-tool is not in the environment, run it through nixpkgs instead of skipping:
+`--fail` on deadnix makes findings fatal; `-e`/`--edit` removes them and
+writes the files — run it, review the diff, keep or revert. In module-heavy
+repos, unused module args are common; `deadnix -l -L --fail .` tolerates
+them (ignores unused lambda args/attrset-pattern names) if the repo's
+convention accepts them — follow the repo's `AGENTS.md`/gate, not taste.
+
+If a tool is not in the environment, run it through nixpkgs instead of
+skipping:
 
 ```
 nix run nixpkgs#statix -- check .
-nix run nixpkgs#deadnix -- -f .
+nix run nixpkgs#deadnix -- --fail .
 ```
 
 These three tools belong in the repo's devShell (`packages = [alejandra
@@ -134,6 +140,11 @@ statix deadnix ...]`) **and** in a gate, so lint/format failures break the
 build instead of relying on an agent's goodwill. The gate is either a
 `checks.lint` derivation or a CI step; see
 [flakehub-ci.md](references/flakehub-ci.md) for a worked example.
+
+When fixing mechanically, run the fixers in this order: `deadnix -e .`,
+then `statix fix .`, then `nix fmt .` — deadnix removes unused bindings
+first (it can leave `{...}:` patterns behind), statix then normalizes what
+remains (e.g. `{...}:` → `_:`), and alejandra settles formatting last.
 
 Paste the last failing/passing command and its exit status when reporting
 results. "It should work" is not verification.

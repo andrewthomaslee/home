@@ -1,4 +1,4 @@
-{...}: {
+_: {
   perSystem = {pkgs, ...}: {
     # opencode-nixd-scaffold — scaffolds per-repo nixd overrides for OpenCode
     # (`opencode.json`) and optionally VS Code (`.vscode/settings.json`).

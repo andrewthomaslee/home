@@ -1,14 +1,10 @@
 {lib, ...}: let
   relativeToRoot = lib.path.append ../../.;
-  machines = (builtins.fromJSON (builtins.readFile (relativeToRoot "machines.json"))).machines;
+  inherit ((builtins.fromJSON (builtins.readFile (relativeToRoot "machines.json")))) machines;
 in {
   # ------ NixOS Modules ------ #
   flake.nixosModules = {
-    lan = {
-      config,
-      customLib,
-      ...
-    }: let
+    lan = {config, ...}: let
       cfg = config.hostSpec.networking.lan;
     in {
       options.hostSpec.networking.lan = {
@@ -57,11 +53,7 @@ in {
         };
       };
     };
-    wan = {
-      config,
-      customLib,
-      ...
-    }: let
+    wan = {config, ...}: let
       cfg = config.hostSpec.networking.wan;
     in {
       options.hostSpec.networking.wan.enabled = lib.mkEnableOption "default wan configuration";
@@ -74,24 +66,26 @@ in {
         # the real NIC so the interfaces stanza below is inert there; fixing
         # the name would require networkmanager.unmanaged to keep NM in
         # charge.
-        boot.kernel.sysctl = {
-          "net.ipv4.tcp_congestion_control" = "bbr";
-          "net.core.default_qdisc" = "fq";
-          "net.core.wmem_max" = 16777216;
-          "net.ipv4.tcp_wmem" = "4096 65536 16777216";
+        boot = {
+          kernel.sysctl = {
+            "net.ipv4.tcp_congestion_control" = "bbr";
+            "net.core.default_qdisc" = "fq";
+            "net.core.wmem_max" = 16777216;
+            "net.ipv4.tcp_wmem" = "4096 65536 16777216";
+          };
+          kernelModules = ["tcp_bbr"];
+          # Verified against the running kernel's modules (modinfo):
+          # rtw89_core.disable_ps_mode + rtw89_pci.{disable_clkreq,
+          # disable_aspm_l1} — kills WiFi power-save / PCIe PM latency
+          # spikes; inert on machines without the rtw89 driver.
+          extraModprobeConfig = ''
+            options rtw89_core disable_ps_mode=Y
+            options rtw89_pci disable_clkreq=Y disable_aspm_l1=Y
+          '';
         };
-        boot.kernelModules = ["tcp_bbr"];
-        # Verified against the running kernel's modules (modinfo):
-        # rtw89_core.disable_ps_mode + rtw89_pci.{disable_clkreq,
-        # disable_aspm_l1} — kills WiFi power-save / PCIe PM latency
-        # spikes; inert on machines without the rtw89 driver.
-        boot.extraModprobeConfig = ''
-          options rtw89_core disable_ps_mode=Y
-          options rtw89_pci disable_clkreq=Y disable_aspm_l1=Y
-        '';
 
         networking = let
-          net = (lib.findFirst (m: m.name == (config.networking.hostName)) null machines).network;
+          net = (lib.findFirst (m: m.name == config.networking.hostName) null machines).network;
         in {
           networkmanager.enable = lib.mkDefault true;
           networkmanager.wifi.powersave = lib.mkDefault false;

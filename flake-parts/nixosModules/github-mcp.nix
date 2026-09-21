@@ -1,4 +1,4 @@
-{lib, ...}: {
+_: {
   # ------ NixOS Modules ------ #
   # Self-configuring GitHub MCP support. All user-facing options live under
   # homeSpec.programs.opencode (homeModules/opencode.nix) — this module has
