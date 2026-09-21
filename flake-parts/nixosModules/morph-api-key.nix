@@ -2,7 +2,7 @@ _: {
   # ------ NixOS Modules ------ #
   # Self-configuring Morph Fast Apply API key provisioning, mirroring
   # nixosModules/github-mcp. For every home-manager user whose opencode
-  # config has plugins."morph-fast-apply".enable, it declares the clan
+  # config has plugins.morph-fast-apply.enable, it declares the clan
   # vars generator provisioning the key; sops-nix deploys it to
   #   /run/secrets/vars/shared/morph-api-key/api-key
   # (owner = user, mode 0400, neededFor = services), where the opencode
@@ -33,10 +33,10 @@ _: {
             oc
             != null
             && (oc.enable or false)
-            && ((oc.plugins or {})."morph-fast-apply" or {}).enable or false
+            && ((oc.plugins or {}).morph-fast-apply or {}).enable or false
           )
           {
-            "morph-api-key" = {
+            morph-api-key = {
               share = true;
               prompts.api-key = {
                 persist = true;

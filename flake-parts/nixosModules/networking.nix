@@ -1,6 +1,11 @@
 {lib, ...}: let
-  relativeToRoot = lib.path.append ../../.;
-  machinesJson = builtins.fromJSON (builtins.readFile (relativeToRoot "machines.json"));
+  # machines.json lives at the repo root. Read it via a path literal, NOT
+  # customLib.relativeToRoot: a module arg is resolved lazily through
+  # config._module.args, which is circular while config itself is being
+  # evaluated (clan machine evals fail with "attribute 'customLib'
+  # missing"). Home modules are unaffected — extraSpecialArgs is a
+  # separate eval channel.
+  machinesJson = builtins.fromJSON (builtins.readFile ./../../machines.json);
   inherit (machinesJson) machines;
 in {
   # ------ NixOS Modules ------ #

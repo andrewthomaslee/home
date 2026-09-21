@@ -21,7 +21,6 @@
     self,
     inputs,
     lib,
-    customLib,
     pkgs,
     ...
   }: let
@@ -47,7 +46,6 @@
       home-manager = {
         useUserPackages = true;
         backupFileExtension = "hm-backup";
-        extraSpecialArgs = {inherit customLib;};
         sharedModules = [inputs.plasma-manager.homeModules.plasma-manager];
       };
 

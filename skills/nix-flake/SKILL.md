@@ -150,6 +150,22 @@ home-manager modules get it via `home-manager.extraSpecialArgs`, set once
 in `nixosModules/default` — not per clan service, or non-clan consumers
 (KubeVirt VM packages, test VMs) lose it.
 
+One hard exception: a NixOS module whose **config value** needs a
+repo-root path cannot take `customLib` as a module arg — args are
+resolved lazily through `config._module.args`, which is circular while
+`config` itself is being evaluated (clan machine evals die with
+`attribute 'customLib' missing`). There, read the file with a direct path
+literal and comment why:
+
+```nix
+# machines.json lives at the repo root; a module arg here would be
+# circular (config._module.args lookup while config is evaluating)
+machinesJson = builtins.fromJSON (builtins.readFile ./../../machines.json);
+```
+
+Home-manager modules are unaffected — `extraSpecialArgs` is a separate
+eval channel, so `relativeToRoot` is always safe there.
+
 ### Module system
 
 - Options: `lib.mkEnableOption` for booleans; `lib.mkOption` always with

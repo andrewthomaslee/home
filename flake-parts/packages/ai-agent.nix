@@ -48,8 +48,10 @@
           # self.nixosModules.default defaults GRUB to EFI, which fails to
           # install on the generated image ("/boot doesn't look like an EFI
           # partition"), so force BIOS mode.
-          boot.loader.grub.efiSupport = lib.mkForce false;
-          boot.loader.grub.efiInstallAsRemovable = lib.mkForce false;
+          boot.loader.grub = {
+            efiSupport = lib.mkForce false;
+            efiInstallAsRemovable = lib.mkForce false;
+          };
 
           # Headless agent VM: no manpages/docs (shrinks the image closure).
           documentation = {

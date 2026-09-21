@@ -24,14 +24,16 @@
     # Enabling sshd lets sops-nix derive its host key from the SSH host key.
     services.openssh.enable = true;
 
-    users.users.alice = {
-      isNormalUser = true;
-      extraGroups = ["wheel"];
-      linger = true;
-    };
-    users.users.bob = {
-      isNormalUser = true;
-      linger = true;
+    users.users = {
+      alice = {
+        isNormalUser = true;
+        extraGroups = ["wheel"];
+        linger = true;
+      };
+      bob = {
+        isNormalUser = true;
+        linger = true;
+      };
     };
 
     home-manager = {
@@ -81,15 +83,19 @@
           # Morph Fast Apply with the fake key file above: exercises the
           # morph-api-key clan var generator declaration, the opencode
           # wrapper (MORPH_API_KEY export) and the plugin entry.
-          plugins."morph-fast-apply".enable = true;
-          plugins."morph-fast-apply".apiKeyFile = "/etc/vm-morph-key";
+          plugins = {
+            morph-fast-apply = {
+              enable = true;
+              apiKeyFile = "/etc/vm-morph-key";
+            };
+          };
           mcp = {
             cloudflare.enable = true;
-            "cloudflare-docs".enable = true;
-            "cloudflare-bindings".enable = true;
-            "cloudflare-builds".enable = true;
-            "cloudflare-browser".enable = true;
-            "cloudflare-containers".enable = true;
+            cloudflare-docs.enable = true;
+            cloudflare-bindings.enable = true;
+            cloudflare-builds.enable = true;
+            cloudflare-browser.enable = true;
+            cloudflare-containers.enable = true;
             # MDN Web Docs remote MCP server
             mdn.enable = true;
           };
@@ -114,11 +120,11 @@
       # clan var generator is derived automatically by
       # nixosModules/github-mcp from alice's githubMcpAuth = "pat" below.
       etc = {
-        "vm-github-pat".text = "ghp-fake-vm-test-pat";
+        vm-github-pat.text = "ghp-fake-vm-test-pat";
         # Fake Morph API key: proves the opencode wrapper -> MORPH_API_KEY env
         # -> plugin wiring end to end (same pattern as the github PAT above;
         # the clan var generator stays inert because apiKeyFile is overridden).
-        "vm-morph-key".text = "morph-fake-vm-test-key";
+        vm-morph-key.text = "morph-fake-vm-test-key";
         "vm-mcp-probe.py".source = pkgs.writeText "vm-mcp-probe.py" ''
           import json
           import subprocess

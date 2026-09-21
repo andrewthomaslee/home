@@ -36,6 +36,11 @@ in {
       # args passed to all modules
       _module.args = {inherit customLib;};
 
+      # customLib (and thus relativeToRoot) for home-manager modules — set
+      # here, not per clan service, so non-clan consumers (KubeVirt VM
+      # packages, test VMs) get it too.
+      home-manager.extraSpecialArgs = {inherit customLib;};
+
       # pkgs
       nixpkgs = {
         overlays = [self.overlays.default];

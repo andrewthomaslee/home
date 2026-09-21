@@ -47,7 +47,7 @@ _: {
             && ((gh.auth or "oauth") == "pat")
           )
           {
-            "github-mcp" = {
+            github-mcp = {
               share = true;
               prompts.pat = {
                 persist = true;

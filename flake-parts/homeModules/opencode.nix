@@ -8,12 +8,14 @@
   flake.homeModules.opencode = {
     pkgs,
     config,
+    customLib,
     ...
   }: let
     cfg = config.homeSpec.programs.opencode;
     headroomCfg = config.homeSpec.programs.headroom;
     headroomEnabled = config.homeSpec.programs.headroom.enable or false;
     headroomProxyUrl = "http://${headroomCfg.proxy.host}:${toString headroomCfg.proxy.port}/v1";
+    inherit (customLib.custom) relativeToRoot;
     # PAT file used by the wrapper: explicit githubPatFile override or the
     # canonical sops-nix deployment path of the shared "github-mcp" clan var
     # (declared by nixosModules/github-mcp for pat-mode users).
@@ -36,25 +38,25 @@
     # sops-deployed clan var from nixosModules/morph-api-key (same
     # pattern as githubMcpPatFile).
     morphApiKeyFile =
-      if cfg.plugins."morph-fast-apply".apiKeyFile != null
-      then cfg.plugins."morph-fast-apply".apiKeyFile
-      else if cfg.plugins."morph-fast-apply".enable
+      if cfg.plugins.morph-fast-apply.apiKeyFile != null
+      then cfg.plugins.morph-fast-apply.apiKeyFile
+      else if cfg.plugins.morph-fast-apply.enable
       then "/run/secrets/vars/shared/morph-api-key/api-key"
       else null;
     morphEnabledWithKey =
-      cfg.plugins."morph-fast-apply".enable && morphApiKeyFile != null;
+      cfg.plugins.morph-fast-apply.enable && morphApiKeyFile != null;
     opencodeMorphWrapper = pkgs.writeShellScriptBin "opencode" ''
       if [ -r ${lib.escapeShellArg morphApiKeyFile} ]; then
         export MORPH_API_KEY="$(cat ${lib.escapeShellArg morphApiKeyFile})"
       fi
-      export MORPH_MODEL=${lib.escapeShellArg cfg.plugins."morph-fast-apply".model}
+      export MORPH_MODEL=${lib.escapeShellArg cfg.plugins.morph-fast-apply.model}
       exec ${inputs.opencode.packages.${pkgs.stdenv.hostPlatform.system}.opencode}/bin/opencode "$@"
     '';
     # Hermetic plugin packages (flake-parts/packages/opencode-plugins.nix).
     pluginEntries =
       lib.optional headroomEnabled "${headroomCfg.package}/${pkgs.unstable.python313.sitePackages}/headroom/providers/opencode/_dist/entry.opencode.js"
-      ++ lib.optional cfg.plugins."cc-safety-net".enable "${pkgs.cc-safety-net}/share/opencode-plugins/cc-safety-net/dist/index.js"
-      ++ lib.optional cfg.plugins."morph-fast-apply".enable "${pkgs.opencode-morph-fast-apply}/share/opencode-plugins/opencode-morph-fast-apply/index.ts"
+      ++ lib.optional cfg.plugins.cc-safety-net.enable "${pkgs.cc-safety-net}/share/opencode-plugins/cc-safety-net/dist/index.js"
+      ++ lib.optional cfg.plugins.morph-fast-apply.enable "${pkgs.opencode-morph-fast-apply}/share/opencode-plugins/opencode-morph-fast-apply/index.ts"
       ++ lib.optional cfg.plugins.opencode-mem.enable "${pkgs.opencode-mem}/share/opencode-plugins/opencode-mem/dist/plugin.js"
       ++ lib.optional cfg.plugins.devcontainers.enable "${pkgs.opencode-devcontainers}/share/opencode-plugins/opencode-devcontainers/plugin/index.js";
   in {
@@ -136,27 +138,27 @@
           default = false;
           description = "Enable the Cloudflare Code Mode MCP server (recommended, broad access across Cloudflare APIs through code execution).";
         };
-        "cloudflare-docs".enable = lib.mkOption {
+        cloudflare-docs.enable = lib.mkOption {
           type = lib.types.bool;
           default = false;
           description = "Enable the Cloudflare Documentation MCP server (up-to-date Cloudflare reference information).";
         };
-        "cloudflare-bindings".enable = lib.mkOption {
+        cloudflare-bindings.enable = lib.mkOption {
           type = lib.types.bool;
           default = false;
           description = "Enable the Cloudflare Workers Bindings MCP server (build Workers apps with storage, AI, and compute primitives).";
         };
-        "cloudflare-builds".enable = lib.mkOption {
+        cloudflare-builds.enable = lib.mkOption {
           type = lib.types.bool;
           default = false;
           description = "Enable the Cloudflare Workers Builds MCP server (insights and management for Cloudflare Workers Builds).";
         };
-        "cloudflare-browser".enable = lib.mkOption {
+        cloudflare-browser.enable = lib.mkOption {
           type = lib.types.bool;
           default = false;
           description = "Enable the Cloudflare Browser Run MCP server (fetch web pages, convert to markdown, take screenshots).";
         };
-        "cloudflare-containers".enable = lib.mkOption {
+        cloudflare-containers.enable = lib.mkOption {
           type = lib.types.bool;
           default = false;
           description = "Enable the Cloudflare Container MCP server (spin up a sandbox development environment).";
@@ -179,15 +181,17 @@
         # Kubernetes MCP server (containers/kubernetes-mcp-server, hermetic
         # Go build; stdio is the default transport). Reads the user's
         # kubeconfig.
-        kubernetes.enable = lib.mkOption {
-          type = lib.types.bool;
-          default = false;
-          description = "Enable the Kubernetes MCP server in opencode settings. Off by default: it exits at startup without a kubeconfig (~/.kube/config); enable per profile/machine once cluster credentials exist.";
-        };
-        kubernetes.readOnly = lib.mkOption {
-          type = lib.types.bool;
-          default = false;
-          description = "Run the Kubernetes MCP server in read-only mode (--read-only: only readOnlyHint tools exposed).";
+        kubernetes = {
+          enable = lib.mkOption {
+            type = lib.types.bool;
+            default = false;
+            description = "Enable the Kubernetes MCP server in opencode settings. Off by default: it exits at startup without a kubeconfig (~/.kube/config); enable per profile/machine once cluster credentials exist.";
+          };
+          readOnly = lib.mkOption {
+            type = lib.types.bool;
+            default = false;
+            description = "Run the Kubernetes MCP server in read-only mode (--read-only: only readOnlyHint tools exposed).";
+          };
         };
         # TypeUI: hosted design-skills MCP for AI-first UI work
         # (https://mcp.typeui.sh/mcp, OAuth on first use). Off by default,
@@ -205,7 +209,7 @@
         # (git reset --hard, rm -rf on dangerous targets, ...) and secret
         # access (SSH keys, .env, ~/.aws). Pure-JS plugin, hermetic build;
         # policy tuning is runtime state via `cc-safety-net gui`.
-        "cc-safety-net".enable = lib.mkOption {
+        cc-safety-net.enable = lib.mkOption {
           type = lib.types.bool;
           default = true;
           description = "Enable the CC Safety Net plugin (blocks destructive commands and secret access).";
@@ -215,25 +219,27 @@
         # opencode process env; `apiKeyFile` is provisioned by the
         # morph-api-key clan var generator (nixosModules/morph-api-key).
         # Off by default until the key is provisioned.
-        "morph-fast-apply".enable = lib.mkOption {
-          type = lib.types.bool;
-          default = false;
-          description = "Enable the Morph Fast Apply plugin (morph_edit tool). Requires a Morph API key via apiKeyFile.";
-        };
-        "morph-fast-apply".apiKeyFile = lib.mkOption {
-          type = with lib.types;
-            nullOr str;
-          default = null;
-          description = ''
-            Path to a file containing the Morph API key, exported as
-            MORPH_API_KEY by the opencode wrapper at launch. Usually the
-            clan var at /run/secrets/vars/shared/morph-api-key/api-key.
-          '';
-        };
-        "morph-fast-apply".model = lib.mkOption {
-          type = lib.types.str;
-          default = "auto";
-          description = "Morph model (morph-v3-fast, morph-v3-large, or auto).";
+        morph-fast-apply = {
+          enable = lib.mkOption {
+            type = lib.types.bool;
+            default = false;
+            description = "Enable the Morph Fast Apply plugin (morph_edit tool). Requires a Morph API key via apiKeyFile.";
+          };
+          apiKeyFile = lib.mkOption {
+            type = with lib.types;
+              nullOr str;
+            default = null;
+            description = ''
+              Path to a file containing the Morph API key, exported as
+              MORPH_API_KEY by the opencode wrapper at launch. Usually the
+              clan var at /run/secrets/vars/shared/morph-api-key/api-key.
+            '';
+          };
+          model = lib.mkOption {
+            type = lib.types.str;
+            default = "auto";
+            description = "Morph model (morph-v3-fast, morph-v3-large, or auto).";
+          };
         };
         # opencode-mem: persistent project memory with local vector search
         # (embedded libSQL + onnxruntime embeddings). The default embedding
@@ -260,20 +266,19 @@
     config = lib.mkIf cfg.enable {
       # Morph Fast Apply: ship the packaged always-on routing instruction
       # so agents reliably pick morph_edit over native edit.
-      xdg.configFile."opencode/instructions/morph-tools.md" = lib.mkIf cfg.plugins."morph-fast-apply".enable {
+      xdg.configFile."opencode/instructions/morph-tools.md" = lib.mkIf cfg.plugins.morph-fast-apply.enable {
         source = "${pkgs.opencode-morph-fast-apply}/share/opencode-plugins/opencode-morph-fast-apply/instructions/morph-tools.md";
       };
 
-      # Skills: repo-local custom skills (../../skills) + external skill
-      # sources, merged into ~/.config/opencode/skills by
-      # inputs.agents.lib.mkSkills (a linkFarm of per-skill symlinks).
-      # Custom skills override externals on name collision; among externals,
-      # earlier entries in the list win. Plain relative path (not
-      # relativeToRoot): customLib is not in home-module args, and relative
-      # paths resolve inside this flake's source for external consumers.
+      # Skills: repo-local custom skills + external skill sources, merged
+      # into ~/.config/opencode/skills by inputs.agents.lib.mkSkills (a
+      # linkFarm of per-skill symlinks). Custom skills override externals
+      # on name collision; among externals, earlier entries in the list
+      # win. customLib (and thus relativeToRoot) reaches home modules via
+      # home-manager.extraSpecialArgs, set once in nixosModules/default.
       xdg.configFile."opencode/skills".source = inputs.agents.lib.mkSkills {
         inherit pkgs;
-        customSkills = ../../skills;
+        customSkills = relativeToRoot "skills";
         externalSkills = [
           # Claude skills from anthropics/skills (all skills under skills/)
           {src = inputs.skills-anthropic;}
@@ -323,8 +328,8 @@
         ])
         # Plugin packages: referenced by store path in settings.plugin, so
         # keep them in the closure (GC safety).
-        ++ (lib.optional cfg.plugins."cc-safety-net".enable pkgs.cc-safety-net)
-        ++ (lib.optional cfg.plugins."morph-fast-apply".enable pkgs.opencode-morph-fast-apply)
+        ++ (lib.optional cfg.plugins.cc-safety-net.enable pkgs.cc-safety-net)
+        ++ (lib.optional cfg.plugins.morph-fast-apply.enable pkgs.opencode-morph-fast-apply)
         ++ (lib.optional cfg.plugins.opencode-mem.enable pkgs.opencode-mem)
         ++ (lib.optional cfg.plugins.devcontainers.enable pkgs.opencode-devcontainers);
       # NOTE: the morph key wrapper (opencodeMorphWrapper) is NOT added
@@ -541,7 +546,7 @@
               };
             };
           })
-          (lib.mkIf cfg.mcp."cloudflare-docs".enable {
+          (lib.mkIf cfg.mcp.cloudflare-docs.enable {
             mcp = {
               cloudflare-docs = {
                 type = "remote";
@@ -550,7 +555,7 @@
               };
             };
           })
-          (lib.mkIf cfg.mcp."cloudflare-bindings".enable {
+          (lib.mkIf cfg.mcp.cloudflare-bindings.enable {
             mcp = {
               cloudflare-bindings = {
                 type = "remote";
@@ -559,7 +564,7 @@
               };
             };
           })
-          (lib.mkIf cfg.mcp."cloudflare-builds".enable {
+          (lib.mkIf cfg.mcp.cloudflare-builds.enable {
             mcp = {
               cloudflare-builds = {
                 type = "remote";
@@ -568,7 +573,7 @@
               };
             };
           })
-          (lib.mkIf cfg.mcp."cloudflare-browser".enable {
+          (lib.mkIf cfg.mcp.cloudflare-browser.enable {
             mcp = {
               cloudflare-browser = {
                 type = "remote";
@@ -577,7 +582,7 @@
               };
             };
           })
-          (lib.mkIf cfg.mcp."cloudflare-containers".enable {
+          (lib.mkIf cfg.mcp.cloudflare-containers.enable {
             mcp = {
               cloudflare-containers = {
                 type = "remote";
@@ -651,7 +656,7 @@
           })
           # Morph Fast Apply: point the agent at the always-on instruction
           # (packaged file synced to the xdg path above).
-          (lib.mkIf cfg.plugins."morph-fast-apply".enable {
+          (lib.mkIf cfg.plugins.morph-fast-apply.enable {
             instructions = ["~/.config/opencode/instructions/morph-tools.md"];
           })
           # TypeUI: hosted design-skills MCP (OAuth on first use).
