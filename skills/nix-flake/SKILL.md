@@ -35,12 +35,12 @@ install-script workarounds, channel setup, or `nix-env` advice.
 
 ### Attribute nesting
 
-Nest attribute sets; one path segment per level. Never quote a path
-component unless the key is not a valid identifier (hyphenated names,
-numbers). Never repeat a prefix across sibling lines.
+Nest attribute sets; one path segment per level, and never repeat a prefix
+across sibling lines. Keys with a single member stay flat dotted; keys
+with two or more members are written once and nested:
 
 ```nix
-# good
+# good: single members flat, multi-member keys nested once
 {
   homeSpec = {
     programs = {
@@ -50,22 +50,105 @@ numbers). Never repeat a prefix across sibling lines.
     shell.bash.enabled = true;
   };
 }
+
+plugins = {
+  cc-safety-net.enable = true;   # single member: flat
+  morph-fast-apply = {           # three members: nested once
+    enable = true;
+    apiKeyFile = "/path/to/key";
+    model = "auto";
+  };
+};
 ```
 
 ```nix
-# bad: quoted identifiers, repeated prefixes, mixed styles
+# bad: quoted identifiers, repeated prefixes (quoted or not), mixed styles
 {
   homeSpec."programs".firefox.enabled = true;
   homeSpec."programs".spotify.enabled = true;
   homeSpec.shell.bash.enabled = true;
 }
+
+plugins = {
+  "morph-fast-apply".enable = true;
+  "morph-fast-apply".apiKeyFile = "/path/to/key";
+  "morph-fast-apply".model = "auto";
+};
 ```
 
-Quoting is only correct when required, e.g. `plugins."morph-fast-apply".enable`
-— the key contains a hyphen, so the quoted segment is mandatory. Mixing
-styles when unquoted works (`homeSpec.shell.bash.enabled` vs
-`homeSpec."shell".bash.enabled`) is still wrong: pick the unquoted form
-whenever the key is an identifier.
+statix's `repeated_keys` lint only fires on 3+ adjacent repeats; this rule
+is stricter — 2+ assignments of the same prefix in one attrset are a
+violation, adjacency irrelevant. Enforce it while writing, not by waiting
+for the linter.
+
+### Attribute keys and quoting
+
+Attribute keys are identifiers, and Nix identifiers legally contain
+hyphens (`cloudflare-docs`, `morph-fast-apply`) and trailing apostrophes
+(`self'`). Identifier keys are therefore **never quoted**:
+
+```nix
+# good
+mcp = {
+  cloudflare.enable = true;
+  cloudflare-docs.enable = true;
+};
+```
+
+```nix
+# bad: unnecessary quotes
+mcp = {
+  cloudflare.enable = true;
+  "cloudflare-docs".enable = true;
+};
+```
+
+Quote a key only when it is not an identifier: it contains `/` or `.`
+(`xdg.configFile."opencode/skills"`, `etc."vm-mcp-probe.py"`) or starts
+with a digit. When a quoted key has multiple members, quote it once at its
+own nesting level, never per sibling line. camelCase is preferred for new
+multi-word keys but not enforced — keep existing names, never rename for
+style.
+
+### Boolean toggles
+
+For boolean toggles you control (new options, new modules), prefer
+`setting.enabled = true` over `setting.enable = true` where possible.
+Not strictly enforced: standard NixOS and home-manager options are named
+`enable` (`mkEnableOption` generates `enable`), and existing options are
+never renamed for this — apply it where the naming is yours to choose.
+
+### inherit
+
+One `inherit (source) ...` statement per source per attrset. Never split
+members of the same source across two `inherit` statements:
+
+```nix
+# good
+services.ollama = {
+  inherit (cfg) package port loadModels;
+};
+
+# bad: duplicated source
+services.ollama = {
+  inherit (cfg) package;
+  inherit (cfg) port loadModels;
+};
+```
+
+statix's `manual_inherit_from` lint converts `x = cfg.x;` into `inherit
+(cfg) x;` but does not merge duplicates — consolidate by hand.
+
+### Repo-root paths
+
+Reference repo-root paths through `customLib.custom.relativeToRoot`
+(`relativeToRoot "skills"`), never through fragile `../../` chains in
+module code, and never by defining a local
+`relativeToRoot = lib.path.append ../../.` clone. Scope: NixOS modules get
+`customLib` via `_module.args` (set in `nixosModules/default`);
+home-manager modules get it via `home-manager.extraSpecialArgs`, set once
+in `nixosModules/default` — not per clan service, or non-clan consumers
+(KubeVirt VM packages, test VMs) lose it.
 
 ### Module system
 
@@ -108,6 +191,30 @@ nix fmt -- --check .   # verify without writing
 
 If `nix fmt` fails with no path or with empty stdin, pass an explicit path
 (`nix fmt .`).
+
+### Enforcement
+
+What CI automates (`checks.lint`, built by `nix flake check`):
+
+| Tool | Catches |
+|---|---|
+| alejandra | formatting |
+| statix `repeated_keys` | same key assigned 3+ times, adjacent |
+| statix `manual_inherit*` | assignments that should be `inherit` |
+| deadnix | unused bindings and arguments |
+
+What is convention the agent must enforce itself (CI cannot see it):
+
+- quoting rule — no quotes on identifier keys
+- 2+-member nesting (statix needs 3+ adjacent repeats)
+- inherit consolidation
+- `relativeToRoot` for repo-root paths
+- `enabled` preference
+
+Fix violations in passing whenever you touch a file; write new code right
+the first time. When a rule and a linter disagree, the rule wins — and if
+a linter's suggestion would violate a rule (e.g. `inherit` with double
+parentheses), restructure so both are satisfied.
 
 ## Tool loop (mandatory)
 
