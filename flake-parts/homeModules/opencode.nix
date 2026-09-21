@@ -420,6 +420,7 @@
               read = {
                 "/nix/store/**" = "allow";
                 "/tmp/**" = "allow";
+                "/home/netsa/.config/opencode/" = "allow";
               };
               external_directory = {
                 "/nix/store/**" = "allow";
