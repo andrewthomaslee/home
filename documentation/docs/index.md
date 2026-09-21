@@ -61,8 +61,9 @@ jovian-enabled machine runs the Valve jovian kernel.
     overlays/       # Overlays for Nixpkgs. Adds `pkgs.unstable`
 
     flake-parts/        # Top-level Flake Part files
+                        # Auto-imported via import-tree: every .nix file
+                        # here loads, there is no import list to update
         default.nix     # Default flake-parts configuration
-        profiles.nix    # Profiles for NixOS and Home-manager
         devShells.nix   # Development Shells
         apps/           # Applications `nix run .#<app>`
         packages/       # Packages `nix build .#<package>`

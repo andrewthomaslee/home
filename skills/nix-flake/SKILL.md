@@ -190,9 +190,9 @@ eval channel, so `relativeToRoot` is always safe there.
 - Comments explain *why*, not *what* — especially for pins, workarounds, and
   anything a future reader would be tempted to "clean up". Include the bug
   link where a workaround exists.
-- Kebab-case attribute and file names. One concern per file; let the
-  repo's auto-import mechanism pick it up (flake-parts + import-tree style:
-  new files are auto-loaded, there is no import list to update).
+- One concern per file; let the repo's auto-import mechanism pick it up
+  (flake-parts + import-tree style: new files are auto-loaded, there is
+  no import list to update) — see [import-tree.md](references/import-tree.md).
 
 ### Formatting
 
@@ -276,7 +276,8 @@ results. "It should work" is not verification.
 
 - Prefer flake-parts: `imports = [ (inputs.import-tree ./flake-parts) ]`
   with `perSystem` modules; declare `systems` explicitly (e.g.
-  `systems = ["x86_64-linux"];`).
+  `systems = ["x86_64-linux"];`). How auto-import works and how to lay
+  out the tree: [import-tree.md](references/import-tree.md).
 - Use the standard output names: `packages`, `devShells`, `checks`,
   `apps`, `nixosConfigurations`, `homeModules`/`nixosModules`, `overlays`,
   `formatter`, `templates`.
@@ -330,3 +331,6 @@ results. "It should work" is not verification.
   deployment via `fh`, lint-gate examples.
 - [vm-tests.md](references/vm-tests.md) — hermetic NixOS VM tests: writing,
   running, size variants, driver mode, agent iteration loop.
+- [import-tree.md](references/import-tree.md) — how flake-parts
+  auto-import via import-tree works: provenance, mechanics, this repo's
+  tree layout and conventions.
