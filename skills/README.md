@@ -33,6 +33,11 @@ linked from `SKILL.md`.
   FlakeHub, GitHub Actions (self-hosted runners), `nix build .#<thing>`,
   alejandra/statix/deadnix tool loop, hermetic NixOS VM tests.
   Repo-specific facts live in each repo's `AGENTS.md`, not here.
+- `baton-pass` — session handoff: saves the full state of an in-progress
+  task to `.baton-pass/` (timestamped markdown file + `LATEST.md` pointer,
+  auto-gitignored) so a different agent or model can resume where the
+  session stopped, or resume from an existing handoff. Language- and
+  repo-agnostic.
 
 ## Precedence
 
