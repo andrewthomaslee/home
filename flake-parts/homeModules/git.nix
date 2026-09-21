@@ -38,6 +38,7 @@
             "config.tf.json"
             "*.tfbackend"
             "backend.tfbackend"
+            ".baton-pass/"
           ];
 
           settings = {
