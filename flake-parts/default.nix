@@ -107,23 +107,10 @@ in {
     overlays.default = import (relativeToRoot "overlays") {inherit inputs self;};
 
     # ------ Templates ------ #
-    templates = {
-      default = {
-        path = relativeToRoot "templates/default";
-        description = "Dendritic Flake";
-      };
-      minimal = {
-        path = relativeToRoot "templates/minimal";
-        description = "Minimal Dendritic Flake";
-      };
-      clan = {
-        path = relativeToRoot "templates/clan";
-        description = "Dendritic Clan Flake";
-      };
-      self = {
-        path = relativeToRoot ".";
-        description = "This Flake";
-      };
+    # Scaffold a new repo from this one: `nix flake init -t .#self`
+    templates.self = {
+      path = relativeToRoot ".";
+      description = "This Flake";
     };
 
     # --- Clan Configuration ------ #

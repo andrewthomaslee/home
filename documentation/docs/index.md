@@ -59,7 +59,6 @@ jovian-enabled machine runs the Valve jovian kernel.
     clanServices/   # Clan.lol Services    
     lib/            # Custom functions accessible via `lib.custom`
     overlays/       # Overlays for Nixpkgs. Adds `pkgs.unstable`
-    templates/      # Templates for Projects
 
     flake-parts/        # Top-level Flake Part files
         default.nix     # Default flake-parts configuration
@@ -184,8 +183,5 @@ git+file:///home/netsa/home
 │       ├───tfctl: package 'tfctl-0.16.4'
 │       └───vcluster: package 'vcluster-v0.36.1'
 └───templates
-    ├───clan: template: Dendritic Clan Flake
-    ├───default: template: Dendritic Flake
-    ├───minimal: template: Minimal Dendritic Flake
     └───self: template: This Flake
 ```

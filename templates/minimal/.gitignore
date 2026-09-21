@@ -1,7 +1,0 @@
-result*
-result-*
-.direnv
-.secrets
-.env.*
-.env
-!*.env.schema
