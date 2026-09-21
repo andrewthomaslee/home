@@ -28,7 +28,7 @@ xdg.configFile."opencode/skills".source = inputs.agents.lib.mkSkills {
 
 | Source | Type | Skills |
 |---|---|---|
-| `skills/` (this repo) | custom | `dendritic-nix` (repo conventions for agents) |
+| `skills/` (this repo) | custom | `nix-flake` (generic Nix flake conventions for agents) |
 | [anthropics/skills](https://github.com/anthropics/skills) | external | docx, pdf, pptx, xlsx, mcp-builder, frontend-design, ... |
 | [payloadcms/skills](https://github.com/payloadcms/skills) | external | `payload` (Payload development guidelines), `cms-migration` (CMS → Payload migration workflow) |
 

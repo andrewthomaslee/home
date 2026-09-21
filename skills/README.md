@@ -12,7 +12,8 @@ One directory per skill, each containing a `SKILL.md` with YAML frontmatter:
 skills/
   my-skill/
     SKILL.md        # required: name + description frontmatter
-    ...             # optional supporting files (reference docs, scripts)
+    references/     # optional: details loaded on demand (progressive
+    ...             #   disclosure keeps always-on context small)
 ```
 
 ```markdown
@@ -21,6 +22,17 @@ name: my-skill
 description: When this skill should be used (drives agent triggering).
 ---
 ```
+
+Keep `SKILL.md` lean (rules the agent needs every time) and push
+detail (worked examples, deep reference material) into `references/`
+linked from `SKILL.md`.
+
+## Current skills
+
+- `nix-flake` — generic conventions for Nix flake repos: Determinate Nix,
+  FlakeHub, GitHub Actions (self-hosted runners), `nix build .#<thing>`,
+  alejandra/statix/deadnix tool loop, hermetic NixOS VM tests.
+  Repo-specific facts live in each repo's `AGENTS.md`, not here.
 
 ## Precedence
 
