@@ -39,12 +39,20 @@ The packaging trims are what made the KubeVirt agent image drop from
   settings key must be `nixd` — that is opencode's built-in nixd LSP, and
   a different key would start both servers). It carries
   `initialization.nixd.nixpkgs.expr` for out-of-box completion in foreign
-  repos; exact-structure option overrides for this flake live in the
-  repo-root `opencode.json` / `.vscode/settings.json` (machine-agnostic —
-  the hostname is read from `/etc/hostname` at LSP eval time), scaffoldable
-  elsewhere with `opencode-nixd-scaffold`. Built-in pyright is disabled: it
-  would auto-download `pyright-langserver` at runtime (non-hermetic) and
-  duplicate pyrefly's `.py` coverage.
+  repos — opencode spawns nixd with cwd = project root, so `toString ./.`
+  evaluates the flake at the repo root and completion uses that flake's
+  own nixpkgs. In non-flake dirs the expr eval fails; nixd logs it and
+  keeps its startup default `import <nixpkgs> { }`, resolved through the
+  `NIX_PATH` this module sets (this flake's nixpkgs). Repo-level
+  `opencode.json` deep-merges over the global config, so a foreign flake
+  can override the expr (borg does exactly this via
+  `opencode-nixd-scaffold`). Exact-structure option overrides for this
+  flake live in the repo-root `opencode.json` / `.vscode/settings.json`
+  (machine-agnostic — the hostname is read from `/etc/hostname` at LSP
+  eval time), scaffoldable elsewhere with `opencode-nixd-scaffold`.
+  Built-in pyright is disabled: it would auto-download
+  `pyright-langserver` at runtime (non-hermetic) and duplicate pyrefly's
+  `.py` coverage.
 - **Formatters**: alejandra (`.nix`), ruff (`ruff format`, `.py`/`.pyi`),
   gleam — all with `"$FILE"` placeholders and dotted extensions (OpenCode
   requires both; see the VM test history).
