@@ -440,15 +440,17 @@
               # overrides the built-in instead of running two Nix servers.
               # opencode spawns LSP servers with cwd = project root, so
               # `toString ./.` anchors to the repo opencode was opened in:
-              # foreign flakes (e.g. borg) get their own nixpkgs. Non-flake
-              # dirs fall back to this repo's flake. Exact per-repo option
-              # trees are supplied by each repo's opencode.json.
+              # foreign flakes (e.g. borg) get their own nixpkgs. In non-flake
+              # dirs the eval fails; nixd logs it and keeps its startup
+              # default `import <nixpkgs> { }` resolved via NIX_PATH.
+              # Exact per-repo option trees are supplied by each repo's
+              # opencode.json.
               nixd = {
                 command = ["nixd"];
                 extensions = [".nix"];
                 env.NIX_PATH = "nixpkgs=${inputs.nixpkgs}";
                 initialization.nixd.nixpkgs.expr = ''
-                  import (if builtins.pathExists ((toString ./.)) + "/flake.nix" then (builtins.getFlake (toString ./.)).inputs.nixpkgs else (builtins.getFlake "/home/netsa/home").inputs.nixpkgs) { }'';
+                  import (builtins.getFlake (toString ./.)).inputs.nixpkgs { }'';
               };
               # helm-ls: charts/templates diagnostics; it launches the
               # installed yaml-language-server itself for non-template YAML
