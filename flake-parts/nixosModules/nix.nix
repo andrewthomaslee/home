@@ -46,6 +46,8 @@
             "https://cache.nixos.org"
             "https://nix-community.cachix.org"
             "https://cache.lounge.rocks/nix-cache"
+            # devenv flake package deps (its own nix fork, rust, cachix) are only served here
+            "https://devenv.cachix.org"
           ];
 
           trusted-substituters = [

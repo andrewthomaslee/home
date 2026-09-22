@@ -13,6 +13,7 @@
   zen-browser = inputs.zen-browser.packages.${final.stdenv.hostPlatform.system}.default;
   moscripts = inputs.moscripts.packages.${final.stdenv.hostPlatform.system}.default;
   kubefetch = inputs.kubefetch.packages.${final.stdenv.hostPlatform.system}.default;
+  devenv = inputs.devenv.packages.${final.stdenv.hostPlatform.system}.devenv;
 
   k3s = inputs.nixpkgs-unstable.legacyPackages.${final.stdenv.hostPlatform.system}.k3s_1_35;
   rke2 = inputs.nixpkgs-unstable.legacyPackages.${final.stdenv.hostPlatform.system}.rke2_1_35;

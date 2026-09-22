@@ -78,6 +78,12 @@
       inputs.nixpkgs.follows = "nixpkgs-unstable";
     };
 
+    # devenv — developer environments CLI (auto-activation hook, `devenv
+    # mcp` MCP server). Pinned to the release tag; builds are served by
+    # the devenv.cachix.org substituter already trusted in
+    # nixosModules/nix.nix.
+    devenv.url = "github:cachix/devenv?ref=v2.3.1";
+
     # ArtifactHub MCP — stdio MCP server for Helm charts on artifacthub.io
     # (opencode mcp server). Repo has no flake.nix, so the source tree is
     # pinned to the v1.1.1 tag and built with buildNpmPackage in

@@ -14,6 +14,12 @@
           bun.enable = true;
           direnv.enable = true;
           docker.enable = true;
+          devenv = {
+            # devenv CLI (flake package) on PATH for the headless agent;
+            # no interactive auto-activation hook (non-interactive shells).
+            enabled = true;
+            autoActivate.enabled = false;
+          };
           git.enable = true;
           go.enable = true;
           k9s.enable = true;

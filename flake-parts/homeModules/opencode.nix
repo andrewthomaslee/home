@@ -37,6 +37,24 @@
       fi
       exec ${lib.getExe pkgs.unstable.github-mcp-server} stdio "$@"
     '';
+    # devenv MCP wrapper: `devenv mcp` requires a devenv project
+    # (devenv.nix in cwd or an ancestor) and hard-exits otherwise. Mirror
+    # devenv's own project discovery (walk up for devenv.nix); when there
+    # is none (e.g. the home repo, which uses plain `nix develop`), fall
+    # back to the pinned agent project generated in xdg.configFile below
+    # so the server always starts and can serve
+    # search_packages / search_options.
+    devenvMcpWrapper = pkgs.writeShellScriptBin "devenv-mcp-opencode" ''
+      dir="$PWD"
+      while [ "$dir" != "/" ]; do
+        if [ -f "$dir/devenv.nix" ]; then
+          exec ${lib.getExe pkgs.devenv} mcp "$@"
+        fi
+        dir="$(dirname "$dir")"
+      done
+      cd "$HOME/.config/devenv-agent"
+      exec ${lib.getExe pkgs.devenv} mcp "$@"
+    '';
     # Morph API key: only wrapped when a key file is configured. When the
     # plugin is enabled and no explicit file is set, default to the
     # sops-deployed clan var from nixosModules/morph-api-key (same
@@ -358,6 +376,17 @@
             description = "Run the Kubernetes MCP server in read-only mode (--read-only: only readOnlyHint tools exposed).";
           };
         };
+        # devenv MCP: local stdio `devenv mcp` (search nixpkgs packages +
+        # devenv options) via the devenv-mcp-opencode wrapper. Off by
+        # default, enabled via the netsa tag profile. The devenv CLI comes
+        # from the devenv flake input via the overlay; outside devenv
+        # projects the wrapper serves the pinned ~/.config/devenv-agent
+        # project instead.
+        devenv.enable = lib.mkOption {
+          type = lib.types.bool;
+          default = false;
+          description = "Enable the devenv MCP server (search nixpkgs packages and devenv options) in opencode settings.";
+        };
         # TypeUI: hosted design-skills MCP for AI-first UI work
         # (https://mcp.typeui.sh/mcp, OAuth on first use). Off by default,
         # enabled for the dev profile.
@@ -459,6 +488,30 @@
             {src = inputs.skills-payloadcms;}
           ];
         };
+
+        # devenv MCP fallback project: pinned devenv project the
+        # devenv-mcp-opencode wrapper serves when opencode is opened
+        # outside a devenv project. nixpkgs is pinned to the repo flake's
+        # nixpkgs input as a store path — no runtime fetch and search
+        # results match the fleet's nixpkgs. devenv writes devenv.lock and
+        # runtime state (.devenv/) next to these files on first use.
+        "devenv-agent/devenv.yaml" = lib.mkIf cfg.mcp.devenv.enable {
+          text = ''
+            inputs:
+              nixpkgs:
+                url: path:${inputs.nixpkgs}
+          '';
+        };
+        "devenv-agent/devenv.nix" = lib.mkIf cfg.mcp.devenv.enable {
+          text = ''
+            {...}: {
+              # Pinned minimal devenv project: fallback root for the
+              # devenv MCP server (devenv-mcp-opencode wrapper) when
+              # opencode runs outside a devenv project.
+              packages = [];
+            }
+          '';
+        };
       };
 
       home.packages =
@@ -496,6 +549,9 @@
         ])
         ++ (lib.optionals cfg.mcp.artifacthub.enable [
           pkgs.artifacthub-mcp
+        ])
+        ++ (lib.optionals cfg.mcp.devenv.enable [
+          pkgs.devenv
         ])
         ++ (lib.optionals (cfg.mcp.github.enable && cfg.mcp.github.auth == "pat") [
           githubMcpWrapper
@@ -580,6 +636,9 @@
           ])
           ++ (lib.optionals cfg.mcp.artifacthub.enable [
             pkgs.artifacthub-mcp
+          ])
+          ++ (lib.optionals cfg.mcp.devenv.enable [
+            pkgs.devenv
           ]);
         tui.theme = "tokyonight";
         settings = lib.mkMerge [
@@ -802,6 +861,19 @@
                 command =
                   ["${lib.getExe pkgs.kubernetes-mcp-server}"]
                   ++ lib.optional cfg.mcp.kubernetes.readOnly "--read-only";
+                enabled = true;
+              };
+            };
+          })
+          (lib.mkIf cfg.mcp.devenv.enable {
+            mcp = {
+              # devenv MCP: local stdio `devenv mcp` via the wrapper —
+              # serves the cwd's devenv project when there is one, the
+              # pinned ~/.config/devenv-agent project otherwise (devenv
+              # hard-exits outside devenv projects).
+              devenv = {
+                type = "local";
+                command = ["${devenvMcpWrapper}/bin/devenv-mcp-opencode"];
                 enabled = true;
               };
             };

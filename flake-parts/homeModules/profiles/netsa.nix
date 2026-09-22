@@ -12,6 +12,11 @@
           bun.enable = true;
           direnv.enable = true;
           docker.enable = true;
+          devenv = {
+            # devenv CLI (flake package) + 2.x native auto-activation hook
+            enabled = true;
+            autoActivate.enabled = true;
+          };
           firefox.enable = true;
           ghostty.enable = true;
           git.enable = true;
@@ -50,6 +55,8 @@
               # Kubernetes MCP — exits without a kubeconfig, so the module
               # default is off; dev machines provision one.
               kubernetes.enable = true;
+              # devenv MCP (search nixpkgs packages + devenv options)
+              devenv.enable = true;
             };
             # Dev-profile plugins (off by module default)
             plugins = {
