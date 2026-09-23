@@ -27,6 +27,10 @@ adds the fleet layer on top:
 - **Cross-machine services** — clanServices are reusable units with
   roles (client/server, per-machine) and multi-instance support, resolved
   from the inventory.
+- **Build-time exports** — services publish facts (node addresses,
+  interfaces, MTUs, endpoints) that other services consume during
+  evaluation, not at deploy; see
+  [Exports](#exports-and-the-strict-eval-check).
 - **Secrets lifecycle** — vars generate, encrypt, store, and deploy
   secrets (see [clan-vars.md](clan-vars.md)).
 - **Operational tooling** — `clan machines update|install|ssh`, `clan
@@ -286,6 +290,148 @@ inherit
   ;
 ```
 
+## Exports and the strict-eval check
+
+ClanServices exchange facts **at build time** through exports: a service
+publishes values (node IPs, interface names, MTUs, endpoints), and
+consumer services select them during evaluation instead of asking for
+addresses in settings. `inventory.nix` stays the single source of truth —
+derived facts come from exports, never hardcoded.
+
+Worked examples below are from the author's fleet repo
+(`andrewthomaslee/borg`), where the `lan` transport service exports peer
+addresses/interfaces and the `rke2` service consumes them. The patterns
+are generic.
+
+### Publishing
+
+A service declares which export interfaces it may emit, then publishes
+values with `mkExports` (available in the args of `perInstance` and
+`perMachine`):
+
+```nix
+# clanServices/lan/default.nix (condensed)
+{
+  _class = "clan.service";
+  manifest = {
+    name = "lan";
+    exports.out = ["peer" "netif"];   # export interfaces this service emits
+  };
+
+  roles.default.perInstance = {mkExports, settings, ...}: {
+    exports = mkExports {
+      peer.hosts = [{plain = settings.ipv4;}];
+      netif = {
+        interface = settings.interface;
+        inherit (settings) mtu;
+      };
+    };
+  };
+}
+```
+
+`mkExports` scopes every key under the emitting context
+(`service:instance:role:machine` — a service may only export to its own
+service scope; out-of-scope keys or an unregistered interface name in
+`manifest.exports.out` throw at eval).
+
+### Consuming
+
+Consumers receive the whole exports tree and select with `clanLib`
+helpers. Export keys are `service:instance:role:machine` scope strings;
+`clanLib.selectExports` parses them into
+`serviceName/instanceName/roleName/machineName` for filtering,
+`clanLib.getExport` fetches one scope (throws with the full scope
+breakdown if missing):
+
+```nix
+# a consumer service's perInstance (condensed from borg's rke2)
+{
+  peerHosts,
+  exports,
+  machine,
+  ...
+}: {
+  # every machine's peer hosts in the named lan instance
+  lanPeers = clanLib.selectExports
+    (scope: scope.serviceName == "lan" && scope.instanceName == settings.network)
+    exports;
+
+  # one machine's netif export
+  myNetif = clanLib.getExport {
+    serviceName = "lan";
+    instanceName = settings.network;
+    machineName = machine.name;
+  } exports;
+}
+```
+
+### Export interfaces
+
+An export interface is the shared option set for one export name.
+Declare it once and register it in the flake's `clan` block; every
+exporter of that name gets its options merged into its `mkExports`
+value, so the schema cannot drift between producers:
+
+```nix
+# flake-parts/default.nix — clan block
+exportInterfaces.netif = relativeToRoot "clanServices/lan/netif-interface.nix";
+```
+
+```nix
+# clanServices/lan/netif-interface.nix
+{lib, ...}: {
+  options.mtu = lib.mkOption {
+    type = lib.types.nullOr lib.types.int;
+    default = null;   # every option needs a default — see below
+    description = "Link MTU of the interface (null = leave default)";
+  };
+}
+```
+
+clan-core ships built-in interfaces (`peer`, `networking`, `endpoints`,
+`auth`, `generators`); a repo registers its own under
+`clan.exportInterfaces.<name>`. Services reference a name only after it
+exists — `manifest.exports.out` naming an unregistered interface throws
+with the list of available ones.
+
+**Every export-interface option needs a `default` — or every exporter
+must set it.** An option left undefined passes every other static gate
+(formatter, lint, machine evals, VM tests) and only explodes when the
+clan CLI deep-evaluates the exports tree during
+`clan machines install/update` (via `clan select 'clan.?exports'`):
+"accessed but has no value defined", mid bring-up, on the operator box.
+This exact failure motivated the check below.
+
+### The strict-eval check
+
+Force the same deep evaluation inside `nix flake check` so an undefined
+export leaf surfaces as a red check instead of a deploy-time failure:
+
+```nix
+# flake-parts/checks.nix — pattern from andrewthomaslee/borg
+{
+  self,
+  ...
+}: {
+  perSystem = {pkgs, ...}: {
+    checks.clan-exports-strict-eval = pkgs.runCommand "clan-exports-strict-eval" {
+      # exportsJson forces every export leaf at *eval* time: checks are
+      # evaluated (not built) by `nix flake check`, so a throw in the
+      # toJSON fails the check — the same deep eval `clan machines
+      # install/update` performs via `clan select 'clan.?exports'`.
+      exportsJson = builtins.toJSON self.clan.exports;
+    } "touch $out";
+  };
+}
+```
+
+Add the check once any service sets `manifest.exports.out` — with no
+exports, `self.clan.exports` is empty and the check passes trivially.
+The check serializes with `builtins.toJSON` to mirror
+`nix eval .#clan.exports --json`; do not extend it to
+`clan.exportInterfaces` (see below).
+
 ## The clan CLI
 
 The CLI is the fleet's control plane. It needs `CLAN_DIR` pointing at the
@@ -333,6 +479,7 @@ this table maps its files so you can translate to your own tree:
 | `clanServices/` | repo-local clanServices (`machine-type`, `tags`) |
 | `machines/<name>/` | per-machine config, autoincluded (`configuration.nix`, `disko.nix`, `facter.json`) |
 | `flake-parts/nixosModules/clan.nix` | `hostSpec.clan.enable` → `clan.core` machine options |
+| `flake-parts/checks.nix` | lint gate + `clan-exports-strict-eval` (pattern from the author's fleet repo `andrewthomaslee/borg`, which pairs it with an export-interfaces eval check) |
 | `vars/` | clan vars storage ([clan-vars.md](clan-vars.md)) |
 | `flake-parts/apps/get-keys.nix` | scripted CLI key extraction (provisioning) |
 
@@ -350,6 +497,17 @@ Mixing them up double-loads or mis-classifies modules.
 - **Tags must resolve** — a role assigned by tag matches only machines
   carrying that tag; keep tag sets consistent between `machines` and
   `instances`, or config silently applies to nothing.
+- **Export options need a default** — an export-interface option without
+  a `default` (unset by some exporter) passes all static gates and only
+  throws when the clan CLI deep-evaluates exports during
+  `install/update`; gate it with `checks.clan-exports-strict-eval` (see
+  [Exports](#exports-and-the-strict-eval-check)).
+- **Don't `--json` the interfaces** — `nix eval .#clan.exportInterfaces
+  --json` can never pass: clan's `apply` wrap embeds `mkOption`
+  functions in the applied value. Evaluate interfaces through clan's
+  submodule wrap instead (the borg repo's
+  `clan-export-interfaces-strict-eval` does this); serialize only
+  `clan.exports`.
 - **Machine-eval arg circularity** — machine modules get args via
   `clan.specialArgs`, but a module's *config value* cannot use them (see
   the `relativeToRoot` exception in [SKILL.md](../SKILL.md#repo-root-paths)).

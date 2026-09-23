@@ -391,7 +391,8 @@ values into output or logs, and never manually source or re-load them.
 - [clan-core.md](references/clan-core.md) — clan-core as a flake: what it
   adds (fleet registry, tag-driven config, services, tooling), input
   wiring, the inventory (machines/instances/roles/tags), clanServices,
-  the clan CLI, with the home repo as worked example.
+  cross-service exports and the strict-eval check gating them, the clan
+  CLI, with the home repo as worked example.
 - [clan-vars.md](references/clan-vars.md) — clan vars: declaring
   generators, vars/ storage layout, age/sops backends, generate/get
   workflow, CI and scripted key extraction.
