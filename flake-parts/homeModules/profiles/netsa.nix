@@ -57,6 +57,8 @@
               kubernetes.enable = true;
               # devenv MCP (search nixpkgs packages + devenv options)
               devenv.enable = true;
+              # Varlock docs (search varlock.dev docs)
+              varlock-docs.enable = true;
             };
             # Dev-profile plugins (off by module default)
             plugins = {

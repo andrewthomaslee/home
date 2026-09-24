@@ -395,6 +395,14 @@
           default = false;
           description = "Enable the TypeUI remote MCP server (design systems and UI prompts) in opencode settings.";
         };
+        # Varlock docs MCP: hosted docs-search server
+        # (https://docs.mcp.varlock.dev/mcp, public, no auth). Off by
+        # default, enabled via the netsa tag profile.
+        varlock-docs.enable = lib.mkOption {
+          type = lib.types.bool;
+          default = false;
+          description = "Enable the Varlock docs MCP server (search varlock.dev documentation) in opencode settings.";
+        };
       };
 
       # ---- Plugins: homeSpec.programs.opencode.plugins.<name>.enable ---- #
@@ -921,6 +929,17 @@
               typeui = {
                 type = "remote";
                 url = "https://mcp.typeui.sh/mcp";
+                enabled = true;
+              };
+            };
+          })
+          # Varlock docs: hosted docs-search server
+          # (https://docs.mcp.varlock.dev/mcp) — public, no auth.
+          (lib.mkIf cfg.mcp.varlock-docs.enable {
+            mcp = {
+              varlock-docs = {
+                type = "remote";
+                url = "https://docs.mcp.varlock.dev/mcp";
                 enabled = true;
               };
             };
