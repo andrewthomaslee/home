@@ -38,6 +38,13 @@ linked from `SKILL.md`.
   auto-gitignored) so a different agent or model can resume where the
   session stopped, or resume from an existing handoff. Language- and
   repo-agnostic.
+- `devenv` — expert guide to devenv 2.x: devenv.nix/devenv.yaml/devenv.lock
+  authoring, the full devenv CLI, devenv.yaml inputs and lock discipline,
+  the v2 changes (native process manager migration, breaking changes),
+  flake-parts and plain-flake integration (worked example: the borg repo's
+  dual-mode CLI + flake-parts wiring), devcontainer.json for GitHub
+  Codespaces, monorepo/polyrepo composition, cross-platform patterns,
+  containers/CI, Claude Code integration, and a devenv.sh doc map.
 
 ## Precedence
 
