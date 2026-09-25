@@ -1,5 +1,5 @@
 {customLib}: let
-  inherit (customLib.custom) relativeToRoot;
+  inherit (customLib) relativeToRoot;
 in {
   meta = {
     name = "home";

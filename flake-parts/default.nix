@@ -4,9 +4,13 @@
   lib,
   ...
 }: let
-  # Define custom lib accessable as `customLib.custom`
-  customLib = lib.extend (_self: _super: {custom = import ../lib {inherit lib;};});
-  inherit (customLib.custom) relativeToRoot;
+  # Custom lib: nixpkgs lib extended with the repo's own helpers
+  # (lib/default.nix) at the TOP LEVEL — `customLib.relativeToRoot`, no
+  # `.custom` hop. Also exported as `flake.lib` (inputs.<name>.lib for
+  # other flakes; `mkLib` is the exportable root-binding factory there,
+  # since this repo's `relativeToRoot` is bound to THIS repo's root).
+  customLib = lib.extend (_self: _super: import ../lib {inherit lib;});
+  inherit (customLib) relativeToRoot;
 in {
   # ------ Per-System ------ #
   perSystem = {
@@ -31,6 +35,9 @@ in {
   };
 
   flake = {
+    # Exportable lib for other flakes: inputs.home.lib.mkLib <root>
+    lib = import ../lib {inherit lib;};
+
     # ------ NixOS Modules ------ #
     nixosModules.default = {...}: {
       # args passed to all modules

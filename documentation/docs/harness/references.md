@@ -63,6 +63,7 @@ Available aliases and coverage:
 | `clan-core` | inventory, clanServices, exports + strict-eval check, vars/generators, clan CLI, machine updates, clanService VM tests |
 | `devenv` | devenv 2.x CLI reference, CLI-native vs flake embedding, borg hybrid pattern, devcontainer.json, monorepo/polyrepo, containers/K8s, Claude Code integration |
 | `vm-tests` | Hermetic NixOS VM tests: structure, size variants, running, agent loop |
+| `lib` | This repo's `customLib` (`relativeToRoot`, `mkLib`, injection channels, specialArgs gotcha) + the AGENTS flake lib (`mkSkills` skill cherry-picking, `loadAgents`, `agentsJson`, `skills-runtime`) |
 
 The reference sources are the repo's own curated docs (the
 `nix-flake` skill's former `references/*.md`, ported and extended with
@@ -85,7 +86,7 @@ When writing or editing any .nix file: read the opencode reference nix-style ...
 ## Enablement
 
 Defaults are off for all users; `profile-netsa` (the dev profile)
-enables all eight aliases:
+enables all nine aliases:
 
 ```nix
 # flake-parts/homeModules/profiles/netsa.nix
@@ -98,6 +99,7 @@ homeSpec.programs.opencode.references = {
   clan-core.enable = true;
   devenv.enable = true;
   vm-tests.enable = true;
+  lib.enable = true;
 };
 ```
 

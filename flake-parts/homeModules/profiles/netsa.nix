@@ -85,6 +85,8 @@
               devenv.enable = true;
               # Hermetic NixOS VM tests
               vm-tests.enable = true;
+              # This repo's customLib + the AGENTS flake lib (mkSkills etc.)
+              lib.enable = true;
             };
           };
           headroom.enable = true;

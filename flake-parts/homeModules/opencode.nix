@@ -19,7 +19,7 @@
     headroomCfg = config.homeSpec.programs.headroom;
     headroomEnabled = config.homeSpec.programs.headroom.enable or false;
     headroomProxyUrl = "http://${headroomCfg.proxy.host}:${toString headroomCfg.proxy.port}/v1";
-    inherit (customLib.custom) relativeToRoot;
+    inherit (customLib) relativeToRoot;
     # PAT file used by the wrapper: explicit githubPatFile override or the
     # canonical sops-nix deployment path of the shared "github-mcp" clan var
     # (declared by nixosModules/github-mcp for pat-mode users).
@@ -100,6 +100,7 @@
       "clan-core" = "Fleet management with clan-core: inventory.nix (machines/instances/roles/tags), clanServices (perInstance/perMachine), build-time exports + the strict-eval check, the clan CLI, vars generators, machine update flows (FlakeHub pull vs clan machines update), and clanService NixOS VM tests. Load when working on anything clan.*.";
       "devenv" = "devenv 2.x dev environments: full CLI reference, devenv.yaml inputs/lock discipline, CLI-native vs flake embedding (and why CLI is the default for dev shells), the borg hybrid pattern (one shared module, two lockfiles, drift check), devcontainer.json, monorepo/polyrepo, containers/OCI/K8s, and the Claude Code integration. Load when writing devenv.nix/devenv.yaml/.devcontainer or running devenv commands.";
       "vm-tests" = "Hermetic NixOS VM tests: hermeticity rule, structure (nixosLib.runTest modules under legacyPackages, never checks), sm/md/lg size variants, running via .#vm-test (sandboxed vs driver mode), the agent loop, and patterns/anti-patterns. Load when creating, running, or debugging a VM test.";
+      "lib" = "Custom libs: this repo's customLib (lib/default.nix — relativeToRoot, the mkLib root-binding factory, the four injection channels: perSystem _module.args, nixosModules _module.args, home-manager extraSpecialArgs, clan specialArgs — and the specialArgs-vs-_module.args circularity gotcha in nixosModules/networking.nix) and the AGENTS flake lib (inputs.agents.lib — mkSkills for composing/cherry-picking skill dirs into ~/.config/opencode/skills via selectSkills, loadAgents, agentsJson, skills-runtime package). Load when using customLib/relativeToRoot, wiring skills via inputs.agents.lib.mkSkills, editing lib/default.nix, or consuming inputs.home.lib from another flake.";
     };
     # Aliases of the references the user enabled, name -> description.
     enabledReferences = lib.filterAttrs (_: r: r.enable) cfg.references;
