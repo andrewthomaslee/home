@@ -64,6 +64,7 @@ Available aliases and coverage:
 | `devenv` | devenv 2.x CLI reference, CLI-native vs flake embedding, borg hybrid pattern, devcontainer.json, monorepo/polyrepo, containers/K8s, Claude Code integration |
 | `vm-tests` | Hermetic NixOS VM tests: structure, size variants, running, agent loop |
 | `lib` | This repo's `customLib` (`relativeToRoot`, `mkLib`, injection channels, specialArgs gotcha) + the AGENTS flake lib (`mkSkills` skill cherry-picking, `loadAgents`, `agentsJson`, `skills-runtime`) |
+| `cilium` | Cilium 1.20.x: the v2 CRD-based BGP control plane (all four CRDs, advertisement types, auto-discovery, timers, no-BFD), LB IPAM, L2 announcements, network policy language, troubleshooting conditions + symptom table, operation playbook |
 
 The reference sources are the repo's own curated docs (the
 `nix-flake` skill's former `references/*.md`, ported and extended with
@@ -86,7 +87,7 @@ When writing or editing any .nix file: read the opencode reference nix-style ...
 ## Enablement
 
 Defaults are off for all users; `profile-netsa` (the dev profile)
-enables all nine aliases:
+enables all ten aliases:
 
 ```nix
 # flake-parts/homeModules/profiles/netsa.nix
@@ -100,6 +101,7 @@ homeSpec.programs.opencode.references = {
   devenv.enable = true;
   vm-tests.enable = true;
   lib.enable = true;
+  cilium.enable = true;
 };
 ```
 

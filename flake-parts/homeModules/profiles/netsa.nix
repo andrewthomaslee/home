@@ -87,6 +87,8 @@
               vm-tests.enable = true;
               # This repo's customLib + the AGENTS flake lib (mkSkills etc.)
               lib.enable = true;
+              # Cilium docs: v2 BGP control plane, LB IPAM, L2 announcements
+              cilium.enable = true;
             };
           };
           headroom.enable = true;
