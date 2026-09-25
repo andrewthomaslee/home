@@ -94,7 +94,7 @@ The packaging trims are what made the KubeVirt agent image drop from
 |---|---|
 | `kubernetes-mcp-server` | containers/kubernetes-mcp-server v0.0.66, hermetic `buildGoModule` (`flake-parts/packages/kubernetes-mcp-server.nix`) |
 | `opencode-nixd-scaffold` | scaffolds per-repo `opencode.json` + `.vscode/settings.json` nixd overrides (`flake-parts/packages/opencode-nixd-scaffold.nix` + `.py`, `writers.writePython3Bin`) |
-| `cc-safety-net`, `opencode-mem`, `opencode-morph-fast-apply`, `opencode-devcontainers` | plugin packages from `flake-parts/packages/opencode-plugins.nix` |
+| `cc-safety-net`, `opencode-mem`, `opencode-morph-fast-apply` | plugin packages from `flake-parts/packages/opencode-plugins.nix` |
 | `artifacthub-mcp` | ArtifactHub MCP binary (`flake-parts/packages/artifacthub-mcp.nix`) |
 
 ## Profiles
@@ -103,8 +103,8 @@ The packaging trims are what made the KubeVirt agent image drop from
   to `netsa` on the netsa-tagged dev machines (nixos, kamrui-h1, ghost)
   through the users clan service in `inventory.nix`. Opts into the MCP
   servers / plugins that need credentials or a cluster (typeui,
-  kubernetes, github `pat`, cloudflare ×6, mdn, artifacthub, opencode-mem,
-  devcontainers) and pairs with `hostSpec.services.nix-ld.enable = true`
+  kubernetes, github `pat`, cloudflare ×6, mdn, artifacthub, opencode-mem)
+  and pairs with `hostSpec.services.nix-ld.enable = true`
   so prebuilt native binaries (onnxruntime) run.
 - **Headless agent profile** (`flake-parts/homeModules/profiles/
   netsa-agent.nix`, `flake.homeModules.profile-netsa-agent`) — headless
@@ -118,7 +118,7 @@ The packaging trims are what made the KubeVirt agent image drop from
 
 | File | Purpose |
 |---|---|
-| `flake-parts/homeModules/opencode.nix` | everything on this page: MCP under `mcp.<name>.enable`, plugins under `plugins.<name>.enable`, LSP (nixd, helm_ls, pyrefly, gleam), formatters, compaction, `enableDesktop`/`fullDevTools` trims, machine context (`machineContext.*`), PAT + Morph wrappers |
+| `flake-parts/homeModules/opencode.nix` | everything on this page: MCP under `mcp.<name>.enable` merged into native V2 `mcp.servers.*`, plugins under `plugins.<name>.enable` (V2 `plugins` store-path entries), formatters, ordered `permissions` array, `agents.title.model`, `enableDesktop`/`fullDevTools` trims, machine context (`machineContext.*`), PAT + Morph wrappers |
 | `flake-parts/homeModules/headroom.nix` | headroom options + `headroom-proxy.service` user unit — see [Headroom](headroom.md) |
 | `flake-parts/homeModules/profiles/netsa.nix` | dev profile: opencode MCP/plugin opt-ins |
 | `flake-parts/homeModules/profiles/netsa-agent.nix` | headless AI agent profile |
@@ -126,7 +126,8 @@ The packaging trims are what made the KubeVirt agent image drop from
 | `flake-parts/nixosModules/github-mcp.nix` | clan vars PAT generator (see [MCP Servers](mcp-servers.md#github-mcp-server)) |
 | `flake-parts/nixosModules/morph-api-key.nix` | clan vars generator for the Morph API key (see [Plugins](plugins.md)) |
 | `flake-parts/packages/kubernetes-mcp-server.nix` | kubernetes-mcp-server package |
-| `flake-parts/packages/opencode-nixd-scaffold.nix` + `.py` | nixd per-repo scaffold package |
-| repo-root `opencode.json` / `.vscode/settings.json` | per-repo nixd overrides for this flake |
+| `flake-parts/packages/opencode-nixd-scaffold.nix` + `.py` | nixd per-repo scaffold package (VS Code only — OpenCode v2 no longer runs LSP servers) |
+| `overlays/default.nix` | repo overlay: `pkgs.unstable`, the opencode v2 CLI + desktop packages with the upstream Nix-packaging fixes (completions postInstall, bundled sidecar launcher, `OPENCODE_CHANNEL=latest` service registration), electron SHASUM/libANGLE pins |
+| `.vscode/settings.json` | per-repo nixd overrides for this flake (VS Code) |
 | `clanServices/tags/netsa.nix` | netsa tag: machine-level `hostSpec` options only (nix-ld) |
 | `flake-parts/packages/artifacthub-mcp.nix` | artifacthub-mcp package (see [MCP Servers](mcp-servers.md)) |

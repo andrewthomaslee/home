@@ -162,7 +162,6 @@ git+file:///home/netsa/home
 │       ├───kubernetes-mcp-server: package 'kubernetes-mcp-server-0.0.66'
 │       ├───kubevirt-image: package 'nixos-disk-image'
 │       ├───longhornctl: package 'longhornctl-v1.12.0'
-│       ├───opencode-devcontainers: package 'opencode-devcontainers-0.5.1'
 │       ├───opencode-mem: package 'opencode-mem-2.26.0'
 │       ├───opencode-morph-fast-apply: package 'opencode-morph-fast-apply-1.11.0'
 │       ├───opencode-nixd-scaffold: package 'opencode-nixd-scaffold'

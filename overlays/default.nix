@@ -33,7 +33,20 @@
   # directory argument and chdir's into it, failing the build with ENOENT.
   # v2 exposes shell completions via the `--completions <shell>` global
   # flag (effect CLI), so regenerate them with that.
-  opencode = inputs.opencode.packages.${final.stdenv.hostPlatform.system}.opencode.overrideAttrs (_old: {
+  opencode = inputs.opencode.packages.${final.stdenv.hostPlatform.system}.opencode.overrideAttrs (old: {
+    # Desktop sidecar fix (splash-screen hang #2): the v2 CLI's service
+    # registration filename is channel-derived (service-config.ts
+    # filename(): latest/dev/beta/next -> flat "service.json", anything
+    # else -> "service-<channel>.json"), and OPENCODE_CHANNEL is a
+    # compile-time constant. Upstream's nix packaging bakes "prod", so
+    # `opencode serve --service` registers at service-prod.json while the
+    # desktop app's bundled @opencode/client polls ONLY the flat
+    # ~/.local/state/opencode/service.json — the two never meet, the
+    # client respawns contenders forever and the app hangs on its splash.
+    # Build with channel "latest" so both sides agree on the flat
+    # filename (also the default port 0xc0de); the channel is otherwise
+    # inert here (it only names self-update artifacts we never use).
+    env = (old.env or {}) // {OPENCODE_CHANNEL = "latest";};
     postInstall = final.lib.optionalString (final.stdenv.buildPlatform.canExecute final.stdenv.hostPlatform) ''
       installShellCompletion --cmd opencode \
         --bash <($out/bin/opencode --completions bash) \
@@ -92,7 +105,25 @@
         ["cp ${final.opencode}/bin/opencode \"$OPENCODE_CLI_DIST/$cli_package/bin/opencode\""]
         [
           ''
-            cp ${final.opencode}/bin/opencode "$OPENCODE_CLI_DIST/$cli_package/bin/opencode"
+            # Nix packaging fix (splash-screen hang): upstream expects the
+            # bundled CLI to be a single standalone executable, but the Nix
+            # opencode package's bin/opencode is a 16 KB makeBinaryWrapper
+            # shim that execs its SIBLING .opencode-wrapped (the 350 MB
+            # real CLI). The desktop app's installCli() copies ONLY this
+            # one file into the user profile at runtime, so the shim lands
+            # there alone, the `opencode-cli serve --service` background
+            # service dies instantly and never registers
+            # ~/.local/state/opencode/service.json — the renderer waits on
+            # the splash screen forever. Ship a self-contained launcher
+            # instead: absolute store paths survive the copy anywhere, and
+            # ripgrep stays on the sidecar's PATH exactly as the wrapped
+            # CLI expects.
+            cat > "$OPENCODE_CLI_DIST/$cli_package/bin/opencode" <<'LAUNCHER'
+            #!/bin/sh
+            export PATH=${final.lib.makeBinPath [final.ripgrep]}:"$PATH"
+            exec ${final.opencode}/bin/.opencode-wrapped "$@"
+            LAUNCHER
+            chmod +x "$OPENCODE_CLI_DIST/$cli_package/bin/opencode"
             printf '{"name":"%s","version":"%s"}\n' "$cli_package" "${final.opencode.version}" > "$OPENCODE_CLI_DIST/$cli_package/package.json"
           ''
         ]

@@ -50,6 +50,32 @@ three size variants (engine: `flake-parts/tests.nix`, runner app:
      `programs.opencode.web` service (`opencode serve` HTTP title check
      on port 4096).
 
+2. **`opencode-desktop-<sm|md|lg>`** (`vm-tests/opencode-desktop.nix`):
+   - Boots the packaged **OpenCode Desktop** (Electron) app under an Xvfb
+     virtual display and screenshots the real rendering (`scrot` at two
+     points, pulled out as artifacts). This test exists because the
+     desktop app hung on its splash screen; the captured app log, window
+     tree, process list and service-registration file diagnose exactly
+     which startup step stalls.
+   - Startup chain asserted: the bundled sidecar launcher present and
+     runnable (`resources/opencode-cli --version`), the app window mapped
+     (`xdotool search --name OpenCode`), the staged v2 CLI sidecar process
+     alive (`opencode-cli serve --service`), and the main-process log line
+     `v2 CLI background service ready` in the app's own electron-log
+     (`~/.config/ai.opencode.desktop/logs/<stamp>/main.log`).
+   - Diagnostics are captured and copied out as artifacts **before** any
+     assertion (`chromium.log`, `desktop-0.png`/`desktop-1.png`,
+     `app-artifacts/` with the app `main.log`, the service registration
+     `service.json` and the CLI stage dir listing), so a red run always
+     explains itself.
+   - Two upstream Nix-packaging bugs are fixed in `overlays/default.nix`
+     (see the opencode/opencode-desktop entries there): the bundled CLI
+     must be a self-contained launcher (the wrapped binary's shim loses
+     its `.opencode-wrapped` sibling when the app copies it into the user
+     profile), and the CLI's service registration filename must be the
+     flat `service.json` the desktop client polls (`OPENCODE_CHANNEL`
+     baked as `latest`).
+
 ## Running
 
 ```bash

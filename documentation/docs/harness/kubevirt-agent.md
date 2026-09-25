@@ -112,8 +112,10 @@ both invoke `.github/workflows/_oci.yml`, which:
 
 ## VM test
 
-`vm-tests/headroom-opencode-web.nix` exercises the same machine definition
-(unsized) as `headroom-opencode-web-<size>`: it asserts the headless
-developer tooling is on `netsa`'s PATH, the Headroom proxy healthcheck, the
-OpenCode web UI on port 4096, and the MCP CCR roundtrip — see
+`vm-tests/opencode.nix` exercises the same headless profile (unsized, as
+the `netsa` user of the consolidated `opencode-<size>` test): it asserts
+the headless developer tooling is on `netsa`'s PATH, the other
+GitHub-MCP auth branch (oauth remote), the Cloudflare/MDN remote MCPs, the
+Morph Fast Apply V2 plugin, the Headroom proxy healthcheck, the HM-native
+OpenCode web service on port 4096, and the MCP CCR roundtrip — see
 [VM Tests](vm-tests.md).
