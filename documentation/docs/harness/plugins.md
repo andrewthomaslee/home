@@ -17,6 +17,12 @@ The three opt-in plugins are enabled for the **dev profile**
 `hostSpec.services.nix-ld.enable = true` on the netsa-tagged dev machines
 (nixos, kamrui-h1, ghost) so prebuilt native binaries (onnxruntime) run.
 
+> **v2 note:** plugins are loaded at runtime from the binary's home dir, so
+> every plugin must support the v2 opencode runtime (`js/plugin`, config-key
+> event names) and the `devInfo()`/v2 server APIs it calls — plugin breakage
+> surfaces as errors *inside* the session, not at launch. The opencode VM test
+> also validates the `devInfo` port in the bun-built-in (opencode-mem) case.
+
 ## Morph API key provisioning (`flake-parts/nixosModules/morph-api-key.nix`)
 
 Mirrors the [github-mcp generator](mcp-servers.md#clan-vars-provisioning-flake-partsnixosmodulesgithub-mcpnix):

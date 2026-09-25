@@ -63,7 +63,6 @@
             # Dev-profile plugins (off by module default)
             plugins = {
               opencode-mem.enable = true;
-              devcontainers.enable = true;
             };
           };
           headroom.enable = true;

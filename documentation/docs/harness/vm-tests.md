@@ -21,39 +21,41 @@ three size variants (engine: `flake-parts/tests.nix`, runner app:
 
 ## Available test suites (`nix run .#vm-test -- --list`)
 
-1. **`headroom-opencode-<sm|md|lg>`** (`vm-tests/headroom-opencode.nix`):
-   - 1 KVM VM, home-manager profile with headroom + opencode enabled.
-   - Asserts binaries on PATH (headroom, opencode, playwright-mcp,
-     github-mcp-server), `opencode.json` generation (headroom MCP + plugin
-     + provider override + `mcp.openrouter`/`mcp.playwright` entries),
-     `headroom-proxy.service` healthcheck (`/livez`), stdio JSON-RPC MCP
-     CCR compression roundtrip (`/etc/vm-mcp-probe.py`), a second stdio
-     probe driving the Playwright MCP server (`initialize` → `tools/list`,
-     asserting `browser_navigate`/`browser_snapshot`/`browser_click`), and
-     a third stdio probe driving the `github-mcp-server-opencode` wrapper
-     (PAT method with a fake `/etc/vm-github-pat` — a successful
-     `tools/list` proves the PAT file was read and exported, since the
-     server exits without it).
-   - A second lightweight user (`bob`) exercises the other exclusive auth
-     branch: `mcp.github` must be the `remote` oauth entry
-     (`https://api.githubcopilot.com/mcp/`).
-2. **`headroom-opencode-web-<sm|md|lg>`**
-   (`vm-tests/headroom-opencode-web.nix`):
-   - Tests a KubeVirt AI agent machine using the headless `netsa` profile
-     ([profile-netsa-agent](kubevirt-agent.md)).
-   - Asserts headless dev tooling on `netsa`'s PATH, `opencode.json`
-     generation (headroom MCP + plugin + `mcp.openrouter`/`mcp.playwright`
-     entries), OpenCode Web HTTP access on port 4096
-     (`<title>OpenCode</title>`), Headroom proxy `/livez`, and MCP CCR
-     roundtrip (`/etc/vm-mcp-probe.py`).
+1. **`opencode-<sm|md|lg>`** (`vm-tests/opencode.nix`):
+   - 1 KVM VM, two home-manager users on one machine (OpenCode v2).
+   - **alice** — full desktop profile with headroom + opencode: asserts
+     binaries on PATH (headroom, opencode, playwright-mcp,
+     github-mcp-server), native V2 `opencode.json` generation
+     (`mcp.servers.*` entries incl. headroom/openrouter/playwright, the
+     `providers.deepseek.settings.baseURL` proxy override, the ordered
+     `permissions` array, `agents.title.model`, and the `plugins` list),
+     the devenv MCP fallback project, `headroom-proxy.service` healthcheck
+     (`/livez`), stdio JSON-RPC MCP CCR compression roundtrip
+     (`/etc/vm-mcp-probe.py`), a second stdio probe driving the Playwright
+     MCP server (`initialize` → `tools/list`, asserting
+     `browser_navigate`/`browser_snapshot`/`browser_click`), a third stdio
+     probe driving the `github-mcp-server-opencode` wrapper (PAT method
+     with a fake `/etc/vm-github-pat` — a successful `tools/list` proves
+     the PAT file was read and exported, since the server exits without
+     it), and a devenv MCP probe (`/etc/vm-devenv-probe.py`) proving the
+     wrapper fell back to the pinned `~/.config/devenv-agent` project
+     (fully offline: devenv itself is pinned as a `path:` input).
+   - **netsa** — headless agent profile ([profile-netsa-agent](kubevirt-agent.md))
+     plus the other exclusive auth branch (`mcp.servers.github` must be the
+     `remote` oauth entry, `https://api.githubcopilot.com/mcp/`), the
+     six Cloudflare remote MCP servers, MDN, the Morph Fast Apply V2 plugin
+     with a fake `/etc/vm-morph-key` (MORPH_API_KEY wrapper export), a
+     second headroom proxy on port 8788, its own MCP CCR roundtrip
+     (`/etc/vm-web-mcp-probe.py`), and the home-manager native
+     `programs.opencode.web` service (`opencode serve` HTTP title check
+     on port 4096).
 
 ## Running
 
 ```bash
-nix run .#vm-test -- --list                             # list all test names
-nix run .#vm-test -- headroom-opencode-sm               # sandboxed (CI-style)
-nix run .#vm-test -- headroom-opencode-sm --driver      # driver mode: logs + artifacts
-nix run .#vm-test -- headroom-opencode-web-sm --driver  # driver mode for web test
+nix run .#vm-test -- --list                     # list all test names
+nix run .#vm-test -- opencode-sm                # sandboxed (CI-style)
+nix run .#vm-test -- opencode-lg --driver       # driver mode: logs + artifacts
 ```
 
 **Sandbox mode** (default): builds the full test derivation; the driver

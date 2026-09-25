@@ -37,9 +37,12 @@ ships a [VM test](vm-tests.md) that validates the whole stack.
   to fetch the verbatim original on demand.
 - **MCP server** (`headroom mcp serve`) — stdio MCP server exposing
   `headroom_compress`, `headroom_retrieve`, and `headroom_stats`.
-- **OpenCode transport plugin** — bundled JS plugin (`entry.opencode.js`)
-  that reroutes *all* provider traffic through the proxy and registers
-  `headroom_retrieve` as a native tool.
+- **OpenCode transport plugin** — bundled JS plugin (`entry.opencode.js`),
+  upstream's V1-era integration: it rerouted *all* provider traffic through
+  the proxy and registered `headroom_retrieve` as a native tool. **Not
+  wired here**: OpenCode v2 only loads V2 plugins (`{ id, setup }` default
+  exports) and this entry is a V1 hook function; headroom is integrated
+  via the declarative config below instead.
 
 ## Why `headroom wrap opencode` is not used
 
@@ -95,21 +98,20 @@ into `programs.opencode.settings` when headroom is enabled (no
 `headroom wrap opencode` needed — wrap is unusable on a read-only
 home-manager config):
 
-- **MCP server** — `mcp.headroom = { type = "local"; command = ["headroom" "mcp" "serve"]; enabled = true; }`
-- **Transport plugin** — the bundled `entry.opencode.js` from the Nix
-  store. It patches OpenCode's HTTP stack so *every* provider is routed
-  through the proxy (tagged via `x-headroom-base-url`), and registers
-  `headroom_retrieve` as a native tool.
-- **Provider baseURL overrides** — `deepseek`, `anthropic`, and `openai`
-  point at `http://127.0.0.1:8787/v1` (the reliable fallback layer that
-  works even without the plugin, e.g. `opencode --pure`).
+- **MCP server** — `mcp.servers.headroom = { type = "local"; command = ["headroom" "mcp" "serve"]; }`
+  (native V2 shape: servers live under `mcp.servers`, there is no
+  `enabled` toggle — present means enabled)
+- **Provider baseURL overrides** — `providers.deepseek/anthropic/openai.settings.baseURL`
+  point at `http://127.0.0.1:8787/v1` (native V2 provider shape; the
+  compression path — *every* request through those providers is routed
+  through the proxy).
 
 Providers NOT overridden (intentionally):
 
 - **openrouter / google gemini** — native OpenCode providers resolved from
   models.dev. Keep their real upstream baseURLs; the proxy's OpenAI handler
-  honors the plugin's `x-headroom-base-url` header and its Gemini handler
-  serves `/v1beta/models/...` natively. Config-level entries for them are
+  honors its routing headers and its Gemini handler serves
+  `/v1beta/models/...` natively. Config-level entries for them are
   unnecessary (and would break upstream selection).
 - **Auth** — use `/connect` in the TUI (writes
   `~/.local/share/opencode/auth.json`) or provider env vars

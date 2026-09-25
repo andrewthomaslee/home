@@ -66,8 +66,12 @@
     jovian.url = "github:Jovian-Experiments/Jovian-NixOS";
 
     # OpenCode
+    # Pinned to the v2.0.16 release tag: v2 is a major rework (new plugin
+    # API, new server API, native V2 config shape); see
+    # https://opencode.ai/docs/migrate-v1/ for the breaking changes this
+    # repo's homeModules/opencode.nix was migrated to.
     opencode = {
-      url = "github:anomalyco/opencode";
+      url = "github:anomalyco/opencode?ref=v2.0.16";
       inputs.nixpkgs.follows = "nixpkgs-unstable";
     };
 

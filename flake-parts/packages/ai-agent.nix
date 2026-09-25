@@ -30,6 +30,9 @@
         (inputs.nixpkgs + "/nixos/modules/virtualisation/kubevirt.nix")
         inputs.home-manager.nixosModules.home-manager
         self.nixosModules.default
+        # Repo overlay: provides pkgs.unstable and the patched opencode
+        # package (upstream v2.0.16 nix postInstall is broken).
+        {nixpkgs.overlays = [self.overlays.default];}
         ({
           config,
           lib,
@@ -109,7 +112,9 @@
               # Optional runtime env (e.g. OPENCODE_SERVER_PASSWORD) via
               # cloud-init write_files into /etc/default/opencode-web.
               EnvironmentFile = "-/etc/default/opencode-web";
-              ExecStart = "${inputs.opencode.packages.${system}.opencode}/bin/opencode serve --port 4096 --hostname 0.0.0.0";
+              # Overlay package: inputs.opencode v2.0.16 with the upstream
+              # postInstall completion fix (see overlays/default.nix).
+              ExecStart = "${pkgs.opencode}/bin/opencode serve --port 4096 --hostname 0.0.0.0";
               Restart = "always";
               RestartSec = 3;
             };

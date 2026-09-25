@@ -72,15 +72,16 @@
         export MORPH_API_KEY="$(cat ${lib.escapeShellArg morphApiKeyFile})"
       fi
       export MORPH_MODEL=${lib.escapeShellArg cfg.plugins.morph-fast-apply.model}
-      exec ${inputs.opencode.packages.${pkgs.stdenv.hostPlatform.system}.opencode}/bin/opencode "$@"
+      exec ${lib.getExe pkgs.opencode} "$@"
     '';
     # Hermetic plugin packages (flake-parts/packages/opencode-plugins.nix).
+    # V2 native-plugin entries: each is an absolute store-path file whose
+    # module default-exports a V2 plugin `{ id, setup|effect }` (the V1
+    # loader accepted default-export hook functions; those no longer run).
     pluginEntries =
-      lib.optional headroomEnabled "${headroomCfg.package}/${pkgs.unstable.python313.sitePackages}/headroom/providers/opencode/_dist/entry.opencode.js"
-      ++ lib.optional cfg.plugins.cc-safety-net.enable "${pkgs.cc-safety-net}/share/opencode-plugins/cc-safety-net/dist/index.js"
+      lib.optional cfg.plugins.cc-safety-net.enable "${pkgs.cc-safety-net}/share/opencode-plugins/cc-safety-net/dist/index.js"
       ++ lib.optional cfg.plugins.morph-fast-apply.enable "${pkgs.opencode-morph-fast-apply}/share/opencode-plugins/opencode-morph-fast-apply/index.ts"
-      ++ lib.optional cfg.plugins.opencode-mem.enable "${pkgs.opencode-mem}/share/opencode-plugins/opencode-mem/dist/plugin.js"
-      ++ lib.optional cfg.plugins.devcontainers.enable "${pkgs.opencode-devcontainers}/share/opencode-plugins/opencode-devcontainers/plugin/index.js";
+      ++ lib.optional cfg.plugins.opencode-mem.enable "${pkgs.opencode-mem}/share/opencode-plugins/opencode-mem/dist/v2/plugin.js";
     # ---- Machine context (per-machine system-prompt instruction) ---- #
     # Home-manager runs as a NixOS module here, so osConfig carries the
     # machine this user is on. From it, the machine's nixos-facter report
@@ -454,15 +455,6 @@
           default = false;
           description = "Enable the opencode-mem persistent memory plugin (memory tool + web UI).";
         };
-        # opencode-devcontainers: isolated branch workspaces via
-        # devcontainers or git worktrees (/devcontainer, /worktree,
-        # /workspaces commands). Needs the devcontainer CLI (fullDevTools)
-        # and docker/podman at runtime.
-        devcontainers.enable = lib.mkOption {
-          type = lib.types.bool;
-          default = false;
-          description = "Enable the opencode-devcontainers plugin (branch workspace isolation).";
-        };
       };
     };
     config = lib.mkIf cfg.enable {
@@ -508,6 +500,12 @@
             inputs:
               nixpkgs:
                 url: path:${inputs.nixpkgs}
+              # devenv 2.x implicitly adds a `devenv` input on first lock
+              # update; pin it to the repo's devenv flake input so the
+              # fallback project stays fully offline (VMs boot without
+              # working DNS).
+              devenv:
+                url: path:${inputs.devenv.outPath}
           '';
         };
         "devenv-agent/devenv.nix" = lib.mkIf cfg.mcp.devenv.enable {
@@ -523,10 +521,11 @@
       };
 
       home.packages =
-        (lib.optionals cfg.enableDesktop
-          (with inputs.opencode.packages.${pkgs.stdenv.hostPlatform.system}; [
-            opencode-desktop
-          ]))
+        (lib.optionals cfg.enableDesktop [
+          # Overlay package: inputs.opencode v2.0.16 with the upstream
+          # postInstall completion fix (see overlays/default.nix).
+          pkgs.opencode-desktop
+        ])
         ++ (lib.optionals cfg.fullDevTools (with pkgs.unstable; [
           podman
           gleam
@@ -560,16 +559,19 @@
         ])
         ++ (lib.optionals cfg.mcp.devenv.enable [
           pkgs.devenv
+          # The devenv-mcp-opencode wrapper referenced by the local
+          # mcp.servers.devenv command, also installed on PATH so the
+          # server can be driven manually (the VM test probes it that way).
+          devenvMcpWrapper
         ])
         ++ (lib.optionals (cfg.mcp.github.enable && cfg.mcp.github.auth == "pat") [
           githubMcpWrapper
         ])
-        # Plugin packages: referenced by store path in settings.plugin, so
+        # Plugin packages: referenced by store path in settings.plugins, so
         # keep them in the closure (GC safety).
         ++ (lib.optional cfg.plugins.cc-safety-net.enable pkgs.cc-safety-net)
         ++ (lib.optional cfg.plugins.morph-fast-apply.enable pkgs.opencode-morph-fast-apply)
-        ++ (lib.optional cfg.plugins.opencode-mem.enable pkgs.opencode-mem)
-        ++ (lib.optional cfg.plugins.devcontainers.enable pkgs.opencode-devcontainers);
+        ++ (lib.optional cfg.plugins.opencode-mem.enable pkgs.opencode-mem);
       # NOTE: the morph key wrapper (opencodeMorphWrapper) is NOT added
       # here — programs.opencode.package above already installs it into
       # the user env, and a second entry would collide in buildEnv.
@@ -583,11 +585,13 @@
         enable = true;
         # Morph key wrapper: exports MORPH_API_KEY (from the clan var file)
         # into the opencode process env when the morph plugin is enabled
-        # with a configured key file; otherwise the stock package.
+        # with a configured key file; otherwise the stock package. The
+        # package comes from the overlay (inputs.opencode v2.0.16 with the
+        # upstream postInstall completion fix).
         package =
           if morphEnabledWithKey
           then opencodeMorphWrapper
-          else inputs.opencode.packages.${pkgs.stdenv.hostPlatform.system}.opencode;
+          else pkgs.opencode;
         extraPackages =
           (with pkgs.unstable; [
             actionlint
@@ -652,61 +656,52 @@
         settings = lib.mkMerge [
           {
             model = "glm-5.3-flash";
-            small_model = "glm-5.3-flash";
-            compaction = {
-              auto = true;
-              tail_turns = 12;
-            };
-            permission = {
-              read = {
-                "/nix/store/**" = "allow";
-                "/tmp/**" = "allow";
-                "/home/netsa/.config/opencode/" = "allow";
-                "/etc/hostname" = "allow";
-              };
-              external_directory = {
-                "/nix/store/**" = "allow";
-                "/tmp/**" = "allow";
-              };
-            };
-            lsp = {
-              python = {
-                command = ["pyrefly" "lsp"];
-                extensions = [".py" ".pyi"];
-              };
-              # Built-in pyright would try a runtime npm auto-download of
-              # pyright-langserver (non-hermetic on NixOS) and duplicate the
-              # .py/.pyi LSP already provided by pyrefly.
-              pyright.disabled = true;
-              # nixd replaces the previous `nil` entry. The settings key must
-              # be "nixd" (opencode's built-in nixd LSP) so this entry
-              # overrides the built-in instead of running two Nix servers.
-              # opencode spawns LSP servers with cwd = project root, so
-              # `toString ./.` anchors to the repo opencode was opened in:
-              # foreign flakes (e.g. borg) get their own nixpkgs. In non-flake
-              # dirs the eval fails; nixd logs it and keeps its startup
-              # default `import <nixpkgs> { }` resolved via NIX_PATH.
-              # Exact per-repo option trees are supplied by each repo's
-              # opencode.json.
-              nixd = {
-                command = ["nixd"];
-                extensions = [".nix"];
-                env.NIX_PATH = "nixpkgs=${inputs.nixpkgs}";
-                initialization.nixd.nixpkgs.expr = ''
-                  import (builtins.getFlake (toString ./.)).inputs.nixpkgs { }'';
-              };
-              # helm-ls: charts/templates diagnostics; it launches the
-              # installed yaml-language-server itself for non-template YAML
-              # (no separate `yaml` LSP entry — would double diagnostics).
-              helm_ls = {
-                command = ["helm_ls" "serve"];
-                extensions = [".yaml" ".yml"];
-              };
-              gleam = {
-                command = ["gleam" "lsp"];
-                extensions = [".gleam"];
-              };
-            };
+            # small_model V1 field -> the model of the built-in title agent
+            # (native V2 shape; V1 small_model is normalized silently).
+            agents.title.model = "glm-5.3-flash";
+            # V2 keeps compaction.auto; the V1 tail_turns budget is replaced
+            # by checkpoint-based compaction (keep.tokens) — dropped here.
+            compaction.auto = true;
+            # V2 ordered permissions array (last matching rule wins; the V1
+            # permission.* map is normalized silently). Path actions keep
+            # their names ("read", "external_directory"); bash/task/write
+            # were renamed shell/subagent/edit upstream.
+            permissions = [
+              {
+                action = "read";
+                resource = "/nix/store/**";
+                effect = "allow";
+              }
+              {
+                action = "read";
+                resource = "/tmp/**";
+                effect = "allow";
+              }
+              {
+                action = "read";
+                resource = "/home/netsa/.config/opencode/";
+                effect = "allow";
+              }
+              {
+                action = "read";
+                resource = "/etc/hostname";
+                effect = "allow";
+              }
+              {
+                action = "external_directory";
+                resource = "/nix/store/**";
+                effect = "allow";
+              }
+              {
+                action = "external_directory";
+                resource = "/tmp/**";
+                effect = "allow";
+              }
+            ];
+            # NOTE: V1 settings.lsp was dropped — V2 accepts lsp config but
+            # never runs language servers; diagnostics come from the agent
+            # running the linters/typecheckers in extraPackages directly
+            # (statix/deadnix/nix build, pyrefly check, gleam check, ...).
             formatter = {
               nix = {
                 command = ["alejandra" "$FILE"];
@@ -723,193 +718,142 @@
             };
           }
           (lib.mkIf cfg.mcp.nix.enable {
-            mcp = {
-              nixos = {
-                type = "local";
-                command = ["${lib.getExe inputs.mcp-nixos.packages.${pkgs.stdenv.hostPlatform.system}.mcp-nixos}"];
-                enabled = true;
-              };
+            mcp.servers.nixos = {
+              type = "local";
+              command = ["${lib.getExe inputs.mcp-nixos.packages.${pkgs.stdenv.hostPlatform.system}.mcp-nixos}"];
             };
           })
           (lib.mkIf cfg.mcp.openrouter.enable {
-            mcp = {
-              openrouter = {
-                # Remote hosted server: no local install, no docker/uvx.
-                # opencode handles the OAuth login automatically on first
-                # tool use (minted key expires after 7 days).
-                type = "remote";
-                url = "https://mcp.openrouter.ai/mcp";
-                enabled = true;
-              };
+            mcp.servers.openrouter = {
+              # Remote hosted server: no local install, no docker/uvx.
+              # opencode handles the OAuth login automatically on first
+              # tool use (minted key expires after 7 days).
+              type = "remote";
+              url = "https://mcp.openrouter.ai/mcp";
             };
           })
           (lib.mkIf cfg.mcp.playwright.enable {
-            mcp = {
-              playwright = {
-                # Hermetic local server: the nixpkgs wrapper pins the
-                # browser bundle (playwright-driver.browsers) and the
-                # playwright node modules, so nothing is downloaded at
-                # runtime. --headless so it works on displayless agents;
-                # chromium is the nixpkgs default browser.
-                type = "local";
-                command = ["${lib.getExe pkgs.playwright-mcp}" "--headless"];
-                enabled = true;
-              };
+            mcp.servers.playwright = {
+              # Hermetic local server: the nixpkgs wrapper pins the
+              # browser bundle (playwright-driver.browsers) and the
+              # playwright node modules, so nothing is downloaded at
+              # runtime. --headless so it works on displayless agents;
+              # chromium is the nixpkgs default browser.
+              type = "local";
+              command = ["${lib.getExe pkgs.playwright-mcp}" "--headless"];
             };
           })
           (lib.mkIf cfg.mcp.github.enable {
-            mcp = {
-              github =
-                if cfg.mcp.github.auth == "pat"
-                then {
-                  # Local stdio server with PAT auth: the wrapper reads the
-                  # clan-var-deployed PAT file and exports
-                  # GITHUB_PERSONAL_ACCESS_TOKEN at server start.
-                  type = "local";
-                  command = ["${githubMcpWrapper}/bin/github-mcp-server-opencode"];
-                  enabled = true;
-                }
-                else {
-                  # Remote hosted server: no local install, no PAT file.
-                  # opencode handles the browser OAuth flow automatically on
-                  # first tool use.
-                  type = "remote";
-                  url = "https://api.githubcopilot.com/mcp/";
-                  enabled = true;
-                };
-            };
+            mcp.servers.github =
+              if cfg.mcp.github.auth == "pat"
+              then {
+                # Local stdio server with PAT auth: the wrapper reads the
+                # clan-var-deployed PAT file and exports
+                # GITHUB_PERSONAL_ACCESS_TOKEN at server start.
+                type = "local";
+                command = ["${githubMcpWrapper}/bin/github-mcp-server-opencode"];
+              }
+              else {
+                # Remote hosted server: no local install, no PAT file.
+                # opencode handles the browser OAuth flow automatically on
+                # first tool use.
+                type = "remote";
+                url = "https://api.githubcopilot.com/mcp/";
+              };
           })
           # Cloudflare remote MCP servers: hosted by Cloudflare, no local
           # install. opencode handles the Cloudflare OAuth flow on first
           # tool use (the docs server is public).
           (lib.mkIf cfg.mcp.cloudflare.enable {
-            mcp = {
-              cloudflare = {
-                type = "remote";
-                url = "https://mcp.cloudflare.com/mcp";
-                enabled = true;
-              };
+            mcp.servers.cloudflare = {
+              type = "remote";
+              url = "https://mcp.cloudflare.com/mcp";
             };
           })
           (lib.mkIf cfg.mcp.cloudflare-docs.enable {
-            mcp = {
-              cloudflare-docs = {
-                type = "remote";
-                url = "https://docs.mcp.cloudflare.com/mcp";
-                enabled = true;
-              };
+            mcp.servers.cloudflare-docs = {
+              type = "remote";
+              url = "https://docs.mcp.cloudflare.com/mcp";
             };
           })
           (lib.mkIf cfg.mcp.cloudflare-bindings.enable {
-            mcp = {
-              cloudflare-bindings = {
-                type = "remote";
-                url = "https://bindings.mcp.cloudflare.com/mcp";
-                enabled = true;
-              };
+            mcp.servers.cloudflare-bindings = {
+              type = "remote";
+              url = "https://bindings.mcp.cloudflare.com/mcp";
             };
           })
           (lib.mkIf cfg.mcp.cloudflare-builds.enable {
-            mcp = {
-              cloudflare-builds = {
-                type = "remote";
-                url = "https://builds.mcp.cloudflare.com/mcp";
-                enabled = true;
-              };
+            mcp.servers.cloudflare-builds = {
+              type = "remote";
+              url = "https://builds.mcp.cloudflare.com/mcp";
             };
           })
           (lib.mkIf cfg.mcp.cloudflare-browser.enable {
-            mcp = {
-              cloudflare-browser = {
-                type = "remote";
-                url = "https://browser.mcp.cloudflare.com/mcp";
-                enabled = true;
-              };
+            mcp.servers.cloudflare-browser = {
+              type = "remote";
+              url = "https://browser.mcp.cloudflare.com/mcp";
             };
           })
           (lib.mkIf cfg.mcp.cloudflare-containers.enable {
-            mcp = {
-              cloudflare-containers = {
-                type = "remote";
-                url = "https://containers.mcp.cloudflare.com/mcp";
-                enabled = true;
-              };
+            mcp.servers.cloudflare-containers = {
+              type = "remote";
+              url = "https://containers.mcp.cloudflare.com/mcp";
             };
           })
           (lib.mkIf cfg.mcp.mdn.enable {
-            mcp = {
-              # MDN Web Docs, hosted by Mozilla — no local install.
-              mdn = {
-                type = "remote";
-                url = "https://mcp.mdn.mozilla.net/";
-                enabled = true;
-              };
+            # MDN Web Docs, hosted by Mozilla — no local install.
+            mcp.servers.mdn = {
+              type = "remote";
+              url = "https://mcp.mdn.mozilla.net/";
             };
           })
           (lib.mkIf cfg.mcp.artifacthub.enable {
-            mcp = {
-              # ArtifactHub, local stdio server — hermetic nix build from the
-              # pinned v1.1.1 source (packages/artifacthub-mcp.nix); no
-              # docker/npx runtime downloads.
-              artifacthub = {
-                type = "local";
-                command = ["${lib.getExe pkgs.artifacthub-mcp}"];
-                enabled = true;
-              };
+            # ArtifactHub, local stdio server — hermetic nix build from the
+            # pinned v1.1.1 source (packages/artifacthub-mcp.nix); no
+            # docker/npx runtime downloads.
+            mcp.servers.artifacthub = {
+              type = "local";
+              command = ["${lib.getExe pkgs.artifacthub-mcp}"];
             };
           })
           (lib.mkIf cfg.mcp.kubernetes.enable {
-            mcp = {
-              # Kubernetes MCP server (containers/kubernetes-mcp-server):
-              # hermetic Go build, stdio is the default transport (no
-              # --stdio flag). Uses the user's kubeconfig; optional
-              # --read-only restricts to readOnlyHint tools.
-              kubernetes = {
-                type = "local";
-                command =
-                  ["${lib.getExe pkgs.kubernetes-mcp-server}"]
-                  ++ lib.optional cfg.mcp.kubernetes.readOnly "--read-only";
-                enabled = true;
-              };
+            # Kubernetes MCP server (containers/kubernetes-mcp-server):
+            # hermetic Go build, stdio is the default transport (no
+            # --stdio flag). Uses the user's kubeconfig; optional
+            # --read-only restricts to readOnlyHint tools.
+            mcp.servers.kubernetes = {
+              type = "local";
+              command =
+                ["${lib.getExe pkgs.kubernetes-mcp-server}"]
+                ++ lib.optional cfg.mcp.kubernetes.readOnly "--read-only";
             };
           })
           (lib.mkIf cfg.mcp.devenv.enable {
-            mcp = {
-              # devenv MCP: local stdio `devenv mcp` via the wrapper —
-              # serves the cwd's devenv project when there is one, the
-              # pinned ~/.config/devenv-agent project otherwise (devenv
-              # hard-exits outside devenv projects).
-              devenv = {
-                type = "local";
-                command = ["${devenvMcpWrapper}/bin/devenv-mcp-opencode"];
-                enabled = true;
-              };
+            # devenv MCP: local stdio `devenv mcp` via the wrapper —
+            # serves the cwd's devenv project when there is one, the
+            # pinned ~/.config/devenv-agent project otherwise (devenv
+            # hard-exits outside devenv projects).
+            mcp.servers.devenv = {
+              type = "local";
+              command = ["${devenvMcpWrapper}/bin/devenv-mcp-opencode"];
             };
           })
           (lib.mkIf headroomEnabled {
-            mcp = {
-              headroom = {
-                type = "local";
-                command = ["${lib.getExe headroomCfg.package}" "mcp" "serve"];
-                enabled = true;
-              };
+            mcp.servers.headroom = {
+              type = "local";
+              command = ["${lib.getExe headroomCfg.package}" "mcp" "serve"];
             };
-            provider = {
-              deepseek = {
-                options = {
-                  baseURL = headroomProxyUrl;
-                };
-              };
-              anthropic = {
-                options = {
-                  baseURL = headroomProxyUrl;
-                };
-              };
-              openai = {
-                options = {
-                  baseURL = headroomProxyUrl;
-                };
-              };
+            # Headroom proxy: reroute provider traffic through the proxy.
+            # NOTE: the V1 transport plugin (headroom's entry.opencode.js)
+            # is gone — its default export is a V1 plugin function and V2
+            # only loads V2 plugins ({ id, setup }); headroom compresses
+            # via these providers.*.settings.baseURL overrides (native V2
+            # shape; V1 was provider.<p>.options.baseURL) plus its MCP
+            # compress/retrieve tools.
+            providers = {
+              deepseek.settings.baseURL = headroomProxyUrl;
+              anthropic.settings.baseURL = headroomProxyUrl;
+              openai.settings.baseURL = headroomProxyUrl;
             };
           })
           # Morph Fast Apply: point the agent at the always-on instruction
@@ -925,31 +869,26 @@
           })
           # TypeUI: hosted design-skills MCP (OAuth on first use).
           (lib.mkIf cfg.mcp.typeui.enable {
-            mcp = {
-              typeui = {
-                type = "remote";
-                url = "https://mcp.typeui.sh/mcp";
-                enabled = true;
-              };
+            mcp.servers.typeui = {
+              type = "remote";
+              url = "https://mcp.typeui.sh/mcp";
             };
           })
           # Varlock docs: hosted docs-search server
           # (https://docs.mcp.varlock.dev/mcp) — public, no auth.
           (lib.mkIf cfg.mcp.varlock-docs.enable {
-            mcp = {
-              varlock-docs = {
-                type = "remote";
-                url = "https://docs.mcp.varlock.dev/mcp";
-                enabled = true;
-              };
+            mcp.servers.varlock-docs = {
+              type = "remote";
+              url = "https://docs.mcp.varlock.dev/mcp";
             };
           })
           # Plugin entries: single definition so mkMerge never sees two
-          # conflicting `plugin` lists. Each entry is an absolute store
-          # path (the headroom pattern), so nothing is fetched from npm at
-          # runtime; the packages are kept alive via home.packages.
+          # conflicting `plugins` lists. Each entry is an absolute store
+          # path (a V2 plugin module: default export `{ id, setup }`), so
+          # nothing is fetched from npm at runtime; the packages are kept
+          # alive via home.packages.
           (lib.mkIf (pluginEntries != []) {
-            plugin = pluginEntries;
+            plugins = pluginEntries;
           })
         ];
       };
