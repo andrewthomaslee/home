@@ -1,45 +1,45 @@
----
-name: devenv
-description: Expert guide to devenv — declaring, building and maintaining reproducible development shells with Nix. Covers devenv.nix/devenv.yaml/devenv.lock authoring, the full devenv CLI (shell, up, down, processes, tasks, test, search, update, container, gc, mcp, allow/hook), devenv.yaml inputs and lock discipline, the devenv 2.x changes (native process manager migration, breaking changes, portless URLs), flake-parts and plain-flake integration, devcontainer.json generation for GitHub Codespaces, monorepo and polyrepo composition, cross-platform patterns, OCI containers and the devenv-container CI image (including Argo Workflows pointers), and the Claude Code integration — with the borg repo (andrewthomaslee/borg, devenv v2.3.1) as the worked example of dual-mode flake-parts + CLI wiring. Use when writing or editing devenv.nix, devenv.yaml, devenv.lock or .devcontainer/, when running devenv commands, when wiring devenv into a flake, CI, or containers, or when asked to set up dev shells with devenv.
----
-
 # devenv
 
 devenv declares complete development environments (packages, languages,
 services, processes, tasks, secrets) in Nix, reproducibly and fast. This
-skill brings an agent up to speed on devenv 2.x (the v2 interface to Nix)
-so it can author and maintain dev shells, generate devcontainer.json, run
-CLI commands, and compose environments without re-reading the docs.
+reference brings an agent up to speed on devenv 2.x (the v2 interface to
+Nix) so it can author and maintain dev shells, generate
+devcontainer.json, run CLI commands, and compose environments without
+re-reading the docs.
 
 Version alert: devenv 2.x is a major redesign (2.0 released March 2026,
-2.3 September 2026). Local CLI on this machine and the worked example repo
-are both pinned at **v2.3.1**. Much older training-data advice
+2.3 September 2026). Local CLI on this machine and the worked example
+repo are both pinned at **v2.3.1**. Much older training-data advice
 (process-compose defaults, direnv-only activation, `pre-commit`, plain
 `devenv build` output) is stale — see the [v2 alert](#devenv-2x-alert)
-below. Canonical docs live at https://devenv.sh; a full doc map is at the
-end of this file.
+below. Canonical docs live at https://devenv.sh; a full doc map is at
+the end of this file.
 
 ## Mental model
 
 Three files define a project, plus generated state:
 
 - **`devenv.nix`** — the environment: a Nix function returning a module
-  (`{ pkgs, ... }: { ... }`). One concern per import; merge via `imports`.
-- **`devenv.yaml`** — project settings: `inputs` (dependencies), `imports`
-  (shared configs), nixpkgs config, shell/profile/reload behavior.
-- **`devenv.lock`** — resolved input revisions. Committed; hand edits are a
-  smell — update with `devenv update` or `devenv inputs add`.
+  (`{ pkgs, ... }: { ... }`). One concern per import; merge via
+  `imports`.
+- **`devenv.yaml`** — project settings: `inputs` (dependencies),
+  `imports` (shared configs), nixpkgs config, shell/profile/reload
+  behavior.
+- **`devenv.lock`** — resolved input revisions. Committed; hand edits
+  are a smell — update with `devenv update` or `devenv inputs add`.
 - **`.devenv/`** — runtime state (profile, caches, task/process state).
   Gitignore it; never commit.
 
 Special arguments every `devenv.nix` module receives: `pkgs` (the
 `nixpkgs` input for your system), `inputs` (all devenv.yaml inputs),
-`config` (the final resolved configuration — reference any option lazily),
-`lib` (nixpkgs lib), and `multiverse` (when configured — version-pinned
-packages, see [pinning](https://devenv.sh/pinning/)).
+`config` (the final resolved configuration — reference any option
+lazily), `lib` (nixpkgs lib), and `multiverse` (when configured —
+version-pinned packages, see
+[pinning](https://devenv.sh/pinning/)).
 
 Scaffold a new project with `devenv init` (writes `devenv.yaml`,
-`devenv.nix`, `.gitignore`; `--include-envrc` adds an `.envrc` for direnv).
+`devenv.nix`, `.gitignore`; `--include-envrc` adds an `.envrc` for
+direnv).
 
 Two usage modes exist and they compose:
 
@@ -47,15 +47,24 @@ Two usage modes exist and they compose:
    `devenv.nix`/`devenv.yaml`, activated with `devenv shell` / auto
    activation. Full feature set: containers, evaluation caching, GC
    protection, cross-project references, secretspec, fast startup.
-2. **Embedded-in-a-flake mode**: the devenv module system evaluated inside
-   `nix develop` via `inputs.devenv.flakeModule` (flake-parts) or
-   `devenv.lib.mkShell` (plain flake). Use when the project already is a
-   flake. Limitations: needs `--no-pure-eval` (or a `devenv.root`
-   override), no container outputs unless you add nix2container, slower
-   eval, no process running in `devenv test`. Feature table below.
+2. **Embedded-in-a-flake mode**: the devenv module system evaluated
+   inside `nix develop` via `inputs.devenv.flakeModule` (flake-parts)
+   or `devenv.lib.mkShell` (plain flake). Use when the project already
+   is a flake. Limitations: needs `--no-pure-eval` (or a `devenv.root`
+   override), no container outputs unless you add nix2container,
+   slower eval, no process running in `devenv test`. Feature table
+   below.
 
 The two modes can be combined so one shared module feeds both — that is
-exactly what the borg repo does (see [the worked example](#worked-example-borg)).
+exactly what the borg repo does (see [the worked
+example](#worked-example-borg)). Why the CLI is the better default for
+the day-to-day dev shell even in a flake repo: the flake embedding
+gains nothing for plain shell entry (`nix develop` vs `devenv shell`)
+while giving up the CLI's container builds, eval caching, GC
+protection, and cross-project references; upstream's own template set
+(`devenv init`, `devenv generate`) assumes CLI-native mode. Keep flake
+`devShells` only where CI or flake consumers need the shell as an
+output.
 
 ## devenv 2.x alert
 
@@ -70,8 +79,8 @@ Read this before writing process definitions or scripts. What changed:
 
 Breaking changes to watch in existing code and scripts:
 
-- **git-hooks input is no longer implicit.** If you use `git-hooks.hooks`,
-  declare it in `devenv.yaml`:
+- **git-hooks input is no longer implicit.** If you use
+  `git-hooks.hooks`, declare it in `devenv.yaml`:
 
   ```yaml
   inputs:
@@ -86,12 +95,13 @@ Breaking changes to watch in existing code and scripts:
 - **`devenv container --copy <name>` removed** — use
   `devenv container copy <name>`.
 - **Process-compose-only options are gone** unless you opt back in with
-  `process.manager.implementation = "process-compose";` — migrate with the
-  table below.
-- `processes.<name>.shutdown.signal`/`.grace` exist only from 2.2.3 (older
-  2.x always SIGTERMs).
+  `process.manager.implementation = "process-compose";` — migrate with
+  the table below.
+- `processes.<name>.shutdown.signal`/`.grace` exist only from 2.2.3
+  (older 2.x always SIGTERMs).
 
-process-compose → native manager migration (apply only the parts you used):
+process-compose → native manager migration (apply only the parts you
+used):
 
 | Before (`processes.<name>.process-compose.*`) | After (`processes.<name>.*`) |
 |---|---|
@@ -149,11 +159,12 @@ Per-input options:
 | `overlays` | List of overlays to pull from the input |
 | `flake` | `false` when the input is a plain `devenv.nix` project, not a flake |
 
-Common URI formats: `github:org/repo/branch`, `github:org/repo?ref=v1.0.0`,
-`github:org/repo?dir=subdir`, `gitlab:owner/repo/branch`,
+Common URI formats: `github:org/repo/branch`,
+`github:org/repo?ref=v1.0.0`, `github:org/repo?dir=subdir`,
+`gitlab:owner/repo/branch`,
 `git+https://host/user/path?ref=branch&rev=<rev>`,
-`git+ssh://...`, `tarball+https://...`, `path:/local/dir` (local paths copy
-the whole directory — prefer `git+file:` for large trees).
+`git+ssh://...`, `tarball+https://...`, `path:/local/dir` (local paths
+copy the whole directory — prefer `git+file:` for large trees).
 
 Manage inputs from the CLI instead of hand-editing:
 
@@ -164,8 +175,8 @@ devenv update      # resolve/update devenv.lock
 ```
 
 Other `devenv.yaml` settings worth knowing: `imports` (list of paths or
-input names — absolute paths starting with `/` resolve from the repo root),
-`nixpkgs.allow_unfree`, `nixpkgs.permitted_unfree_packages`,
+input names — absolute paths starting with `/` resolve from the repo
+root), `nixpkgs.allow_unfree`, `nixpkgs.permitted_unfree_packages`,
 `nixpkgs.permitted_insecure_packages`, `nixpkgs.allow_broken`,
 `clean.enabled`/`clean.keep`, `impure`, `profile` (default profile),
 `shell` (`bash`/`zsh`/`fish`/`nu`), `reload`, `strict_ports`,
@@ -208,18 +219,21 @@ Global flags:
   `devenv -O languages.rust.enable:bool true shell -- cargo build`
 - `--from path:/abs/dir` or `--from github:org/repo?dir=subdir` — use a
   foreign devenv; bind it persistently with `devenv allow`
-- `-o, --override-input <name> <uri>` — CI overrides without editing yaml
+- `-o, --override-input <name> <uri>` — CI overrides without editing
+  yaml
 - `--profile <name>` (repeatable), `--shell bash|zsh|fish|nu`
 - `--reload` / `--no-reload`, `--strict-ports` / `--no-strict-ports`
 - `--trace-to otlp-grpc` etc. (observability), `--verbose`, `--tui`
 - `--user-config <file>`
 
 Agent-relevant behavior: devenv detects coding agents (`CLAUDECODE`,
-`OPENCODE_CLIENT`, `AI_AGENT`) and switches to quiet mode (no TUI output);
-opt out with `DEVENV_NO_AI_AGENT=1`. `devenv mcp` exposes options/packages
-search and process tools to MCP clients — in this fleet it is wired for
-opencode (see the `devenv` MCP server), and the home repo ships a pinned
-fallback project so the MCP works even outside a devenv project.
+`OPENCODE_CLIENT`, `AI_AGENT`) and switches to quiet mode (no TUI
+output); opt out with `DEVENV_NO_AI_AGENT=1`. `devenv mcp` exposes
+options/packages search and process tools to MCP clients — in this
+fleet it is wired for opencode (the `devenv` MCP server) in
+`flake-parts/homeModules/opencode.nix`, and the home repo ships a
+pinned fallback project (`~/.config/devenv-agent`) so the MCP works
+even outside a devenv project.
 
 ## devenv.nix essentials
 
@@ -241,8 +255,9 @@ fallback project so the MCP works even outside a devenv project.
 - `enterShell` runs bash once on activation; for ordered/parallel setup
   prefer `tasks` (`tasks."<id>".exec` with `before`/`after` on
   `devenv:enterShell`).
-- `devenv shell -- git log --oneline` runs a command in the env and exits;
-  wrap compound commands: `devenv shell -- bash -c 'cd src && make'`.
+- `devenv shell -- git log --oneline` runs a command in the env and
+  exits; wrap compound commands:
+  `devenv shell -- bash -c 'cd src && make'`.
 - `devenv info` prints env, packages, scripts, processes.
 - Hide the `(devenv)` prompt prefix (e.g. with Starship):
   `prompt_prefix: false` in `devenv.yaml` (or globally in
@@ -251,10 +266,12 @@ fallback project so the MCP works even outside a devenv project.
   (saves hundreds of MB and startup time).
 - Escape Nix interpolation inside scripts with `''${var}`.
 
-Languages and services are the backbone: `languages.rust.enable = true;`,
+Languages and services are the backbone:
+`languages.rust.enable = true;`,
 `services.postgres.enable = true;` etc. Every option is documented at
 https://devenv.sh/reference/options/ and every language/service has a
-dedicated page (https://devenv.sh/languages/, https://devenv.sh/services/).
+dedicated page (https://devenv.sh/languages/,
+https://devenv.sh/services/).
 
 ## Using with flake-parts
 
@@ -289,29 +306,30 @@ dedicated page (https://devenv.sh/languages/, https://devenv.sh/services/).
 
 - Enter with `nix develop --no-pure-eval` — flakes are pure-eval and
   devenv needs to query the working directory. Alternative: set
-  `devenv.root` to an absolute path in the shell module (makes the flake
-  machine-specific but pure-safe).
+  `devenv.root` to an absolute path in the shell module (makes the
+  flake machine-specific but pure-safe).
 - `devenv up` / `devenv test` still work from the flake shell.
-- Multiple shells: define `devenv.shells.projectA` / `devenv.shells.projectB`
-  and pick a default with `devShells.default = config.devShells.projectA;`.
-  Enter with `nix develop --no-pure-eval .#projectA`.
+- Multiple shells: define `devenv.shells.projectA` /
+  `devenv.shells.projectB` and pick a default with
+  `devShells.default = config.devShells.projectA;`. Enter with
+  `nix develop --no-pure-eval .#projectA`.
 - Under direnv, `devenv up`, `devenv test`, and `devenv tasks` skip
   re-evaluation and hit the cache (significantly faster).
 - The flake-parts module auto-generates `container-shell` /
-  `container-processes` package outputs per shell; they throw at eval time
-  unless `nix2container` and `mk-shell-bin` are flake inputs. If you have
-  no devenv-container use case, suppress them with
+  `container-processes` package outputs per shell; they throw at eval
+  time unless `nix2container` and `mk-shell-bin` are flake inputs. If
+  you have no devenv-container use case, suppress them with
   `containers = lib.mkForce {};`.
 
 ### Worked example: borg
 
-The borg repo (`andrewthomaslee/borg`) wires devenv in **both modes from
-one shared module** — the pattern to copy:
+The borg repo (`andrewthomaslee/borg`) wires devenv in **both modes
+from one shared module** — the pattern to copy:
 
 1. **Flake-parts mode** (`nix develop`): `flake.nix` pins
    `devenv.url = "github:cachix/devenv?ref=v2.3.1";` and imports
-   `inputs.devenv.flakeModule`. `flake-parts/devShells.nix` declares the
-   shell and a cacheable package alias:
+   `inputs.devenv.flakeModule`. `flake-parts/devShells.nix` declares
+   the shell and a cacheable package alias:
 
    ```nix
    # flake-parts/devShells.nix
@@ -326,8 +344,8 @@ one shared module** — the pattern to copy:
    ```
 
 2. **CLI mode** (`devenv shell`, `devenv mcp`, auto-activation): root
-   `devenv.nix` imports the same directory and layers overlays that need
-   devenv.yaml inputs:
+   `devenv.nix` imports the same directory and layers overlays that
+   need devenv.yaml inputs:
 
    ```nix
    # devenv.nix (repo root)
@@ -356,9 +374,10 @@ one shared module** — the pattern to copy:
      allow_unfree: true
    ```
 
-4. **Discipline:** a `devenv-lock-drift` check in `flake-parts/checks.nix`
-   fails when `devenv.yaml` pins drift from `flake.lock` — bump nixpkgs/
-   clan-core and the pinned URLs (plus `devenv update`) in the same commit.
+4. **Discipline:** a `devenv-lock-drift` check in
+   `flake-parts/checks.nix` fails when `devenv.yaml` pins drift from
+   `flake.lock` — bump nixpkgs/clan-core and the pinned URLs (plus
+   `devenv update`) in the same commit.
 
 The shared module (`devenv/default.nix`) carries the gotchas worth
 copying:
@@ -387,8 +406,14 @@ copying:
 Hard rule in that repo: the shared module must not reference flake-only
 things (`inputs`, `self'`) — it evaluates inside devenv's own module
 system where `inputs` means *devenv.yaml inputs*, not the flake's. Entry
-points that need flake values inject them via overlays (`devenv.nix`) or
-let flake-parts resolve `pkgs`.
+points that need flake values inject them via overlays (`devenv.nix`)
+or let flake-parts resolve `pkgs`.
+
+Why the two-lockfile hybrid instead of just flake devShells: CLI mode
+keeps full devenv features (processes, containers, GC protection, MCP,
+auto-activation) while `nix develop` keeps flake consumers and CI on
+standard outputs — one shared module, identical pin sets, zero drift
+thanks to the check.
 
 ## Using with flakes (plain, no flake-parts)
 
@@ -419,17 +444,19 @@ Use `devenv.lib.mkShell` when you cannot or do not want flake-parts:
 }
 ```
 
-Multiple shells: `devShells.${system}.projectA = devenv.lib.mkShell {...};`
-entered with `nix develop --no-pure-eval .#projectA`.
+Multiple shells:
+`devShells.${system}.projectA = devenv.lib.mkShell {...};` entered with
+`nix develop --no-pure-eval .#projectA`.
 
-What the dedicated CLI gives you that embedded-flake shells do not: built-in
-container support, GC protection, evaluation caching + lazy-tree fast eval,
-cross-project references, secretspec, and running processes under
-`devenv test`. If you only ever run `nix develop`, the flake embedding is
-fine; for anything richer, prefer CLI-native mode. External flakes
-(`nix develop --no-pure-eval file:/path/to/central/flake#projectA`) work
-for projects that cannot carry their own `flake.nix` — no lockfile means
-unpinned versions, so prefer a local project flake.
+What the dedicated CLI gives you that embedded-flake shells do not:
+built-in container support, GC protection, evaluation caching +
+lazy-tree fast eval, cross-project references, secretspec, and running
+processes under `devenv test`. If you only ever run `nix develop`, the
+flake embedding is fine; for anything richer, prefer CLI-native mode.
+External flakes
+(`nix develop --no-pure-eval file:/path/to/central/flake#projectA`)
+work for projects that cannot carry their own `flake.nix` — no
+lockfile means unpinned versions, so prefer a local project flake.
 
 ## devcontainer.json and GitHub Codespaces
 
@@ -438,13 +465,13 @@ devenv autogenerates a devcontainer from your environment:
 ```nix
 # devenv.nix
 {
-  devcontainer.enable = true;
+  devcontainer.enabled = true;
 }
 ```
 
-Run `devenv shell` — it writes `.devcontainer/devcontainer.json`. Commit
-and push it; GitHub Codespaces (and any devcontainer-compatible editor)
-then builds your environment from it.
+Run `devenv shell` — it writes `.devcontainer/devcontainer.json`.
+Commit and push it; GitHub Codespaces (and any devcontainer-compatible
+editor) then builds your environment from it.
 
 `devcontainer.settings` is freeform JSON with these defaults (from the
 devenv module source):
@@ -457,10 +484,11 @@ devenv module source):
 | `customizations.vscode.extensions` | `[ "mkhl.direnv" ]` |
 | `customizations.zed.extensions` | `[]` |
 
-The image ships the devenv CLI, so anything in `devenv.nix` — languages,
-services, tasks — works inside the container; the direnv VS Code extension
-keeps the editor shell in sync. Add extra JSON settings (ports, features,
-more extensions) freely via `devcontainer.settings`.
+The image ships the devenv CLI, so anything in `devenv.nix` —
+languages, services, tasks — works inside the container; the direnv
+VS Code extension keeps the editor shell in sync. Add extra JSON
+settings (ports, features, more extensions) freely via
+`devcontainer.settings`.
 
 ## Monorepo
 
@@ -503,7 +531,8 @@ my-monorepo/
 Compose environments across repositories. Two approaches:
 
 1. **Merge everything via imports** — add the remote as an input and
-   import it; its packages, services, env, outputs, processes all merge:
+   import it; its packages, services, env, outputs, processes all
+   merge:
 
    ```yaml
    # devenv.yaml
@@ -544,7 +573,8 @@ Caveats to respect:
   `devenv.yaml` is *not* evaluated (upstream issue #2205).
 - Profiles do not work with cross-project references (#2521).
 - The remote project's `outputs.<name>` pattern
-  (`config.languages.python.import ./. {}`) is how it exposes buildables.
+  (`config.languages.python.import ./. {}`) is how it exposes
+  buildables.
 
 ## Cross-platform patterns
 
@@ -563,10 +593,10 @@ Helpers: `stdenv.isLinux`, `stdenv.isDarwin`, `stdenv.isAarch64`,
 `stdenv.isx86_64`. Use `lib.optionalAttrs` for per-platform attribute
 merges inside existing options.
 
-When whole configuration sections differ per platform, do NOT use `//` /
-`optionalAttrs` at the top level — the keys of the attrset would depend on
-values inside it, and Nix dies with `infinite recursion`. Use module
-helpers instead:
+When whole configuration sections differ per platform, do NOT use `//`
+/ `optionalAttrs` at the top level — the keys of the attrset would
+depend on values inside it, and Nix dies with `infinite recursion`.
+Use module helpers instead:
 
 ```nix
 { pkgs, lib, ... }: {
@@ -585,7 +615,22 @@ lib.mkMerge [
 
 ## Containers
 
-Two distinct things — do not confuse them:
+Two distinct things — do not confuse them.
+
+### Ephemeral environments for humans, agents, CI, and Kubernetes
+
+- **Ad-hoc shells** (`devenv -O ... shell -- <cmd>`): spin a throwaway
+  environment around any command without a project `devenv.nix` —
+  instant ephemeral coding environments for a human trying a tool or an
+  agent that needs a missing tool; composes multiple option overrides
+  (see the Global flags above and
+  https://devenv.sh/ad-hoc-developer-environments/).
+- **Project shells** (`devenv shell` in a checked-out project): the
+  reproducible daily-driver environment; agents work inside it like any
+  developer.
+- **Profiles** (`devenv --profile <name> shell`): variants of one
+  project environment (minimal vs full, backend vs frontend) — pick
+  per-consumer without new files.
 
 ### Building OCI images from the environment
 
@@ -597,10 +642,11 @@ devenv inputs add mk-shell-bin github:rrbutani/nix-mk-shell-bin
 ```
 
 Then: `devenv container build shell` (enter the environment),
-`devenv container build processes` (run your processes as the entrypoint),
-`devenv container run <name>` (via Docker), `devenv container --registry
-docker://ghcr.io/ copy <name>` (push via skopeo; customize with
-`containers.<name>.registry` / `.defaultCopyArgs`). Custom containers:
+`devenv container build processes` (run your processes as the
+entrypoint), `devenv container run <name>` (via Docker),
+`devenv container --registry docker://ghcr.io/ copy <name>` (push via
+skopeo; customize with `containers.<name>.registry` /
+`.defaultCopyArgs`). Custom containers:
 
 ```nix
 {
@@ -611,8 +657,9 @@ docker://ghcr.io/ copy <name>` (push via skopeo; customize with
 }
 ```
 
-- `config.container.isBuilding` / `config.containers."<name>".isBuilding`
-  let you exclude dev-only packages from images.
+- `config.container.isBuilding` /
+  `config.containers."<name>".isBuilding` let you exclude dev-only
+  packages from images.
 - Building containers on macOS requires a remote Linux builder.
 
 ### Running devenv itself in containers (CI, Kubernetes, Argo)
@@ -623,9 +670,10 @@ image](https://devenv.sh/integrations/devenv-container/)
 container-based system — Docker, GitLab CI, Kubernetes Jobs
 (`command: ["devenv", "tasks", "run", "my-app:hello-world"]`), and
 equivalently Argo Workflows: there is no dedicated Argo page; map the
-Kubernetes Job pattern onto your Argo Workflow container spec the same way
-(`image: ghcr.io/cachix/devenv/devenv:latest`, `command: devenv ...`).
-Full examples: https://devenv.sh/integrations/devenv-container/
+Kubernetes Job pattern onto your Argo Workflow container spec the same
+way (`image: ghcr.io/cachix/devenv/devenv:latest`,
+`command: devenv ...`). Full examples:
+https://devenv.sh/integrations/devenv-container/
 
 ## Claude Code integration
 
@@ -646,6 +694,7 @@ See https://devenv.sh/ad-hoc-developer-environments/
 ```
 
 Per-project integration (`claude.code.enable = true;`) wires:
+
 - **Auto-formatting** — git-hooks run on files Claude edits
 - **Hooks** — `PreToolUse` (can block), `PostToolUse`, `Notification`,
   `Stop`, `SubagentStop`; each takes `matcher` (regex on tool name) and
@@ -655,9 +704,10 @@ Per-project integration (`claude.code.enable = true;`) wires:
 - **Agents** — `claude.code.agents.<name>` with `description`, `tools`,
   `model`, `effort`, `prompt`, `permissionMode`; `claude.code.agent`
   promotes one to primary
-- **Skills** — `claude.code.skills.<name>` writes `.claude/skills/<name>/SKILL.md`
-  with `description`, `content`, `resources` (long reference material),
-  `allowedTools`, `copyMode = "seed"` to edit in place
+- **Skills** — `claude.code.skills.<name>` writes
+  `.claude/skills/<name>/SKILL.md` with `description`, `content`,
+  `resources` (long reference material), `allowedTools`,
+  `copyMode = "seed"` to edit in place
 - **MCP servers** — `claude.code.mcpServers` (stdio or http) generates
   `.mcp.json`; include devenv itself with
   `{ type = "stdio"; command = "devenv"; args = [ "mcp" ]; }`

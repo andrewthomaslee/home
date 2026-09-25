@@ -1,11 +1,15 @@
 # OpenCode Skills — Declarative Skill Management
 
-OpenCode skills are packaged instructions (`SKILL.md` + optional supporting
-files) that extend agent capabilities. This flake manages them declaratively:
-`flake-parts/homeModules/opencode.nix` builds a single merged skills folder
-and symlinks it to `~/.config/opencode/skills` via `xdg.configFile`. Every
-machine with `homeSpec.programs.opencode.enable` gets the same global skill
-set.
+OpenCode skills are packaged instructions (`SKILL.md` + optional
+supporting files) that extend agent capabilities. This flake manages
+them declaratively: `flake-parts/homeModules/opencode.nix` builds a
+single merged skills folder and symlinks it to `~/.config/opencode/skills`
+via `xdg.configFile`. Every machine with
+`homeSpec.programs.opencode.enable` gets the same global skill set.
+
+Deep "how things work" documentation has moved to attachable OpenCode
+V2 reference bundles (repo-root `references/` tree) — see
+[References](references.md).
 
 ## Composition
 
@@ -28,9 +32,14 @@ xdg.configFile."opencode/skills".source = inputs.agents.lib.mkSkills {
 
 | Source | Type | Skills |
 |---|---|---|
-| `skills/` (this repo) | custom | `nix-flake` (generic Nix flake conventions for agents), `baton-pass` (session handoff via `.baton-pass/`), `devenv` (devenv 2.x dev shells: CLI, devenv.yaml inputs, flake-parts + CLI wiring with the borg repo as worked example, devcontainer.json, monorepo/polyrepo, v2 migration) |
+| `skills/` (this repo) | custom | `baton-pass` (session handoff via `.baton-pass/`) |
 | [anthropics/skills](https://github.com/anthropics/skills) | external | docx, pdf, pptx, xlsx, mcp-builder, frontend-design, ... |
 | [payloadcms/skills](https://github.com/payloadcms/skills) | external | `payload` (Payload development guidelines), `cms-migration` (CMS → Payload migration workflow) |
+
+The former `nix-flake` and `devenv` custom skills were migrated to the
+attachable reference bundles — see [References](references.md); their
+deep material (clan-core, clan-vars, flakehub-ci, import-tree,
+vm-tests, the devenv guide) lives there now.
 
 External sources are flake inputs with `flake = false`; `mkSkills` reads each
 repo's `skills/` directory (override with `skillsDir`, cherry-pick with

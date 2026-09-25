@@ -1,39 +1,29 @@
----
-name: nix-flake
-description: Conventions and style guide for working in Nix flake repos — Determinate Nix, FlakeHub, GitHub Actions with self-hosted runners, nix build .#<thing>, alejandra/statix/deadnix, hermetic NixOS VM tests, and clan-core fleet management (inventory, clanServices, vars, clan CLI). Use when editing any .nix file, adding flake inputs/outputs/packages/modules, wiring CI for a flake, creating and running VM tests, or working in a flake that uses clan inputs.
----
+# nix-style — Nix code style and tool loop
 
-# Nix Flake Conventions
+How to write and change Nix code in flake repos: the style guide, the
+mandatory verification tool loop, and the working rules. These are user
+preferences — apply them in any repo the owner works in, not just this
+one. Repo-specific facts live in each repo's `AGENTS.md`.
 
-Generic conventions for any flake-based repo. Worked examples name the
-home repo (`andrewthomaslee/home`, the public flake this skill ships in);
-every rule applies to any flake-based repo — substitute your repo's own
-names. The user runs Determinate Nix
-(everywhere: workstations, CI runners, machines), publishes to
-[FlakeHub](https://docs.determinate.systems/flakehub/), and builds and ships
-artifacts with GitHub Actions, primarily as `nix build .#<thing>`. Assume
-Determinate Nix on every host: never emit `experimental-features` boilerplate,
-install-script workarounds, channel setup, or `nix-env` advice.
-
-## Non-negotiables
+## Non-negotiables (flake repos)
 
 - Flakes only. `nix build .#<attr>` is *the* build interface. No
   `nix-build`, no `shell.nix`/`default.nix` entry points, no channels, no
   `<nixpkgs>` / `NIX_PATH` lookups.
 - `flake.lock` is committed. Update it with `nix flake update <input>` or
-  `nix flake lock --update-input`; never hand-edit the lock file.
+  `nix flake update <name>`; never hand-edit the lock file.
 - Nix evaluates the flake from the git tree. `git add` every new file
   (`.nix`, test files, skills, assets) before `nix build` /
   `nix flake check` — untracked files do not exist to Nix.
-- No secrets in Nix source or the store (it is world-readable). Secrets come
-  from a provisioning layer (sops-nix, clan vars, CI OIDC, GitHub
-  Actions secrets), never from expressions — clan vars:
-  [clan-vars.md](references/clan-vars.md).
+- No secrets in Nix source or the store (it is world-readable). Secrets
+  come from a provisioning layer (sops-nix, clan vars, CI OIDC, GitHub
+  Actions secrets), never from expressions — clan vars are documented in
+  the `clan-core` reference.
 - Never reach for `--impure`, `--no-sandbox`, `sandbox = false`, or
-  `builtins.readFile /etc/...` to make something build. Impurity hides bugs,
-  breaks FlakeHub Cache reproducibility, and fails on CI. If something needs
-  the outside world, make it an input (a flake input, a store path, a test
-  fixture) instead.
+  `builtins.readFile /etc/...` to make something build. Impurity hides
+  bugs, breaks FlakeHub Cache reproducibility, and fails on CI. If
+  something needs the outside world, make it an input (a flake input, a
+  store path, a test fixture) instead.
 
 ## Style guide
 
@@ -196,26 +186,27 @@ eval channel, so the helper is always safe there.
 - `with pkgs;` only inside a small list literal where it reads better
   (`(with pkgs.unstable; [ ... ])`); never `with` around a whole module
   body or over `lib`.
-- Comments explain *why*, not *what* — especially for pins, workarounds, and
-  anything a future reader would be tempted to "clean up". Include the bug
-  link where a workaround exists.
+- Comments explain *why*, not *what* — especially for pins, workarounds,
+  and anything a future reader would be tempted to "clean up". Include
+  the bug link where a workaround exists.
 - One concern per file; let the repo's auto-import mechanism pick it up
   (flake-parts + import-tree style: new files are auto-loaded, there is
-  no import list to update) — see [import-tree.md](references/import-tree.md).
+  no import list to update) — see the `import-tree` reference.
 
 ### Formatting
 
 alejandra is the formatter. It owns the layout: never hand-format Nix,
-never fight its choices, never merge conflict over whitespace. After every
-edit:
+never fight its choices, never merge conflict over whitespace. After
+every edit:
 
 ```
-nix fmt .          # write
+nix fmt .              # write
 nix fmt -- --check .   # verify without writing
 ```
 
-If `nix fmt` fails with no path or with empty stdin, pass an explicit path
-(`nix fmt .`).
+If `nix fmt` fails with no path or with empty stdin, pass an explicit
+path (`nix fmt .`) — a bare `nix fmt` that forwards no args makes
+alejandra read empty stdin and exit 1, non-mutating.
 
 ### Enforcement
 
@@ -263,10 +254,11 @@ nix flake check 2>&1 | grep -E "❌|error:" -A 5          # failures + trace
 ```
 
 `--fail` on deadnix makes findings fatal; `-e`/`--edit` removes them and
-writes the files — run it, review the diff, keep or revert. In module-heavy
-repos, unused module args are common; `deadnix -l -L --fail .` tolerates
-them (ignores unused lambda args/attrset-pattern names) if the repo's
-convention accepts them — follow the repo's `AGENTS.md`/gate, not taste.
+writes the files — run it, review the diff, keep or revert. In
+module-heavy repos, unused module args are common; `deadnix -l -L --fail
+.` tolerates them (ignores unused lambda args/attrset-pattern names) if
+the repo's convention accepts them — follow the repo's `AGENTS.md`/gate,
+not taste.
 
 If a tool is not in the environment, run it through nixpkgs instead of
 skipping — but check first whether you are actually outside the devShell
@@ -279,18 +271,19 @@ nix run nixpkgs#deadnix -- --fail .
 ```
 
 These three tools belong in the repo's devShell (`packages = [alejandra
-statix deadnix ...]`) **and** in a gate, so lint/format failures break the
-build instead of relying on an agent's goodwill. The gate is either a
-`checks.lint` derivation or a CI step; see
-[flakehub-ci.md](references/flakehub-ci.md) for a worked example.
+statix deadnix ...]`) **and** in a gate, so lint/format failures break
+the build instead of relying on an agent's goodwill. The gate is either a
+`checks.lint` derivation or a CI step — see the `flake-parts` reference
+for a worked example.
 
 When fixing mechanically, run the fixers in this order: `deadnix -e .`,
 then `statix fix .`, then `nix fmt .` — deadnix removes unused bindings
-first (it can leave `{...}:` patterns behind), statix then normalizes what
-remains (e.g. `{...}:` → `_:`), and alejandra settles formatting last.
+first (it can leave `{...}:` patterns behind), statix then normalizes
+what remains (e.g. `{...}:` → `_:`), and alejandra settles formatting
+last.
 
-Paste the last failing/passing command and its exit status when reporting
-results. "It should work" is not verification.
+Paste the last failing/passing command and its exit status when
+reporting results. "It should work" is not verification.
 
 ## DevShell and the agent
 
@@ -325,51 +318,15 @@ tooling needs (sops, clan vars, CI) into the devShell. Assume present;
 verify with `printenv <NAME>` (presence, not value), never echo secret
 values into output or logs, and never manually source or re-load them.
 
-## Flake layout
-
-- Prefer flake-parts: `imports = [ (inputs.import-tree ./flake-parts) ]`
-  with `perSystem` modules; declare `systems` explicitly (e.g.
-  `systems = ["x86_64-linux"];`). How auto-import works and how to lay
-  out the tree: [import-tree.md](references/import-tree.md).
-- Use the standard output names: `packages`, `devShells`, `checks`,
-  `apps`, `nixosConfigurations`, `homeModules`/`nixosModules`, `overlays`,
-  `formatter`, `templates`.
-- Make the devShell buildable and cacheable so CI can warm it:
-  `packages.devShell = self'.devShells.default;` then `nix build .#devShell`.
-- Expensive, KVM-dependent, or VM-booting outputs must NOT go in `checks`
-  (`nix flake check` evaluates and often builds `checks`). Expose them under
-  `legacyPackages.<system>.vmTests` — `nix flake check` does not walk it.
-  See [vm-tests.md](references/vm-tests.md).
-- Do not add a `nixConfig` block requiring extra `trusted-public-keys` /
-  `extra-substituters` trust from consumers. In CI, caching is configured by
-  the runner-side actions, not by the flake.
-
-## Inputs
-
-- Reference FlakeHub flakes by URL with semver wildcards:
-  `https://flakehub.com/f/<org>/<repo>/*` (latest), `/0` or `/1.2` for a
-  major or major.minor constraint. Update often and in small increments —
-  stale nixpkgs inputs are the leading cause of painful upgrades.
-- Deduplicate big inputs with `follows`
-  (`nixpkgs.follows = "clan-core/nixpkgs";`) so one nixpkgs instance serves
-  the whole graph. Surface a second channel as `pkgs.unstable` via an
-  overlay, not by re-importing nixpkgs ad hoc. Full clan-core input
-  wiring: [clan-core.md](references/clan-core.md).
-- Pin binary artifacts (tarballs, wheels) as `flake = false` inputs so
-  `flake.lock` carries the hash:
-  `artifacthub-mcp = { url = "github:owner/repo?ref=v1.1.1"; flake = false; }`.
-- One flake per versioned thing (Determinate's own advice): a CLI tool, a
-  service's NixOS config, a docs site — publish each; consolidate later.
-  Several flakes may live in one repo (monorepo-friendly).
-
 ## Working in a flake repo (agent contract)
 
 1. Read `flake.nix` and the neighbouring module *before* editing; mirror
    the local patterns (namespaces, mkMerge usage, overlay routing) instead
    of importing your own style.
-2. Never guess option or package names. Look them up (the `nix` MCP tool,
-   search.nixos.org) and verify the exact attribute path — the repo may pin
-   versions or scope packages under `pkgs.unstable` via an overlay.
+2. Never guess option or package names. Look them up (the `nixos` MCP
+   tool, search.nixos.org) and verify the exact attribute path — a repo
+   may pin versions or scope packages under `pkgs.unstable` via an
+   overlay.
 3. Generated files (`flake.lock`, disko layouts, `facter.json`, clan
    `inventory.json`) are not hand-editable. Regenerate them with their
    generator, or leave them alone.
@@ -377,22 +334,3 @@ values into output or logs, and never manually source or re-load them.
    modules you did not need to touch.
 5. Verify per the tool loop, and state which command verified the change.
    If you cannot build it (missing hardware, no KVM), say so explicitly.
-
-## References (load on demand)
-
-- [flakehub-ci.md](references/flakehub-ci.md) — GitHub Actions + Determinate
-  actions, FlakeHub Cache and publishing, self-hosted runner notes,
-  deployment via `fh`, lint-gate examples.
-- [vm-tests.md](references/vm-tests.md) — hermetic NixOS VM tests: writing,
-  running, size variants, driver mode, agent iteration loop.
-- [import-tree.md](references/import-tree.md) — how flake-parts
-  auto-import via import-tree works: provenance, mechanics, the home
-  repo's tree layout and conventions.
-- [clan-core.md](references/clan-core.md) — clan-core as a flake: what it
-  adds (fleet registry, tag-driven config, services, tooling), input
-  wiring, the inventory (machines/instances/roles/tags), clanServices,
-  cross-service exports and the strict-eval check gating them, the clan
-  CLI, with the home repo as worked example.
-- [clan-vars.md](references/clan-vars.md) — clan vars: declaring
-  generators, vars/ storage layout, age/sops backends, generate/get
-  workflow, CI and scripted key extraction.

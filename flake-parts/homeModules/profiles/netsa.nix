@@ -64,6 +64,28 @@
             plugins = {
               opencode-mem.enable = true;
             };
+            # Dev-profile references (off by module default): attachable
+            # doc bundles under ~/.config/opencode/references, advertised
+            # via settings.references. Sources live in the repo's
+            # references/ tree.
+            references = {
+              # Nix style guide + mandatory tool loop (user preferences)
+              nix-style.enable = true;
+              # flake-parts mechanics + integrations
+              flake-parts.enable = true;
+              # flake-parts auto-import mechanics
+              import-tree.enable = true;
+              # Determinate Systems / FlakeHub / fh apply / rolling semver
+              determinate.enable = true;
+              # home-manager with flakes + flake-parts (profile example)
+              home-manager.enable = true;
+              # clan-core fleet management
+              clan-core.enable = true;
+              # devenv 2.x (CLI, hybrid borg pattern, containers)
+              devenv.enable = true;
+              # Hermetic NixOS VM tests
+              vm-tests.enable = true;
+            };
           };
           headroom.enable = true;
         };

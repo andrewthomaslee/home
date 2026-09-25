@@ -2,8 +2,8 @@
 
 How flake-parts auto-import works: every `.nix` file under `flake-parts/`
 is loaded automatically — there is no import list to update, ever. The
-wiring example is from the home repo (`andrewthomaslee/home`, the public
-flake this skill ships in); the mechanics are universal.
+wiring example is from the home repo (`andrewthomaslee/home`); the
+mechanics are universal.
 
 ## What it is, where it comes from
 
@@ -90,8 +90,8 @@ sync with the attribute it defines. The layout below is the home repo's
   }: let
     cfg = config.hostSpec.services.docker;
   in {
-    options.hostSpec.services.docker.enable = lib.mkEnableOption "docker";
-    config = lib.mkIf cfg.enable {...};
+    options.hostSpec.services.docker.enabled = lib.mkEnableOption "docker";
+    config = lib.mkIf cfg.enabled {...};
   };
 }
 ```

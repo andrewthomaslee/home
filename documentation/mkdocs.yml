@@ -14,6 +14,7 @@ nav:
       - MCP Servers: harness/mcp-servers.md
       - Plugins: harness/plugins.md
       - Skills: harness/skills.md
+      - References: harness/references.md
       - Headroom (Context Optimization): harness/headroom.md
       - VM Tests: harness/vm-tests.md
       - KubeVirt AI Agent: harness/kubevirt-agent.md

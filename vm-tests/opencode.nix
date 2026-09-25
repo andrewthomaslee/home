@@ -10,8 +10,10 @@
   #   MCPs, GitHub MCP via the PAT method with a fake PAT file.
   # - netsa: the headless profile-netsa-agent (slim headroom, no desktop),
   #   GitHub MCP via the default OAuth method, all six Cloudflare remote
-  #   MCPs, MDN, the Morph plugin with a fake API key, and the home-manager
-  #   native opencode web service (`opencode serve`).
+  #   MCPs, MDN, the Morph plugin with a fake API key, the home-manager
+  #   native opencode web service (`opencode serve`), and all eight
+  #   reference bundles (linkFarm install + settings.references +
+  #   external_directory permission rules).
   name = "opencode";
   globalTimeout = 10 * 60;
 
@@ -132,6 +134,23 @@
             cloudflare-containers.enable = true;
             # MDN Web Docs remote MCP server
             mdn.enable = true;
+          };
+          # References: all eight aliases on for this user — exercises
+          # the linkFarm install (~/.config/opencode/references/<name>),
+          # the settings.references entries, and the read +
+          # external_directory permission rules.
+          references = {
+            nix-style.enable = true;
+            flake-parts.enable = true;
+            import-tree.enable = true;
+            determinate.enable = true;
+            home-manager.enable = true;
+            clan-core.enable = true;
+            devenv.enable = true;
+            vm-tests.enable = true;
+            # Override one description to prove the option exists and
+            # threads through to the generated config.
+            nix-style.description = "VM-test override description";
           };
         };
       };
@@ -555,6 +574,30 @@
     # 8. Verify netsa's MDN Web Docs remote MCP server entry.
     machine.succeed("su - netsa -c 'jq -e \".mcp.servers.mdn.type == \\\"remote\\\"\" ~/.config/opencode/opencode.json'")
     machine.succeed("su - netsa -c 'jq -e \".mcp.servers.mdn.url == \\\"https://mcp.mdn.mozilla.net/\\\"\" ~/.config/opencode/opencode.json'")
+
+    # 8+. Verify references: all eight aliases installed as symlinks
+    # under ~/.config/opencode/references, advertised in
+    # settings.references (path + non-empty description; the nix-style
+    # description carries the VM-test override), and the read +
+    # external_directory permission rules present.
+    machine.succeed("su - netsa -c 'test -d ~/.config/opencode/references'")
+    machine.succeed("su - netsa -c 'test -f ~/.config/opencode/references/nix-style/index.md'")
+    machine.succeed("su - netsa -c 'test -f ~/.config/opencode/references/flake-parts/index.md'")
+    machine.succeed("su - netsa -c 'test -f ~/.config/opencode/references/import-tree/index.md'")
+    machine.succeed("su - netsa -c 'test -f ~/.config/opencode/references/determinate/index.md'")
+    machine.succeed("su - netsa -c 'test -f ~/.config/opencode/references/home-manager/index.md'")
+    machine.succeed("su - netsa -c 'test -f ~/.config/opencode/references/clan-core/index.md'")
+    machine.succeed("su - netsa -c 'test -f ~/.config/opencode/references/devenv/index.md'")
+    machine.succeed("su - netsa -c 'test -f ~/.config/opencode/references/vm-tests/index.md'")
+    machine.succeed("su - netsa -c 'jq -e \".references | keys == [\\\"clan-core\\\", \\\"devenv\\\", \\\"determinate\\\", \\\"flake-parts\\\", \\\"home-manager\\\", \\\"import-tree\\\", \\\"nix-style\\\", \\\"vm-tests\\\"]\" ~/.config/opencode/opencode.json'")
+    machine.succeed("su - netsa -c 'jq -e \".references[\\\"nix-style\\\"].path == \\\"~/.config/opencode/references/nix-style\\\"\" ~/.config/opencode/opencode.json'")
+    machine.succeed("su - netsa -c 'jq -e \".references[\\\"nix-style\\\"].description == \\\"VM-test override description\\\"\" ~/.config/opencode/opencode.json'")
+    machine.succeed("su - netsa -c 'jq -e \"[.references[] | .description | length > 0] | all\" ~/.config/opencode/opencode.json'")
+    machine.succeed("su - netsa -c 'jq -e \"any(.permissions[]; .action == \\\"external_directory\\\" and .resource == \\\"/home/netsa/.config/opencode/references/**\\\" and .effect == \\\"allow\\\")\" ~/.config/opencode/opencode.json'")
+    # Content smoke check: each installed index.md starts with its topic
+    # title (the symlink resolves into the store copy of the repo tree).
+    machine.succeed("su - netsa -c 'head -1 ~/.config/opencode/references/nix-style/index.md | grep -q \"# nix-style\"'")
+    machine.succeed("su - netsa -c 'head -1 ~/.config/opencode/references/vm-tests/index.md | grep -q \"# vm-tests\"'")
 
     # 9. Verify and start netsa's headroom proxy (slim build, port 8788)
     # and its HM-native opencode web service.

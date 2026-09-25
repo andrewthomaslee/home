@@ -82,6 +82,38 @@
       lib.optional cfg.plugins.cc-safety-net.enable "${pkgs.cc-safety-net}/share/opencode-plugins/cc-safety-net/dist/index.js"
       ++ lib.optional cfg.plugins.morph-fast-apply.enable "${pkgs.opencode-morph-fast-apply}/share/opencode-plugins/opencode-morph-fast-apply/index.ts"
       ++ lib.optional cfg.plugins.opencode-mem.enable "${pkgs.opencode-mem}/share/opencode-plugins/opencode-mem/dist/v2/plugin.js";
+    # ---- References (V2 attachable doc bundles) ---- #
+    # Repo-side source: top-level `references/<name>/index.md` (one dir
+    # per reference, mirroring the skills/ convention). Enabled
+    # references are installed into ~/.config/opencode/references/<name>
+    # (linkFarm of per-name symlinks) and registered in
+    # settings.references with `path` + `description` — entries with a
+    # description are advertised in agent instructions, so the alias is
+    # discoverable without a client-side attach. Default descriptions
+    # per alias live here; profiles can override the text.
+    availableReferences = {
+      "nix-style" = "Nix code style + tool loop (user preferences): attribute nesting/quoting/inherit rules, module-system and repo-root-path conventions, the mandatory alejandra/statix/deadnix tool loop, devShell awareness, and the flake-repo agent contract. Use when writing or editing any .nix file.";
+      "flake-parts" = "flake-parts module system: mkFlake/perSystem mechanics, what the infra provides (self', inputs', flake, withSystem), input handling (follows, FlakeHub URLs, flake = false pins), the checks.lint gate, and integrations (clan-core, home-manager, devenv, mkdocs-flake). Load when editing flake.nix or any flake-parts module.";
+      "import-tree" = "flake-parts auto-import via import-tree: provenance, mechanics (_-prefix escape hatch, .nix-only, one module-system eval), tree layout conventions, and agent rules (no import list ever). Load when adding, moving, or drafting files under flake-parts/.";
+      "determinate" = "Determinate Systems + FlakeHub: where the docs live (docs.determinate.systems), publishing, FlakeHub Cache/private flakes/resolved store paths, semver (tagged vs rolling 0.1.<commits-on-branch>), and the fh CLI incl. fh apply deployment. Load when touching flake input URLs, releases, or machine deploys.";
+      "home-manager" = "home-manager with flakes and flake-parts: NixOS-module integration, the homeSpec.* namespace, the homeModules.default composition filter, and a worked user-profile example (flake-parts/homeModules/profiles/netsa.nix). Load when building or changing a home-manager user profile.";
+      "clan-core" = "Fleet management with clan-core: inventory.nix (machines/instances/roles/tags), clanServices (perInstance/perMachine), build-time exports + the strict-eval check, the clan CLI, vars generators, machine update flows (FlakeHub pull vs clan machines update), and clanService NixOS VM tests. Load when working on anything clan.*.";
+      "devenv" = "devenv 2.x dev environments: full CLI reference, devenv.yaml inputs/lock discipline, CLI-native vs flake embedding (and why CLI is the default for dev shells), the borg hybrid pattern (one shared module, two lockfiles, drift check), devcontainer.json, monorepo/polyrepo, containers/OCI/K8s, and the Claude Code integration. Load when writing devenv.nix/devenv.yaml/.devcontainer or running devenv commands.";
+      "vm-tests" = "Hermetic NixOS VM tests: hermeticity rule, structure (nixosLib.runTest modules under legacyPackages, never checks), sm/md/lg size variants, running via .#vm-test (sandboxed vs driver mode), the agent loop, and patterns/anti-patterns. Load when creating, running, or debugging a VM test.";
+    };
+    # Aliases of the references the user enabled, name -> description.
+    enabledReferences = lib.filterAttrs (_: r: r.enable) cfg.references;
+    # settings fragment for enabled references (merged under mkIf below
+    # — kept as one binding so no assignment is left to lint).
+    referenceSettings = {
+      references =
+        lib.mapAttrs
+        (name: r: {
+          path = "~/.config/opencode/references/${name}";
+          inherit (r) description;
+        })
+        enabledReferences;
+    };
     # ---- Machine context (per-machine system-prompt instruction) ---- #
     # Home-manager runs as a NixOS module here, so osConfig carries the
     # machine this user is on. From it, the machine's nixos-facter report
@@ -206,6 +238,13 @@
         "Machine config is strictly read-only: changes only by repo owner ${cfg.machineContext.repoOwner}, or when instructed to while working in the home repo."
         ""
         "Read a repo's AGENTS.md before working in it."
+      ]
+      # nix-style is the user's Nix-writing preferences (style guide +
+      # tool loop); keep an always-on pointer to it in every session's
+      # system prompt when the reference is enabled, so agents writing
+      # .nix files load it.
+      ++ lib.optionals cfg.references.nix-style.enable [
+        "When writing or editing any .nix file: read the opencode reference nix-style (style rules + mandatory alejandra/statix/deadnix tool loop) first."
       ]
       ++ lib.optionals (cfg.machineContext.extraText != null)
       ([""]
@@ -456,6 +495,32 @@
           description = "Enable the opencode-mem persistent memory plugin (memory tool + web UI).";
         };
       };
+
+      # ---- References: homeSpec.programs.opencode.references.<name> ---- #
+      # V2 attachable doc bundles (opencode.json references field): one
+      # option per alias of the repo's top-level references/ tree.
+      # Enabling installs ~/.config/opencode/references/<name> (symlink to
+      # the store copy) and advertises it via settings.references; the
+      # description is what agents see in their instructions.
+      references = lib.genAttrs (builtins.attrNames availableReferences) (name:
+        lib.mkOption {
+          default = {};
+          description = "Options for the ${name} opencode reference bundle (references/${name}/).";
+          type = lib.types.submodule {
+            options = {
+              enable = lib.mkOption {
+                type = lib.types.bool;
+                default = false;
+                description = "Enable the ${name} reference: install it and advertise it in settings.references.";
+              };
+              description = lib.mkOption {
+                type = lib.types.str;
+                default = availableReferences.${name};
+                description = "When-to-use text advertised with the reference in agent instructions.";
+              };
+            };
+          };
+        });
     };
     config = lib.mkIf cfg.enable {
       xdg.configFile = {
@@ -487,6 +552,22 @@
             # Payload CMS skills (payload, cms-migration)
             {src = inputs.skills-payloadcms;}
           ];
+        };
+
+        # References: one symlink per enabled alias under
+        # ~/.config/opencode/references/<name>, pointing at the repo's
+        # references/<name>/ store copy (linkFarm over the enabled subset).
+        # mkIf wraps the whole file entry, not just source — an unset
+        # `source` under a disabled mkIf would throw at eval.
+        "opencode/references" = lib.mkIf (enabledReferences != {}) {
+          source =
+            pkgs.linkFarm "opencode-references"
+            (lib.mapAttrsToList
+              (name: _: {
+                inherit name;
+                path = relativeToRoot "references/${name}";
+              })
+              enabledReferences);
         };
 
         # devenv MCP fallback project: pinned devenv project the
@@ -881,6 +962,31 @@
               type = "remote";
               url = "https://docs.mcp.varlock.dev/mcp";
             };
+          })
+          # References: V2 named doc bundles. path uses the home-relative
+          # form opencode resolves itself (~/.config/opencode/references —
+          # the linkFarm above); description is advertised in agent
+          # instructions so the alias is discoverable without a manual
+          # attach.
+          (lib.mkIf (enabledReferences != {}) referenceSettings)
+          # Reference reads happen outside the active project Location, so
+          # they additionally need the external_directory permission
+          # (read allow alone is not enough for attachments/reads from
+          # another repo). Scoped to the references dir, not the whole
+          # config dir.
+          (lib.mkIf (enabledReferences != {}) {
+            permissions = [
+              {
+                action = "read";
+                resource = "${config.home.homeDirectory}/.config/opencode/references/**";
+                effect = "allow";
+              }
+              {
+                action = "external_directory";
+                resource = "${config.home.homeDirectory}/.config/opencode/references/**";
+                effect = "allow";
+              }
+            ];
           })
           # Plugin entries: single definition so mkMerge never sees two
           # conflicting `plugins` lists. Each entry is an absolute store
