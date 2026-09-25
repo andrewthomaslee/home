@@ -57,6 +57,11 @@
         homeModules/    # Home-manager Modules
         nixosModules/   # NixOS Modules
 
+    devenv/             # Shared devenv module (both `devenv shell` and `nix develop`)
+    devenv.nix          # devenv CLI entry point
+    devenv.yaml         # devenv project settings (pins mirror flake.lock)
+    devenv.lock         # devenv lockfile (pins mirror flake.lock)
+
     documentation/      # MkDocs
         mkdocs.yml      # MkDocs configuration
         docs/           # Documentation source

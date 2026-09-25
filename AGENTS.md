@@ -7,8 +7,9 @@ and Kubernetes tooling. Machines: `nixos` (Intel desktop, NVIDIA gaming), `kamru
 they live in sops / clan vars (`vars/`).
 
 ## Environment
-- Work inside `nix develop`. Its shellHook loads `.env` via varlock (`bunx varlock load`), exporting
-  `SOPS_AGE_KEY`, `GITHUB_TOKEN`, `TF_VAR_flakehub_token`, and sets `CLAN_DIR` to repo root (required by the `clan` CLI).
+- The dev shell is a devenv project shared by two entry points: `devenv shell` (CLI mode — evaluation caching, `devenv mcp`, auto-activation) and `nix develop` (flake mode — CI/flake consumers). Both import the same shared module `devenv/default.nix`; the root `devenv.nix` + `devenv.yaml` are the CLI entry, `flake-parts/devShells.nix` the flake entry.
+- Activation (`devenv shell` or the auto-activation hook) loads `.env` via varlock (`bunx varlock load`), exporting `SOPS_AGE_KEY`, `GITHUB_TOKEN`, `TF_VAR_flakehub_token`, and sets `CLAN_DIR` to repo root (required by the `clan` CLI).
+- `devenv.yaml` pins nixpkgs/nixpkgs-unstable/clan-core to the exact revisions `flake.lock` holds; `checks.devenv-lock-drift` fails `nix flake check` when they drift. When bumping those inputs, update `devenv.yaml` (and run `devenv update`) in the same commit. `devenv.lock` is committed; `.devenv/` is runtime state (gitignored).
 - `.env` is gitignored (schema: `.env.schema`) and invisible to Nix evaluation — don't import it.
 - Nix evaluates the flake from the git tree: `git add` new `.nix` files before `nix build` / `nix flake check` will see them.
 - Formatter/lint gate: alejandra + statix + deadnix run as `checks.lint` (`flake-parts/checks.nix`), so `nix flake check` — and therefore CI — fails on findings. All three tools are in the devShell. Run before declaring work done: `nix fmt .` (bare `nix fmt` fails — it forwards only explicit args, so with no path alejandra reads empty stdin and exits 1, non-mutating; verify with `nix fmt -- --check .`), then `statix check .`, then `deadnix --fail .`. To fix mechanically: `statix fix .`, `deadnix -e .` (deadnix first when fixing — its `-e` leaves `{...}:` patterns that statix then wants as `_:`), then `nix fmt .`.

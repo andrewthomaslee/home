@@ -1,0 +1,21 @@
+# devenv project settings for the devenv CLI (`devenv shell`).
+#
+# Inputs are pinned to the EXACT revisions flake.lock holds, so both
+# lockfiles reference identical sources (same builds, shared
+# devenv.cachix.org cache). checks.devenv-lock-drift in
+# flake-parts/checks.nix fails when these pins drift from flake.lock —
+# bump nixpkgs/clan-core and these URLs (plus `devenv update`) in the same
+# commit.
+inputs:
+  # Follows clan-core/nixpkgs in flake.lock (channel tarball rev
+  # aff8a0b28396750446e5537a96461bc4facdb287).
+  nixpkgs:
+    url: github:NixOS/nixpkgs/aff8a0b28396750446e5537a96461bc4facdb287
+  # flake.lock: nixos-unstable @ 2c423e03bbafcff28bfadc6781a4a8257f205cb5
+  nixpkgs-unstable:
+    url: github:NixOS/nixpkgs/2c423e03bbafcff28bfadc6781a4a8257f205cb5
+  # flake.lock: main tarball @ be949cb06ce56e34939ebc55991475287de7f35a
+  clan-core:
+    url: git+https://git.clan.lol/clan/clan-core?rev=be949cb06ce56e34939ebc55991475287de7f35a
+nixpkgs:
+  allow_unfree: true

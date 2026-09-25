@@ -1,33 +1,13 @@
 _: {
-  perSystem = {
-    pkgs,
-    self',
-    ...
-  }:
-    with pkgs; {
-      packages.devShell = self'.devShells.default;
-      # ------ Default Dev Shell ------ #
-      # Activate: `nix develop`
-      devShells.default = mkShell {
-        packages =
-          [
-            clan-cli
-          ]
-          ++ (with unstable; [
-            alejandra
-            bash
-            bun
-            deadnix
-            disko
-            statix
-          ]);
-        shellHook = ''
-          export REPO_ROOT
-          REPO_ROOT=$(git rev-parse --show-toplevel)
-          export CLAN_DIR
-          CLAN_DIR=$REPO_ROOT
-          eval "$(bunx varlock load --format shell)"
-        '';
-      };
+  perSystem = {self', ...}: {
+    packages.devShell = self'.devShells.default;
+    # ------ Default Dev Shell ------ #
+    # Activate: `devenv shell` (CLI mode, full features) or `nix develop`
+    # (flake mode, CI/flake consumers). Both evaluate the same shared
+    # module in devenv/default.nix. The devenv flakeModule maps
+    # devenv.shells.<name> to devShells.<name> automatically.
+    devenv.shells.default = {
+      imports = [../devenv];
     };
+  };
 }

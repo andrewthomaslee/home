@@ -149,6 +149,10 @@
         inputs.mkdocs-flake.flakeModules.default
         inputs.clan-core.flakeModules.default
         inputs.home-manager.flakeModules.home-manager
+        # devenv flake-parts module: evaluates devenv/default.nix through
+        # devenv.shells.default (see flake-parts/devShells.nix) so
+        # `nix develop` and the devenv CLI share one module.
+        inputs.devenv.flakeModule
       ];
     };
 }
