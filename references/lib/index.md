@@ -154,6 +154,14 @@ Mechanics:
   externalSkills = [
     {src = inputs.skills-anthropic;}
     {src = inputs.skills-payloadcms;}
+    # davidondrej/skills nests skills one level deeper
+    # (skills/<category>/<name>) — one entry per category with a deeper
+    # skillsDir; leaf names are unique across categories.
+    {src = inputs.skills-davidondrej; skillsDir = "skills/agent-orchestration"; selectSkills = ["git-worktree" "goal-loop" "handoff" "herdr" "fable-review" "fable-safe-prompt" "gpt-review" "total-review"];}
+    {src = inputs.skills-davidondrej; skillsDir = "skills/ops-and-setup"; selectSkills = ["create-readonly-db-role" "openrouter" "prompt-for-others" "risky-changes" "setup-help"];}
+    {src = inputs.skills-davidondrej; skillsDir = "skills/research-and-web"; selectSkills = ["domain-checker" "who-is-this"];}
+    {src = inputs.skills-davidondrej; skillsDir = "skills/skill-authoring"; selectSkills = ["effective-agent-skills"];}
+    {src = inputs.skills-davidondrej; skillsDir = "skills/thinking-and-docs";} # whole category
   ];
 };
 ```
@@ -166,6 +174,9 @@ externalSkills = [
   {src = inputs.skills-anthropic; selectSkills = ["pdf" "xlsx"];}
   # non-standard repo layout
   {src = inputs.foo; skillsDir = "agent-skills";}
+  # nested layout (category dirs): one entry per category, skillsDir
+  # pointed at the category dir; omit selectSkills to take it all
+  {src = inputs.skills-davidondrej; skillsDir = "skills/thinking-and-docs";}
   # local path instead of a flake input
   {src = ./some/skills; selectSkills = ["one"];}
   # the AGENTS repo's own skills (default layout)

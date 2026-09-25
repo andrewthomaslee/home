@@ -1360,6 +1360,7 @@
         "opencode": "opencode",
         "plasma-manager": "plasma-manager",
         "skills-anthropic": "skills-anthropic",
+        "skills-davidondrej": "skills-davidondrej",
         "skills-payloadcms": "skills-payloadcms",
         "splashtop-streamer": "splashtop-streamer",
         "whisper-dictation": "whisper-dictation",
@@ -1399,6 +1400,22 @@
       },
       "original": {
         "owner": "anthropics",
+        "repo": "skills",
+        "type": "github"
+      }
+    },
+    "skills-davidondrej": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1790307707,
+        "narHash": "sha256-4bJXVIEORNBJ94s96ut/4bBtJsvQj6FRNNUuuKLQM/E=",
+        "owner": "davidondrej",
+        "repo": "skills",
+        "rev": "a42d261d3c53065b51c80a51b93db4420a397dfb",
+        "type": "github"
+      },
+      "original": {
+        "owner": "davidondrej",
         "repo": "skills",
         "type": "github"
       }

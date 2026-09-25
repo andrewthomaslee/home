@@ -126,6 +126,15 @@
       flake = false;
     };
 
+    # David Ondrej's agent skills (source tree, not a flake). Skills live
+    # two levels deep (skills/<category>/<name>/SKILL.md), so
+    # homeModules/opencode.nix wires one mkSkills entry per category with
+    # a deeper skillsDir.
+    skills-davidondrej = {
+      url = "github:davidondrej/skills";
+      flake = false;
+    };
+
     # Splashtop Streamer — remote-access daemon, Ubuntu amd64 tarball containing the .deb
     splashtop-streamer = {
       url = "https://download.splashtop.com/linux/STB_CSRS_Ubuntu_v3.8.2.0_amd64.tar.gz";

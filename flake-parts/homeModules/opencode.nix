@@ -552,6 +552,38 @@
             {src = inputs.skills-anthropic;}
             # Payload CMS skills (payload, cms-migration)
             {src = inputs.skills-payloadcms;}
+            # davidondrej/skills nests skills one level deeper
+            # (skills/<category>/<name>), so each wanted category gets its
+            # own entry with a deeper skillsDir; the leaf names are unique
+            # across categories, so no linkFarm collisions. Unknown
+            # selectSkills names are silently dropped by mkSkills — verify
+            # the installed set with ls ~/.config/opencode/skills.
+            {
+              src = inputs.skills-davidondrej;
+              skillsDir = "skills/agent-orchestration";
+              selectSkills = ["git-worktree" "goal-loop" "handoff" "herdr" "fable-review" "fable-safe-prompt" "gpt-review" "total-review"];
+            }
+            {
+              src = inputs.skills-davidondrej;
+              skillsDir = "skills/ops-and-setup";
+              selectSkills = ["create-readonly-db-role" "openrouter" "prompt-for-others" "risky-changes" "setup-help"];
+            }
+            {
+              src = inputs.skills-davidondrej;
+              skillsDir = "skills/research-and-web";
+              selectSkills = ["domain-checker" "who-is-this"];
+            }
+            {
+              src = inputs.skills-davidondrej;
+              skillsDir = "skills/skill-authoring";
+              selectSkills = ["effective-agent-skills"];
+            }
+            # thinking-and-docs: the whole category (no selectSkills —
+            # auto-includes everything there now and future).
+            {
+              src = inputs.skills-davidondrej;
+              skillsDir = "skills/thinking-and-docs";
+            }
           ];
         };
 
