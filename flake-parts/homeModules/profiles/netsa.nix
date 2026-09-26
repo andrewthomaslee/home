@@ -89,6 +89,8 @@
               lib.enable = true;
               # Cilium docs: v2 BGP control plane, LB IPAM, L2 announcements
               cilium.enable = true;
+              # disko: disk layouts, clan integration, LUKS + vars, RAID1/mirror
+              disko.enable = true;
             };
           };
           headroom.enable = true;

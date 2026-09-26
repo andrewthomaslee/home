@@ -61,6 +61,7 @@ references/
   clan-core/index.md
   devenv/index.md
   vm-tests/index.md
+  disko/index.md
 ```
 
 Enabling is per profile:
@@ -83,6 +84,7 @@ emits a `settings.references.<name>` entry (`path` +
 | `clan-core` | inventory, clanServices, exports + strict-eval check, vars/generators, clan CLI, machine updates, clanService VM tests |
 | `devenv` | devenv 2.x CLI reference, CLI-native vs flake embedding, borg hybrid pattern, devcontainer.json, monorepo/polyrepo, containers/K8s, Claude Code integration |
 | `vm-tests` | Hermetic NixOS VM tests: structure, size variants, running, agent loop |
+| `disko` | Disko declarative disk partitioning: `disko.devices` tree, CLI modes vs module auto-injection, clan-core auto-import + module source, ext4/btrfs/zfs recipes, LUKS + clan vars partitioning keys, 2-disk RAID1/ZFS-mirror redundancy |
 
 ## Precedence
 

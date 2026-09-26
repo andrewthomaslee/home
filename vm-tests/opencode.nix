@@ -135,7 +135,7 @@
             # MDN Web Docs remote MCP server
             mdn.enable = true;
           };
-          # References: all eight aliases on for this user — exercises
+          # References: all aliases on for this user — exercises
           # the linkFarm install (~/.config/opencode/references/<name>),
           # the settings.references entries, and the read +
           # external_directory permission rules.
@@ -149,6 +149,7 @@
             devenv.enable = true;
             vm-tests.enable = true;
             cilium.enable = true;
+            disko.enable = true;
             # Override one description to prove the option exists and
             # threads through to the generated config.
             nix-style.description = "VM-test override description";
@@ -576,7 +577,7 @@
     machine.succeed("su - netsa -c 'jq -e \".mcp.servers.mdn.type == \\\"remote\\\"\" ~/.config/opencode/opencode.json'")
     machine.succeed("su - netsa -c 'jq -e \".mcp.servers.mdn.url == \\\"https://mcp.mdn.mozilla.net/\\\"\" ~/.config/opencode/opencode.json'")
 
-    # 8+. Verify references: all nine aliases installed as symlinks
+    # 8+. Verify references: all ten aliases installed as symlinks
     # under ~/.config/opencode/references, advertised in
     # settings.references (path + non-empty description; the nix-style
     # description carries the VM-test override), and the read +
@@ -591,7 +592,8 @@
     machine.succeed("su - netsa -c 'test -f ~/.config/opencode/references/devenv/index.md'")
     machine.succeed("su - netsa -c 'test -f ~/.config/opencode/references/vm-tests/index.md'")
     machine.succeed("su - netsa -c 'test -f ~/.config/opencode/references/cilium/index.md'")
-    machine.succeed("su - netsa -c 'jq -e \".references | keys == [\\\"cilium\\\", \\\"clan-core\\\", \\\"determinate\\\", \\\"devenv\\\", \\\"flake-parts\\\", \\\"home-manager\\\", \\\"import-tree\\\", \\\"nix-style\\\", \\\"vm-tests\\\"]\" ~/.config/opencode/opencode.json'")
+    machine.succeed("su - netsa -c 'test -f ~/.config/opencode/references/disko/index.md'")
+    machine.succeed("su - netsa -c 'jq -e \".references | keys == [\\\"cilium\\\", \\\"clan-core\\\", \\\"determinate\\\", \\\"devenv\\\", \\\"disko\\\", \\\"flake-parts\\\", \\\"home-manager\\\", \\\"import-tree\\\", \\\"nix-style\\\", \\\"vm-tests\\\"]\" ~/.config/opencode/opencode.json'")
     machine.succeed("su - netsa -c 'jq -e \".references[\\\"nix-style\\\"].path == \\\"~/.config/opencode/references/nix-style\\\"\" ~/.config/opencode/opencode.json'")
     machine.succeed("su - netsa -c 'jq -e \".references[\\\"nix-style\\\"].description == \\\"VM-test override description\\\"\" ~/.config/opencode/opencode.json'")
     machine.succeed("su - netsa -c 'jq -e \"[.references[] | .description | length > 0] | all\" ~/.config/opencode/opencode.json'")
@@ -601,6 +603,7 @@
     machine.succeed("su - netsa -c 'head -1 ~/.config/opencode/references/nix-style/index.md | grep -q \"# nix-style\"'")
     machine.succeed("su - netsa -c 'head -1 ~/.config/opencode/references/vm-tests/index.md | grep -q \"# vm-tests\"'")
     machine.succeed("su - netsa -c 'head -1 ~/.config/opencode/references/cilium/index.md | grep -q \"# cilium\"'")
+    machine.succeed("su - netsa -c 'head -1 ~/.config/opencode/references/disko/index.md | grep -q \"# disko\"'")
 
     # 9. Verify and start netsa's headroom proxy (slim build, port 8788)
     # and its HM-native opencode web service.
