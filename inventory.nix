@@ -11,15 +11,15 @@ in {
     # Andrew's PCs
     nixos = {
       deploy.targetHost = "root@nixos";
-      tags = ["pc" "intel" "lan" "dev" "netsa" "wife"];
+      tags = ["pc" "intel" "virt" "lan" "dev" "netsa" "wife"];
     };
     kamrui-h1 = {
       deploy.targetHost = "root@kamrui-h1";
-      tags = ["pc" "amd" "wan" "dev" "netsa" "wife"];
+      tags = ["pc" "amd" "virt" "wan" "dev" "netsa" "wife"];
     };
     ghost = {
       deploy.targetHost = "root@ghost";
-      tags = ["pc" "intel" "wan" "dev" "netsa"];
+      tags = ["pc" "intel" "virt" "wan" "dev" "netsa"];
     };
     # Wife's PCs
     hp-notebook = {
@@ -45,10 +45,11 @@ in {
       module.input = "self";
       module.name = "@andrewthomaslee/tags";
       roles = {
+        amd.tags.amd = {};
         dev.tags.dev = {};
-        # amd.tags.amd = {};
         intel.tags.intel = {};
         lan.tags.lan = {};
+        virt.tags.virt = {};
         wan.tags.wan = {};
       };
     };

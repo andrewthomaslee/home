@@ -6,14 +6,14 @@
   };
 
   roles = {
+    amd = {
+      perInstance.nixosModule = ./amd.nix;
+      description = "amd";
+    };
     dev = {
       perInstance.nixosModule = ./dev.nix;
       description = "Dev Computer";
     };
-    # amd = {
-    #   perInstance.nixosModule = ./amd.nix;
-    #   description = "amd";
-    # };
     intel = {
       perInstance.nixosModule = ./intel.nix;
       description = "intel";
@@ -21,6 +21,10 @@
     lan = {
       perInstance.nixosModule = ./lan.nix;
       description = "lan";
+    };
+    virt = {
+      perInstance.nixosModule = ./virt.nix;
+      description = "Virtualization host";
     };
     wan = {
       perInstance.nixosModule = ./wan.nix;

@@ -34,6 +34,11 @@ control + `fq` qdisc with 16M send buffers for lossy long-RTT uplinks, WiFi
 power-save off (NetworkManager `wifi.powersave=2`), and rtw89 low-power /
 PCIe-PM disables.
 
+Nested virtualization (`flake-parts/nixosModules/virtualization.nix`):
+`hostSpec.hardware.virtualization.nested.enable` sets `kvm_amd`/`kvm_intel`
+`nested=1` so KVM guests get their own `/dev/kvm` (e.g. KubeVirt inside a
+NixOS VM test guest). Enabled on dev hosts via the `virt` clan tag.
+
 ## Machines
 
 | Machine           | Role                                            |
@@ -93,9 +98,6 @@ jovian-enabled machine runs the Valve jovian kernel.
 
 ```console
 $ nix flake show
-warning: unknown setting 'lazy-trees'
-warning: Git tree '/home/netsa/home' is dirty
-git+file:///home/netsa/home
 ├───allSystems: unknown
 ├───apps
 │   └───x86_64-linux
@@ -105,6 +107,10 @@ git+file:///home/netsa/home
 │       ├───update-flake-show: app: no description
 │       ├───vm-test: app: no description
 │       └───watch-documentation: app: Run mkdocs in watch mode over your documentation folder. Automatically rebuilds your docs on changes.
+├───checks
+│   └───x86_64-linux
+│       ├───devenv-lock-drift: derivation 'devenv-lock-drift'
+│       └───lint: derivation 'lint'
 ├───clan: unknown
 ├───clanInternals: unknown
 ├───darwinConfigurations: unknown
@@ -112,13 +118,14 @@ git+file:///home/netsa/home
 ├───debug: unknown
 ├───devShells
 │   └───x86_64-linux
-│       └───default: development environment 'nix-shell'
+│       └───default: development environment 'devenv-shell'
 ├───formatter
 │   └───x86_64-linux: package 'alejandra-4.0.0'
 ├───homeConfigurations: unknown
 ├───homeModules: unknown
 ├───legacyPackages
 │   └───x86_64-linux omitted (use '--legacy' to show)
+├───lib: unknown
 ├───nixosConfigurations
 │   ├───ghost: NixOS configuration
 │   ├───hp-notebook: NixOS configuration
@@ -154,6 +161,7 @@ git+file:///home/netsa/home
 │   ├───splashtop-streamer: NixOS module
 │   ├───storagebox: NixOS module
 │   ├───tailscale: NixOS module
+│   ├───virtualization: NixOS module
 │   ├───wan: NixOS module
 │   ├───warp: NixOS module
 │   ├───wayland: NixOS module
@@ -170,8 +178,10 @@ git+file:///home/netsa/home
 │       ├───apply-test: package 'apply-test'
 │       ├───apply-to-boot: package 'apply-to-reboot'
 │       ├───artifacthub-mcp: package 'artifacthub-mcp-1.1.1'
-│       ├───cc-safety-net: package 'cc-safety-net-2.4.1'
-│       ├───devShell: package 'nix-shell'
+│       ├───cc-safety-net: package 'cc-safety-net-2.4.6'
+│       ├───devShell: package 'devenv-shell'
+│       ├───devenv-test: package 'devenv-test'
+│       ├───devenv-up: package 'devenv-up'
 │       ├───documentation: package 'mkdocs-flake-documentation'
 │       ├───get-keys: package 'get-keys'
 │       ├───hcloud-ip: package 'hcloud-ip-v0.0.1'

@@ -17,8 +17,10 @@ _: {
           coreutils
         ];
         text = ''
-          # Generate the clean flake outputs
-          nix flake show --no-update-lock-file 2>&1 | grep -v "evaluating" | sed -r "s/\x1B\[([0-9]{1,3}(;[0-9]{1,2};?)?)?[mGK]//g" > flake_outputs_clean.txt
+          # Generate the clean flake outputs. stdout only — stderr (e.g.
+          # devenv's "devenv-test is deprecated" warnings) must not leak
+          # into the docs snapshot.
+          nix flake show --no-update-lock-file 2>/dev/null | grep -v "evaluating" | sed -r "s/\x1B\[([0-9]{1,3}(;[0-9]{1,2};?)?)?[mGK]//g" > flake_outputs_clean.txt
           sed -i '1s/.*//' flake_outputs_clean.txt && sed -i '1d' flake_outputs_clean.txt
 
           python3 - << 'PYEOF'
