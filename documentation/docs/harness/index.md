@@ -19,10 +19,12 @@ modules extend the harness:
 | `enable` | `false` | Enable OpenCode + the declarative configuration below |
 | `enableDesktop` | `true` | Install `opencode-desktop` (Electron GUI). Disable for headless machines — saves ~2.4 GB (Electron + GTK stack) |
 | `fullDevTools` | `true` | Install the full heavy dev toolset (`k3s`, `rke2`, `k3d`, `devpod`, `devcontainer`, `podman`, `gleam`, `terraform-ls`, `helm-ls`, `go_latest`). Disable for slim headless agents — keeps `docker`, `kubectl`, `helm` |
-| `machineContext.enable` | `true` | Generate `~/.config/opencode/instructions/machine-<hostname>.md` — a per-machine system-prompt file (see below) |
+| `machineContext.enable` | `true` | Generate `~/.config/opencode/AGENTS.md` — the global per-machine system-prompt file (see below) |
 | `machineContext.repoPath` | `home` | Directory name of the local flake checkout relative to the user's home directory, written into the generated file |
-| `machineContext.repoOwner` | `andrewthomaslee` | Owner of the remote flake repo, written into the generated file's `Remote:` line |
-| `machineContext.repoName` | `home` | Name of the remote flake repo, written into the generated file's `Remote:` line |
+| `machineContext.repoOwner` | `andrewthomaslee` | Owner of the remote flake repo, written into the generated file's `Repo:` line |
+| `machineContext.repoName` | `home` | Name of the remote flake repo, written into the generated file's `Repo:` line |
+| `machineContext.environment` | `null` | Host-environment annotation written after the `Machine:` line (e.g. `vm (KubeVirt guest)`). NixOS has no eval-time VM marker, so VM images set this explicitly; NixOS containers are auto-detected (`boot.isContainer`); bare metal stays unset (no line) |
+| `machineContext.facterReport` | `null` | Synthetic nixos-facter report overriding the `machines/<hostname>/facter.json` read (VM tests). Null reads the real file |
 | `machineContext.extraText` | `null` | Optional per-machine notes appended to the generated file (set from `machines/<hostname>/configuration.nix`) |
 
 The packaging trims are what made the KubeVirt agent image drop from
@@ -34,9 +36,9 @@ The packaging trims are what made the KubeVirt agent image drop from
   playwright, github, cloudflare ×6, mdn, artifacthub, kubernetes, typeui),
   each hermetically packaged or hosted-remote. See
   [MCP Servers](mcp-servers.md).
-- **Plugins** — four plugins under `plugins.<name>.enable` (cc-safety-net,
-  morph-fast-apply, opencode-mem, devcontainers) wired with absolute store
-  paths, nothing fetched from npm at runtime. See [Plugins](plugins.md).
+- **Plugins** — plugins under `plugins.<name>.enable` (cc-safety-net,
+  opencode-mem) wired with absolute store paths, nothing fetched from npm
+  at runtime. See [Plugins](plugins.md).
 - **Skills** — a merged skills folder (repo `skills/` + external flake
   inputs) symlinked to `~/.config/opencode/skills`. See [Skills](skills.md).
 - **LSP**: nixd (`.nix`), helm_ls (`.yaml`/`.yml`), pyrefly (`.py`/`.pyi`),
@@ -63,28 +65,36 @@ The packaging trims are what made the KubeVirt agent image drop from
   requires both; see the VM test history).
 - **Compaction**: auto with `tail_turns = 12`.
 - **Machine context** — a compact, matter-of-fact machine descriptor
-  (no markdown decoration, token-lean) injected into the system prompt
-  of every opencode session on the machine. One shared home module
-  renders it per machine: the hostname comes from `osConfig`
-  (home-manager runs as a NixOS module) and the machine's
+  (no markdown decoration, token-lean) loaded into the system prompt of
+  every opencode session on the machine. One shared home module renders
+  it per machine and writes it to the **global AGENTS.md discovery
+  spot**, `~/.config/opencode/AGENTS.md`: the hostname comes from
+  `osConfig` (home-manager runs as a NixOS module) and the machine's
   `machines/<hostname>/facter.json` is read at eval time to bake
   hardware facts (CPU/GPU/RAM/disk, best-effort — missing fields are
-  skipped). The file `~/.config/opencode/instructions/machine-<hostname>.md`
-  contains one identity line (`Machine: <host> (NixOS <platform>)`), a
-  `Hardware:` list, a one-line repo reference
+  skipped; VM tests can inject a synthetic report via
+  `machineContext.facterReport`). The generated file contains one
+  identity line (`Machine: <host> (NixOS <platform>)`), an optional
+  `Environment:` line (VMs set `machineContext.environment` explicitly —
+  NixOS has no eval-time VM marker; NixOS containers are detected via
+  `boot.isContainer`), a `Hardware:` list, a one-line repo reference
   (`Repo: github.com/<repoOwner>/<repoName> (local: <checkout>)`), a
   one-line `Machine facts:` path list (`facter.json`, `disko.nix`,
   `configuration.nix` under `machines/<hostname>/`), a read-only rule
   (machine config may only be changed by the repo owner, or by an agent
   instructed to while working in the home repo) and one generic rule:
-  read a repo's AGENTS.md before working in it. It is wired into
-  `settings.instructions`, so it applies to sessions in any project (a
+  read a repo's AGENTS.md before working in it. It is wired as the
+  **global** AGENTS.md, so it applies to sessions in any project (a
   project's own AGENTS.md still auto-loads on top when working in that
   project). Consumers without a facter report (the installer ISO,
-  KubeVirt agent VMs) get the identity/repo/rules lines only.
+  KubeVirt agent VMs) get the identity/environment/repo/rules lines
+  only. It deliberately does **not** use `settings.instructions`:
+  opencode v2 decodes that array but never resolves its entries (see
+  `services/www/src/docs/content/instructions.mdx` at the pinned
+  opencode rev), while the global `~/.config/opencode/AGENTS.md` is
+  v2's supported global instruction source.
 - **Wrapper scripts** — `github-mcp-server-opencode` (exports the GitHub
-  PAT, see [MCP Servers](mcp-servers.md#github-mcp-server)) and the Morph
-  key wrapper (exports `MORPH_API_KEY`, see [Plugins](plugins.md)).
+  PAT, see [MCP Servers](mcp-servers.md#github-mcp-server)).
 
 ## Packages
 
@@ -94,7 +104,7 @@ The packaging trims are what made the KubeVirt agent image drop from
 |---|---|
 | `kubernetes-mcp-server` | containers/kubernetes-mcp-server v0.0.66, hermetic `buildGoModule` (`flake-parts/packages/kubernetes-mcp-server.nix`) |
 | `opencode-nixd-scaffold` | scaffolds per-repo `opencode.json` + `.vscode/settings.json` nixd overrides (`flake-parts/packages/opencode-nixd-scaffold.nix` + `.py`, `writers.writePython3Bin`) |
-| `cc-safety-net`, `opencode-mem`, `opencode-morph-fast-apply` | plugin packages from `flake-parts/packages/opencode-plugins.nix` |
+| `cc-safety-net`, `opencode-mem` | plugin packages from `flake-parts/packages/opencode-plugins.nix` |
 | `artifacthub-mcp` | ArtifactHub MCP binary (`flake-parts/packages/artifacthub-mcp.nix`) |
 
 ## Profiles
@@ -118,13 +128,12 @@ The packaging trims are what made the KubeVirt agent image drop from
 
 | File | Purpose |
 |---|---|
-| `flake-parts/homeModules/opencode.nix` | everything on this page: MCP under `mcp.<name>.enable` merged into native V2 `mcp.servers.*`, plugins under `plugins.<name>.enable` (V2 `plugins` store-path entries), formatters, ordered `permissions` array, `agents.title.model`, `enableDesktop`/`fullDevTools` trims, machine context (`machineContext.*`), PAT + Morph wrappers |
+| `flake-parts/homeModules/opencode.nix` | everything on this page: MCP under `mcp.<name>.enable` merged into native V2 `mcp.servers.*`, plugins under `plugins.<name>.enable` (V2 `plugins` store-path entries), formatters, ordered `permissions` array, `agents.title.model`, `enableDesktop`/`fullDevTools` trims, machine context (`machineContext.*`), PAT wrapper |
 | `flake-parts/homeModules/headroom.nix` | headroom options + `headroom-proxy.service` user unit — see [Headroom](headroom.md) |
 | `flake-parts/homeModules/profiles/netsa.nix` | dev profile: opencode MCP/plugin opt-ins |
 | `flake-parts/homeModules/profiles/netsa-agent.nix` | headless AI agent profile |
 | `flake-parts/packages/opencode-plugins.nix` | hermetic plugin packages |
 | `flake-parts/nixosModules/github-mcp.nix` | clan vars PAT generator (see [MCP Servers](mcp-servers.md#github-mcp-server)) |
-| `flake-parts/nixosModules/morph-api-key.nix` | clan vars generator for the Morph API key (see [Plugins](plugins.md)) |
 | `flake-parts/packages/kubernetes-mcp-server.nix` | kubernetes-mcp-server package |
 | `flake-parts/packages/opencode-nixd-scaffold.nix` + `.py` | nixd per-repo scaffold package (VS Code only — OpenCode v2 no longer runs LSP servers) |
 | `overlays/default.nix` | repo overlay: `pkgs.unstable`, the opencode v2 CLI + desktop packages with the upstream Nix-packaging fixes (completions postInstall, bundled sidecar launcher, `OPENCODE_CHANNEL=latest` service registration), electron SHASUM/libANGLE pins |

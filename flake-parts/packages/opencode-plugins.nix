@@ -31,51 +31,6 @@
         mkdir -p $out
         cp -r node_modules $out/node_modules
       '';
-
-    # Assemble a plugin package root: source + node_modules (+ optional
-    # build). The plugin entry referenced by opencode's `plugin` array is
-    # a path inside this output, resolved by opencode's Bun runtime.
-    mkBunPlugin = {
-      pname,
-      version,
-      src,
-      entry,
-      prod ? true,
-      preBuild ? "",
-      postBuild ? "",
-      nativeBuildInputs ? [],
-      depsOutputHash,
-    }: let
-      nodeModules = bunNodeModules {
-        name = "${pname}-${version}-bun-deps";
-        inherit prod;
-        srcPath = src;
-        outputHash = depsOutputHash;
-      };
-    in
-      # Assemble: source + node_modules (+ optional build). The plugin
-      # entry referenced by opencode's `plugin` array is a path inside this
-      # output, resolved by opencode's Bun runtime.
-      pkgs.runCommand "${pname}-${version}" {
-        nativeBuildInputs = [pkgs.bun] ++ nativeBuildInputs;
-        passAsFile = ["preBuild" "postBuild"];
-        inherit preBuild postBuild;
-      } ''
-        cp -r ${src} ./repo
-        chmod -R u+w ./repo
-        cd ./repo
-        cp -r ${nodeModules}/node_modules ./node_modules
-        chmod -R u+w ./node_modules
-        export BUN_INSTALL_CACHE_DIR=$TMPDIR/bun-cache
-        export HOME=$TMPDIR/home
-        mkdir -p $HOME
-        source "$preBuildPath"
-        source "$postBuildPath"
-        mkdir -p $out/share/opencode-plugins/${pname}
-        cp -r . $out/share/opencode-plugins/${pname}/
-        rm -rf $out/share/opencode-plugins/${pname}/node_modules/.cache
-        test -e $out/share/opencode-plugins/${pname}/${entry} || { echo "plugin entry missing: ${entry}"; exit 1; }
-      '';
   in {
     # ---- CC Safety Net ----
     # dist/ is committed upstream and the plugin has ZERO runtime deps, so
@@ -97,31 +52,6 @@
           cp -r ${src}/. $out/share/opencode-plugins/cc-safety-net/
           test -e $out/share/opencode-plugins/cc-safety-net/dist/index.js
         '';
-
-      # ---- opencode-morph-fast-apply ----
-      # main = index.ts (opencode's Bun runtime loads TS directly); deps are
-      # pure JS (@opencode-ai/plugin, @opencode/plugin, diff). Also ships the
-      # always-on instructions/morph-tools.md wired into settings.instructions.
-      # Pinned to trunk c185cb88 (2026-09-23, "feat(plugin): support OpenCode
-      # V2"): the default export became a dual-shape object ({ id, setup }
-      # for V2 + legacy `server` adapter); the v1.11.0 release tag predates
-      # V2 support, so re-pin to the next tagged release when one appears.
-      opencode-morph-fast-apply =
-        (mkBunPlugin {
-          pname = "opencode-morph-fast-apply";
-          version = "1.11.0";
-          src = pkgs.fetchFromGitHub {
-            owner = "JRedeker";
-            repo = "opencode-morph-fast-apply";
-            rev = "c185cb8812b35c7ae1e97093468f1776843e065b";
-            hash = "sha256-M3kxGwhlaGbEumJGF9ok1tPJSZO/IY37LNeNWSdRNT8=";
-          };
-          entry = "index.ts";
-          depsOutputHash = "sha256-38IVy2EyoN5nmK9qcvBHnKsscmFsL5jtfVDAT6/UIUA=";
-        })
-        // {
-          passthru.instructions = "instructions/morph-tools.md";
-        };
 
       # ---- opencode-mem ----
       # Builds dist/ (tsc) + the web UI (vite in web/). Includes native

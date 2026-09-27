@@ -11,7 +11,7 @@
     customLib,
     # The NixOS config this home-manager user runs on (null only for
     # standalone home-manager evals, which never happens here). Used to
-    # identify the machine for the per-machine context file below.
+    # identify the machine for the global AGENTS.md machine context below.
     osConfig,
     ...
   }: let
@@ -55,32 +55,12 @@
       cd "$HOME/.config/devenv-agent"
       exec ${lib.getExe pkgs.devenv} mcp "$@"
     '';
-    # Morph API key: only wrapped when a key file is configured. When the
-    # plugin is enabled and no explicit file is set, default to the
-    # sops-deployed clan var from nixosModules/morph-api-key (same
-    # pattern as githubMcpPatFile).
-    morphApiKeyFile =
-      if cfg.plugins.morph-fast-apply.apiKeyFile != null
-      then cfg.plugins.morph-fast-apply.apiKeyFile
-      else if cfg.plugins.morph-fast-apply.enable
-      then "/run/secrets/vars/shared/morph-api-key/api-key"
-      else null;
-    morphEnabledWithKey =
-      cfg.plugins.morph-fast-apply.enable && morphApiKeyFile != null;
-    opencodeMorphWrapper = pkgs.writeShellScriptBin "opencode" ''
-      if [ -r ${lib.escapeShellArg morphApiKeyFile} ]; then
-        export MORPH_API_KEY="$(cat ${lib.escapeShellArg morphApiKeyFile})"
-      fi
-      export MORPH_MODEL=${lib.escapeShellArg cfg.plugins.morph-fast-apply.model}
-      exec ${lib.getExe pkgs.opencode} "$@"
-    '';
     # Hermetic plugin packages (flake-parts/packages/opencode-plugins.nix).
     # V2 native-plugin entries: each is an absolute store-path file whose
     # module default-exports a V2 plugin `{ id, setup|effect }` (the V1
     # loader accepted default-export hook functions; those no longer run).
     pluginEntries =
       lib.optional cfg.plugins.cc-safety-net.enable "${pkgs.cc-safety-net}/share/opencode-plugins/cc-safety-net/dist/index.js"
-      ++ lib.optional cfg.plugins.morph-fast-apply.enable "${pkgs.opencode-morph-fast-apply}/share/opencode-plugins/opencode-morph-fast-apply/index.ts"
       ++ lib.optional cfg.plugins.opencode-mem.enable "${pkgs.opencode-mem}/share/opencode-plugins/opencode-mem/dist/v2/plugin.js";
     # ---- References (V2 attachable doc bundles) ---- #
     # Repo-side source: top-level `references/<name>/index.md` (one dir
@@ -118,13 +98,17 @@
         })
         enabledReferences;
     };
-    # ---- Machine context (per-machine system-prompt instruction) ---- #
+    # ---- Machine context (global AGENTS.md system-prompt header) ---- #
     # Home-manager runs as a NixOS module here, so osConfig carries the
     # machine this user is on. From it, the machine's nixos-facter report
     # (machines/<host>/facter.json) is read at eval time and summarized
-    # into ~/.config/opencode/instructions/machine-<host>.md, wired into
-    # settings.instructions below — opencode injects instruction files
-    # into the system prompt of every session on that machine.
+    # into ~/.config/opencode/AGENTS.md — opencode v2's global AGENTS.md
+    # discovery spot, loaded into the system prompt of every session (a
+    # project's own AGENTS.md still auto-loads on top of it). The
+    # settings.instructions array is NOT a viable wiring: opencode v2
+    # decodes it but never resolves its entries (see
+    # services/www/src/docs/content/instructions.mdx at the pinned
+    # opencode rev).
     hostName =
       if osConfig == null
       then ""
@@ -135,8 +119,13 @@
     # entry), so the facter-derived content is optional and everything
     # below stays lazy: nothing is read unless this user enables opencode.
     hasFacter = hostName != "" && builtins.pathExists facterFile;
+    # A synthetic report (machineContext.facterReport, set by VM tests)
+    # overrides the on-disk read; the accessors below work identically on
+    # either shape.
     facterReport =
-      if hasFacter
+      if cfg.machineContext.facterReport != null
+      then cfg.machineContext.facterReport
+      else if hasFacter
       then builtins.fromJSON (builtins.readFile facterFile)
       else {};
     # Best-effort accessors: facter reports differ per machine and facter
@@ -218,18 +207,31 @@
         ]))
       (facterLine "Disk" diskModels)
     ];
+    # Environment annotation (plain line right after the Machine line):
+    # the explicit option wins — NixOS has no eval-time "this is a VM"
+    # marker (nixpkgs' kubevirt.nix / qemu-vm.nix set none), so VM images
+    # set it (e.g. the KubeVirt agent). Otherwise NixOS containers are
+    # detected via boot.isContainer (a real eval-time signal). Bare metal
+    # emits no line (token-lean).
+    machineContextEnvironment =
+      if cfg.machineContext.environment != null
+      then "Environment: ${cfg.machineContext.environment}"
+      else if (osConfig != null && (osConfig.boot.isContainer or false))
+      then "Environment: nixos-container"
+      else null;
     # Plain, matter-of-fact and token-lean machine descriptor (no markdown
-    # decoration) — injected into the system prompt of every opencode
-    # session on this machine: what the machine is, what hardware it has
-    # and where the facts about it live. The read-only rule and the
-    # AGENTS.md rule apply on every machine; the hardware and facts paths
-    # only when a facter report exists (installer ISO, KubeVirt agent VMs
-    # have none).
+    # decoration) — written to the global AGENTS.md loaded into the system
+    # prompt of every opencode session on this machine: what the machine
+    # is, where it runs, what hardware it has and where the facts about it
+    # live. The read-only rule and the AGENTS.md rule apply on every
+    # machine; the hardware and facts paths only when a facter report
+    # exists (installer ISO, KubeVirt agent VMs have none).
     machineContextLines =
-      [
-        "Machine: ${hostName} (NixOS ${pkgs.stdenv.hostPlatform.system})"
-        ""
-      ]
+      (
+        ["Machine: ${hostName} (NixOS ${pkgs.stdenv.hostPlatform.system})"]
+        ++ lib.optionals (machineContextEnvironment != null) [machineContextEnvironment]
+        ++ [""]
+      )
       ++ lib.optionals (machineContextHardware != [])
       (["Hardware:"] ++ machineContextHardware ++ [""])
       ++ [
@@ -273,15 +275,17 @@
         description = "Install the full heavy dev toolset in opencode extraPackages.";
       };
       # Per-machine system-prompt context (machineContext.*): generates
-      # ~/.config/opencode/instructions/machine-<hostname>.md with the
-      # hostname, hardware facts from the machine's facter.json and
-      # pointers to where machine facts live, then loads it into every
-      # opencode session via settings.instructions.
+      # the global ~/.config/opencode/AGENTS.md with the hostname, an
+      # optional environment annotation, hardware facts from the machine's
+      # facter.json and pointers to where machine facts live. opencode v2
+      # loads this file into every session's system prompt (the
+      # settings.instructions array is not resolved in v2 — see the
+      # machine-context comment above).
       machineContext = {
         enable = lib.mkOption {
           type = lib.types.bool;
           default = true;
-          description = "Generate the per-machine context instruction file (hostname + hardware facts from machines/<hostname>/facter.json).";
+          description = "Generate the global ~/.config/opencode/AGENTS.md machine context (hostname + environment + hardware facts from machines/<hostname>/facter.json).";
         };
         repoPath = lib.mkOption {
           type = lib.types.str;
@@ -302,6 +306,23 @@
           type = with lib.types; nullOr str;
           default = null;
           description = "Optional per-machine notes appended to the generated file (set from machines/<hostname>/configuration.nix).";
+        };
+        environment = lib.mkOption {
+          type = with lib.types; nullOr str;
+          default = null;
+          description = ''
+            Host-environment annotation written after the Machine line (e.g. "vm (KubeVirt guest)").
+            NixOS has no eval-time "this is a VM" marker, so VM images set this explicitly; NixOS
+            containers are auto-detected (boot.isContainer); bare metal stays null (no line).
+          '';
+        };
+        facterReport = lib.mkOption {
+          type = with lib.types; nullOr attrs;
+          default = null;
+          description = ''
+            Synthetic nixos-facter report overriding the machines/<hostname>/facter.json read
+            (VM tests: the test hostname has no real report). Null reads the real file.
+          '';
         };
       };
       # ---- MCP servers: homeSpec.programs.opencode.mcp.<name>.enable ---- #
@@ -460,33 +481,6 @@
           default = true;
           description = "Enable the CC Safety Net plugin (blocks destructive commands and secret access).";
         };
-        # Morph Fast Apply: `morph_edit` tool (lazy edit markers, ~10k
-        # tok/s merges). Requires a Morph API key exported into the
-        # opencode process env; `apiKeyFile` is provisioned by the
-        # morph-api-key clan var generator (nixosModules/morph-api-key).
-        # Off by default until the key is provisioned.
-        morph-fast-apply = {
-          enable = lib.mkOption {
-            type = lib.types.bool;
-            default = false;
-            description = "Enable the Morph Fast Apply plugin (morph_edit tool). Requires a Morph API key via apiKeyFile.";
-          };
-          apiKeyFile = lib.mkOption {
-            type = with lib.types;
-              nullOr str;
-            default = null;
-            description = ''
-              Path to a file containing the Morph API key, exported as
-              MORPH_API_KEY by the opencode wrapper at launch. Usually the
-              clan var at /run/secrets/vars/shared/morph-api-key/api-key.
-            '';
-          };
-          model = lib.mkOption {
-            type = lib.types.str;
-            default = "auto";
-            description = "Morph model (morph-v3-fast, morph-v3-large, or auto).";
-          };
-        };
         # opencode-mem: persistent project memory with local vector search
         # (embedded libSQL + onnxruntime embeddings). The default embedding
         # model (Xenova/nomic-embed-text-v1) is downloaded from Hugging
@@ -528,16 +522,15 @@
     };
     config = lib.mkIf cfg.enable {
       xdg.configFile = {
-        # Morph Fast Apply: ship the packaged always-on routing instruction
-        # so agents reliably pick morph_edit over native edit.
-        "opencode/instructions/morph-tools.md" = lib.mkIf cfg.plugins.morph-fast-apply.enable {
-          source = "${pkgs.opencode-morph-fast-apply}/share/opencode-plugins/opencode-morph-fast-apply/instructions/morph-tools.md";
-        };
-
-        # Per-machine context file (built above from osConfig + facter.json):
-        # opencode expands the ~/ path in settings.instructions and injects
-        # the file into the system prompt of every session on this machine.
-        "opencode/instructions/machine-${hostName}.md" = lib.mkIf (cfg.machineContext.enable && hostName != "") {
+        # Global machine context (built above from osConfig + the machine's
+        # facter report): written to opencode's global AGENTS.md discovery
+        # spot. opencode v2 loads ~/.config/opencode/AGENTS.md into every
+        # session's system prompt (a project's own AGENTS.md still
+        # auto-loads on top). The settings.instructions array is decoded
+        # but never resolved in v2 (see
+        # services/www/src/docs/content/instructions.mdx at the pinned
+        # opencode rev), so file instructions ride AGENTS.md.
+        "opencode/AGENTS.md" = lib.mkIf (cfg.machineContext.enable && hostName != "") {
           text = lib.concatStringsSep "\n" machineContextLines + "\n";
         };
 
@@ -687,11 +680,7 @@
         # Plugin packages: referenced by store path in settings.plugins, so
         # keep them in the closure (GC safety).
         ++ (lib.optional cfg.plugins.cc-safety-net.enable pkgs.cc-safety-net)
-        ++ (lib.optional cfg.plugins.morph-fast-apply.enable pkgs.opencode-morph-fast-apply)
         ++ (lib.optional cfg.plugins.opencode-mem.enable pkgs.opencode-mem);
-      # NOTE: the morph key wrapper (opencodeMorphWrapper) is NOT added
-      # here — programs.opencode.package above already installs it into
-      # the user env, and a second entry would collide in buildEnv.
       assertions = [
         {
           assertion = cfg.mcp.github.auth == "oauth" -> cfg.mcp.github.patFile == null;
@@ -700,15 +689,9 @@
       ];
       programs.opencode = {
         enable = true;
-        # Morph key wrapper: exports MORPH_API_KEY (from the clan var file)
-        # into the opencode process env when the morph plugin is enabled
-        # with a configured key file; otherwise the stock package. The
-        # package comes from the overlay (inputs.opencode v2.0.16 with the
+        # Package comes from the overlay (inputs.opencode v2.0.16 with the
         # upstream postInstall completion fix).
-        package =
-          if morphEnabledWithKey
-          then opencodeMorphWrapper
-          else pkgs.opencode;
+        package = pkgs.opencode;
         extraPackages =
           (with pkgs.unstable; [
             actionlint
@@ -973,17 +956,12 @@
               openai.settings.baseURL = headroomProxyUrl;
             };
           })
-          # Morph Fast Apply: point the agent at the always-on instruction
-          # (packaged file synced to the xdg path above).
-          (lib.mkIf cfg.plugins.morph-fast-apply.enable {
-            instructions = ["~/.config/opencode/instructions/morph-tools.md"];
-          })
-          # Per-machine context file (generated above). Only wired when a
-          # facter report exists for this hostname — the installer ISO and
-          # KubeVirt agent VMs have none, so they skip it.
-          (lib.mkIf (cfg.machineContext.enable && hasFacter) {
-            instructions = ["~/.config/opencode/instructions/machine-${hostName}.md"];
-          })
+          # NOTE: no settings.instructions entries anywhere: opencode v2
+          # does not resolve the instructions config array (see
+          # services/www/src/docs/content/instructions.mdx at the pinned
+          # opencode rev). File-based instructions ride the global
+          # ~/.config/opencode/AGENTS.md (written above); project
+          # AGENTS.md files are discovered automatically.
           # TypeUI: hosted design-skills MCP (OAuth on first use).
           (lib.mkIf cfg.mcp.typeui.enable {
             mcp.servers.typeui = {

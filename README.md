@@ -131,7 +131,6 @@ git+file:///home/netsa/home
 │   ├───kde: NixOS module
 │   ├───lan: NixOS module
 │   ├───longhorn: NixOS module
-│   ├───morph-api-key: NixOS module
 │   ├───motd: NixOS module
 │   ├───nix: NixOS module
 │   ├───nix-ld: NixOS module
@@ -168,7 +167,6 @@ git+file:///home/netsa/home
 │       ├───kubevirt-image: package 'nixos-disk-image'
 │       ├───longhornctl: package 'longhornctl-v1.12.0'
 │       ├───opencode-mem: package 'opencode-mem-2.26.0'
-│       ├───opencode-morph-fast-apply: package 'opencode-morph-fast-apply-1.11.0'
 │       ├───opencode-nixd-scaffold: package 'opencode-nixd-scaffold'
 │       ├───splashtop-streamer: package 'splashtop-streamer-3.8.2.0'
 │       ├───tfctl: package 'tfctl-0.16.4'

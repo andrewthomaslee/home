@@ -97,7 +97,13 @@
             sharedModules = [
               inputs.plasma-manager.homeModules.plasma-manager
             ];
-            users.netsa = self.homeModules.profile-netsa-agent;
+            users.netsa = {
+              imports = [self.homeModules.profile-netsa-agent];
+              # Machine-context environment tag for the generated global
+              # AGENTS.md: NixOS has no eval-time "this is a VM" marker,
+              # so VM images set it explicitly.
+              homeSpec.programs.opencode.machineContext.environment = "vm (KubeVirt guest)";
+            };
           };
 
           # OpenCode Web server service for netsa

@@ -43,8 +43,11 @@ three size variants (engine: `flake-parts/tests.nix`, runner app:
    - **netsa** — headless agent profile ([profile-netsa-agent](kubevirt-agent.md))
      plus the other exclusive auth branch (`mcp.servers.github` must be the
      `remote` oauth entry, `https://api.githubcopilot.com/mcp/`), the
-     six Cloudflare remote MCP servers, MDN, the Morph Fast Apply V2 plugin
-     with a fake `/etc/vm-morph-key` (MORPH_API_KEY wrapper export), a
+     six Cloudflare remote MCP servers, MDN, the global machine-context
+     AGENTS.md (eval-time `assertions` on the generated text plus
+     deployed-file greps: machine, environment and synthetic-facter
+     hardware lines, and a guard that `settings.instructions` stays
+     unset — it is inert in opencode v2), a
      second headroom proxy on port 8788, its own MCP CCR roundtrip
      (`/etc/vm-web-mcp-probe.py`), and the home-manager native
      `programs.opencode.web` service (`opencode serve` HTTP title check

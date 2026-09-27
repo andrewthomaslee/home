@@ -10,14 +10,20 @@
   #   MCPs, GitHub MCP via the PAT method with a fake PAT file.
   # - netsa: the headless profile-netsa-agent (slim headroom, no desktop),
   #   GitHub MCP via the default OAuth method, all six Cloudflare remote
-  #   MCPs, MDN, the Morph plugin with a fake API key, the home-manager
-  #   native opencode web service (`opencode serve`), and all eight
-  #   reference bundles (linkFarm install + settings.references +
+  #   MCPs, MDN, the home-manager native opencode web service
+  #   (`opencode serve`), the global machine-context AGENTS.md (static
+  #   eval asserts + deployed-file greps), and all eight reference
+  #   bundles (linkFarm install + settings.references +
   #   external_directory permission rules).
   name = "opencode";
   globalTimeout = 10 * 60;
 
-  nodes.machine = {pkgs, ...}: {
+  nodes.machine = {
+    config,
+    lib,
+    pkgs,
+    ...
+  }: {
     imports = [
       inputs.clan-core.nixosModules.clanCore
       self.nixosModules.default
@@ -97,9 +103,8 @@
       # netsa: headless agent profile (headroom-slim + headless opencode),
       # plus the other mutually-exclusive GitHub auth branch (oauth remote
       # server, no secret), the opt-in Cloudflare/MDN remote MCP servers,
-      # the Morph plugin with a fake key file, and the HM-native opencode
-      # web service. All six Cloudflare remote MCP servers are enabled to
-      # exercise the opt-in path.
+      # and the HM-native opencode web service. All six Cloudflare remote
+      # MCP servers are enabled to exercise the opt-in path.
       users.netsa = {
         imports = [
           self.homeModules.profile-netsa-agent
@@ -116,13 +121,34 @@
           extraArgs = ["--hostname" "0.0.0.0" "--port" "4096"];
         };
         homeSpec.programs.opencode = {
-          # Morph Fast Apply with the fake key file below: exercises the
-          # morph-api-key clan var generator declaration, the opencode
-          # wrapper (MORPH_API_KEY export) and the V2 plugin entry.
-          plugins = {
-            morph-fast-apply = {
-              enable = true;
-              apiKeyFile = "/etc/vm-morph-key";
+          # Machine context: synthetic facter report + environment tag so
+          # the generated global AGENTS.md has hardware + environment
+          # lines to assert on (this VM's hostname has no real
+          # machines/<host>/facter.json).
+          machineContext = {
+            environment = "vm (test)";
+            facterReport = {
+              hardware = {
+                cpu = [
+                  {
+                    model_name = "VM Test CPU 9000";
+                    units = 8;
+                  }
+                ];
+                graphics_card = [
+                  {
+                    vendor = {name = "TestGPU";};
+                    driver = "test";
+                  }
+                ];
+                disk = [{model = "TestDisk 1TB";} {model = "TestDisk 2TB";}];
+              };
+              smbios.memory_device = [
+                {
+                  size = 8388608;
+                  manufacturer = "TestRAM";
+                }
+              ];
             };
           };
           mcp = {
@@ -158,6 +184,37 @@
       };
     };
 
+    # Static eval-time assertions on the generated global AGENTS.md
+    # (machine-context wiring): a failed assert throws during the
+    # toplevel eval, before the VM even boots. The testScript greps below
+    # mirror these against the deployed file.
+    assertions = let
+      agentsText = config.home-manager.users.netsa.xdg.configFile."opencode/AGENTS.md".text;
+    in [
+      {
+        assertion = lib.hasInfix "Machine: opencode-test (NixOS" agentsText;
+        message = "opencode VM test: global AGENTS.md is missing the Machine line";
+      }
+      {
+        assertion = lib.hasInfix "Environment: vm (test)" agentsText;
+        message = "opencode VM test: global AGENTS.md is missing the environment annotation";
+      }
+      {
+        assertion = lib.hasInfix "CPU: VM Test CPU 9000, 8 threads" agentsText;
+        message = "opencode VM test: global AGENTS.md is missing the synthetic facter CPU line";
+      }
+      {
+        assertion = lib.hasInfix "Memory: 8 GiB (1x TestRAM DIMMs)" agentsText;
+        message = "opencode VM test: global AGENTS.md is missing the synthetic facter memory line";
+      }
+      # Regression guard for the v2 root cause: opencode v2 does not
+      # resolve the settings.instructions array, so it must stay unset.
+      {
+        assertion = !(config.home-manager.users.netsa.programs.opencode.settings ? instructions);
+        message = "opencode VM test: settings.instructions is inert in opencode v2 — wire file instructions via the global AGENTS.md instead";
+      }
+    ];
+
     # MCP end-to-end probe for alice: drives `headroom mcp serve` over
     # stdio JSON-RPC exactly as opencode does (mcp.servers.headroom local
     # server) and exercises the CCR roundtrip: initialize -> tools/list ->
@@ -174,13 +231,8 @@
       # the file -> env -> server-start wiring end to end. The "github-mcp"
       # clan var generator is derived automatically by
       # nixosModules/github-mcp from alice's mcp.github.auth = "pat" above.
-      # Fake Morph API key for netsa: proves the opencode wrapper ->
-      # MORPH_API_KEY env -> plugin wiring end to end (same pattern as the
-      # github PAT above; the clan var generator stays inert because
-      # apiKeyFile is overridden).
       etc = {
         vm-github-pat.text = "ghp-fake-vm-test-pat";
-        vm-morph-key.text = "morph-fake-vm-test-key";
 
         # devenv MCP end-to-end probe: drives the devenv-mcp-opencode
         # wrapper over stdio JSON-RPC exactly as opencode does (local
@@ -500,6 +552,12 @@
     machine.succeed("su - alice -c 'jq -e .mcp.servers.github.command ~/.config/opencode/opencode.json'")
     machine.succeed("su - alice -c 'cat /etc/vm-github-pat | grep -q ghp-fake-vm-test-pat'")
 
+    # 2d. Machine context: the global AGENTS.md is generated for this
+    # machine (machineContext is on by default), deployed as a store
+    # symlink carrying the Machine line.
+    machine.succeed("su - alice -c 'test -L ~/.config/opencode/AGENTS.md'")
+    machine.succeed("su - alice -c 'grep -q \"Machine: opencode-test (NixOS\" ~/.config/opencode/AGENTS.md'")
+
     # 2c+. Verify devenv: the flake-package CLI on PATH, the local
     # mcp.servers.devenv entry with the wrapper command, and the pinned
     # fallback project generated by the devenv home module + opencode module.
@@ -545,7 +603,7 @@
     machine.succeed("su - alice -c 'python3 /etc/vm-devenv-probe.py'")
 
     # ---- netsa: headless profile (headroom-slim, no desktop), oauth
-    # github, Cloudflare/MDN remotes, Morph plugin, HM-native web service.
+    # github, Cloudflare/MDN remotes, HM-native web service.
     machine.wait_for_unit("user@1001.service")
     machine.wait_until_succeeds(
       "su - netsa -c 'test -f ~/.config/opencode/opencode.json'", timeout=60
@@ -557,15 +615,16 @@
     machine.succeed("su - netsa -c 'jq -e \".mcp.servers.github.type == \\\"remote\\\"\" ~/.config/opencode/opencode.json'")
     machine.succeed("su - netsa -c 'jq -e \".mcp.servers.github.url == \\\"https://api.githubcopilot.com/mcp/\\\"\" ~/.config/opencode/opencode.json'")
 
-    # 7+. Verify netsa's Morph plugin: V2 store-path entry in the plugins
-    # list and the opencode wrapper exporting MORPH_API_KEY from the key file.
-    machine.succeed(
-      # HM wraps cfg.package once more (wrapProgram): bin/opencode is a
-      # shim exec'ing the hidden .opencode-wrapped symlink, which resolves
-      # to the morph-key wrapper exporting MORPH_API_KEY.
-      "su - netsa -c 'inner=$(dirname $(readlink -f $(which opencode)))/.opencode-wrapped; test -e \"$inner\" && grep -q MORPH_API_KEY \"$(readlink -f \"$inner\")\"'"
-    )
-    machine.succeed("su - netsa -c 'cat /etc/vm-morph-key | grep -q morph-fake-vm-test-key'")
+    # 7+. Machine context for netsa: the global AGENTS.md store symlink
+    # carries the machine, environment and synthetic hardware lines (the
+    # runtime mirror of the static eval assertions above).
+    machine.succeed("su - netsa -c 'test -L ~/.config/opencode/AGENTS.md'")
+    machine.succeed("su - netsa -c 'grep -q \"Machine: opencode-test (NixOS\" ~/.config/opencode/AGENTS.md'")
+    machine.succeed("su - netsa -c 'grep -q \"Environment: vm (test)\" ~/.config/opencode/AGENTS.md'")
+    machine.succeed("su - netsa -c 'grep -q \"CPU: VM Test CPU 9000, 8 threads\" ~/.config/opencode/AGENTS.md'")
+    machine.succeed("su - netsa -c 'grep -q \"GPU: TestGPU, driver test\" ~/.config/opencode/AGENTS.md'")
+    machine.succeed("su - netsa -c 'grep -q \"Memory: 8 GiB (1x TestRAM DIMMs)\" ~/.config/opencode/AGENTS.md'")
+    machine.succeed("su - netsa -c 'grep -q \"Disk: TestDisk 1TB, TestDisk 2TB\" ~/.config/opencode/AGENTS.md'")
 
     # 7++. Verify netsa's six Cloudflare remote MCP servers are generated
     # with the correct URLs (enabled via the opt-in toggles). Hyphenated

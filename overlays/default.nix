@@ -131,7 +131,6 @@
     });
   # OpenCode plugins (hermetic builds; entries referenced by store path).
   cc-safety-net = self.packages.${final.stdenv.hostPlatform.system}.cc-safety-net;
-  opencode-morph-fast-apply = self.packages.${final.stdenv.hostPlatform.system}.opencode-morph-fast-apply;
   opencode-mem = self.packages.${final.stdenv.hostPlatform.system}.opencode-mem;
 
   apply-and-reboot = self.packages.${final.stdenv.hostPlatform.system}.apply-and-reboot;

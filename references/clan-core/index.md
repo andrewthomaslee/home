@@ -564,8 +564,8 @@ Generator option anatomy:
 
 Two generators with the same name from different modules must merge —
 declare with `config.clan.core.vars.generators = lib.mkMerge (...)`
-(the home repo does that in `github-mcp.nix` and `morph-api-key.nix`,
-where generators are conditionally created per user).
+(the home repo does that in `github-mcp.nix`, where generators are
+conditionally created per user).
 
 ### Storage layout
 
@@ -659,7 +659,6 @@ clan vars upload <machine>            # push generated vars to a machine
 | `tailscale` auth key | `flake-parts/nixosModules/tailscale.nix` | `services.tailscale.authKeyFile` |
 | `storagebox-ssh-<user>` keypair | `flake-parts/nixosModules/storagebox.nix` | rclone sftp mount option |
 | `github-mcp` PAT | `flake-parts/nixosModules/github-mcp.nix` (mkMerge, per-user) | opencode MCP config |
-| `morph-api-key` | `flake-parts/nixosModules/morph-api-key.nix` | morph API service |
 | `openssh-ca`, `pki-root-ca`, `cloudflare-warp`, `rancher-*` | committed under `vars/shared/` | CA/host trust, rancher agents |
 
 `vars/per-machine/<machine>/` exists for every inventory machine — new

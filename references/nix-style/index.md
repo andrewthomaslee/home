@@ -45,12 +45,12 @@ with two or more members are written once and nested:
   };
 }
 
-plugins = {
-  cc-safety-net.enable = true;   # single member: flat
-  morph-fast-apply = {           # three members: nested once
+mcp = {
+  nix.enable = true;             # single member: flat
+  github = {                     # three members: nested once
     enable = true;
-    apiKeyFile = "/path/to/key";
-    model = "auto";
+    auth = "pat";
+    patFile = "/path/to/pat";
   };
 };
 ```
@@ -63,10 +63,11 @@ plugins = {
   homeSpec.shell.bash.enabled = true;
 }
 
-plugins = {
-  "morph-fast-apply".enable = true;
-  "morph-fast-apply".apiKeyFile = "/path/to/key";
-  "morph-fast-apply".model = "auto";
+mcp = {
+  "nix".enable = true;
+  "github".enable = true;
+  "github".auth = "pat";
+  "github".patFile = "/path/to/pat";
 };
 ```
 
@@ -78,7 +79,7 @@ for the linter.
 ### Attribute keys and quoting
 
 Attribute keys are identifiers, and Nix identifiers legally contain
-hyphens (`cloudflare-docs`, `morph-fast-apply`) and trailing apostrophes
+hyphens (`cloudflare-docs`, `opencode-mem`) and trailing apostrophes
 (`self'`). Identifier keys are therefore **never quoted**:
 
 ```nix
