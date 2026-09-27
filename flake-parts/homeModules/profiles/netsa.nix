@@ -91,6 +91,8 @@
               cilium.enable = true;
               # disko: disk layouts, clan integration, LUKS + vars, RAID1/mirror
               disko.enable = true;
+              # OpenEBS: Kubernetes CSI storage engines + Mayastor
+              openebs.enable = true;
             };
           };
           headroom.enable = true;
