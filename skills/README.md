@@ -45,6 +45,11 @@ duplicate deep material per skill.
   pointer, auto-gitignored) so a different agent or model can resume
   where the session stopped, or resume from an existing handoff.
   Language- and repo-agnostic.
+- `add-skill-or-reference` — how to extend this repo's agent material:
+  the skill-vs-reference decision, file layout, the Nix wiring each
+  needs (skills need none; references need `availableReferences` +
+  profile enable), and the house rules (git add before eval, lint loop
+  when .nix changed, README updates). Home-repo-specific.
 
 ## Reference convention
 

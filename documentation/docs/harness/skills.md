@@ -32,7 +32,7 @@ xdg.configFile."opencode/skills".source = inputs.agents.lib.mkSkills {
 
 | Source | Type | Skills |
 |---|---|---|
-| `skills/` (this repo) | custom | `baton-pass` (session handoff via `.baton-pass/`) |
+| `skills/` (this repo) | custom | `baton-pass` (session handoff via `.baton-pass/`), `add-skill-or-reference` (how to extend this repo's skills/references) |
 | [anthropics/skills](https://github.com/anthropics/skills) | external | docx, pdf, pptx, xlsx, mcp-builder, frontend-design, ... |
 | [payloadcms/skills](https://github.com/payloadcms/skills) | external | `payload` (Payload development guidelines), `cms-migration` (CMS → Payload migration workflow) |
 
@@ -59,11 +59,19 @@ frontmatter (`name`, `description` — the description drives agent triggering):
 skills/
   my-skill/
     SKILL.md
-    reference/   # optional supporting files
+    references/   # optional supporting files
 ```
 
 Then `git add skills/my-skill/` — Nix evaluates the flake from the git tree,
 so untracked files are invisible to `nix build` / `nix flake check`.
+
+No Nix changes are needed: the `mkSkills` call merges the whole `skills/`
+tree automatically. Custom skills are global (no per-profile opt-in) and
+override same-named external skills.
+
+The `add-skill-or-reference` custom skill carries these instructions to
+agents at runtime — keep it in sync when the wiring changes. To add a
+reference bundle instead, see [References](references.md).
 
 ## Adding an external source
 

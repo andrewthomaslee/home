@@ -113,10 +113,17 @@ homeSpec.programs.opencode.references = {
 
 1. Create `references/<name>/index.md` (one directory per reference).
 2. Add the alias + default description to `availableReferences` in
-   `flake-parts/homeModules/opencode.nix`.
-3. `git add references/<name>/` — Nix evaluates the flake from the git
+   `flake-parts/homeModules/opencode.nix` — the `lib.genAttrs` there
+   auto-generates the `homeSpec.programs.opencode.references.<name>`
+   option, so the options block needs no edit.
+3. Enable it per profile (`references.<name>.enable = true;` in
+   `flake-parts/homeModules/profiles/netsa.nix`).
+4. `git add references/<name>/` — Nix evaluates the flake from the git
    tree, so untracked files are invisible to `nix build` /
    `nix flake check`.
+
+The `add-skill-or-reference` custom skill carries these instructions to
+agents at runtime. To add a skill instead, see [Skills](skills.md).
 
 ## Verify
 
