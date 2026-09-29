@@ -61,12 +61,14 @@ Available aliases and coverage:
 | `determinate` | Determinate docs map, FlakeHub publishing/cache/private flakes, semver (rolling `0.1.<commits>`), `fh` CLI + `fh apply` |
 | `home-manager` | HM with flakes + flake-parts, worked example: `homeModules/profiles/netsa.nix` |
 | `clan-core` | inventory, clanServices, exports + strict-eval check, vars/generators, clan CLI, machine updates, clanService VM tests |
+| `clanservices` | Authoring clan.service modules in the official style: module skeleton + manifest options, roles/interfaces, perInstance/perMachine args, exports (mkExports/selectExports), vars generators, registration + inventory instances, static-only verification |
 | `devenv` | devenv 2.x CLI reference, CLI-native vs flake embedding, borg hybrid pattern, devcontainer.json, monorepo/polyrepo, containers/K8s, Claude Code integration |
 | `vm-tests` | Hermetic NixOS VM tests: structure, size variants, running, agent loop |
 | `lib` | This repo's `customLib` (`relativeToRoot`, `mkLib`, injection channels, specialArgs gotcha) + the AGENTS flake lib (`mkSkills` skill cherry-picking, `loadAgents`, `agentsJson`, `skills-runtime`) |
 | `cilium` | Cilium 1.20.x: the v2 CRD-based BGP control plane (all four CRDs, advertisement types, auto-discovery, timers, no-BFD), LB IPAM, L2 announcements, network policy language, troubleshooting conditions + symptom table, operation playbook |
 | `disko` | Disko declarative disk partitioning: the `disko.devices` tree, CLI modes vs the NixOS module's auto-injected `fileSystems`/`boot`/`swapDevices`, clan-core auto-import of `machines/<name>/disko.nix` (module arrives via clanCore), ext4/btrfs/zfs recipes, LUKS + clan vars `neededFor="partitioning"` keys (initrd SSH unlock), 2-disk RAID1/ZFS-mirror redundancy |
 | `openebs` | OpenEBS 4.6.x Kubernetes CSI storage: the umbrella chart's five engines (Local PV hostpath/LVM/ZFS/rawfile + Replicated PV Mayastor), per-engine node prerequisites (HugePages, `nvme_tcp`, VGs/zpools), StorageClass parameter tables, DiskPool CRs, NVMe-oF TCP, KubeVirt live migration, CloudNativePG storage choice, air-gapped install (with verbatim save/push scripts), upgrades, troubleshooting symptom tables |
+| `clanservices` | Authoring clan.service modules in the official clan-core style: module skeleton + manifest options (constraints/categories/readme), roles/interfaces, perInstance/perMachine argument tables, multi-instance namespacing, experimental exports (`mkExports`/`selectExports`, scope ownership), vars generators, passing `self`/`pkgs`, this repo's flake-module registration + inventory instances, static-only verification |
 
 The reference sources are the repo's own curated docs (the
 `nix-flake` skill's former `references/*.md`, ported and extended with
@@ -89,7 +91,7 @@ When writing or editing any .nix file: read the opencode reference nix-style ...
 ## Enablement
 
 Defaults are off for all users; `profile-netsa` (the dev profile)
-enables all twelve aliases:
+enables all thirteen aliases:
 
 ```nix
 # flake-parts/homeModules/profiles/netsa.nix
@@ -100,6 +102,7 @@ homeSpec.programs.opencode.references = {
   determinate.enable = true;
   home-manager.enable = true;
   clan-core.enable = true;
+  clanservices.enable = true;
   devenv.enable = true;
   vm-tests.enable = true;
   lib.enable = true;

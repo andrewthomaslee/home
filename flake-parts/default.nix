@@ -12,6 +12,14 @@
   customLib = lib.extend (_self: _super: import ../lib {inherit lib;});
   inherit (customLib) relativeToRoot;
 in {
+  # Clan service registration: clanServices/*/flake-module.nix register
+  # clan.modules.<name> (upstream clan-core layout; the clanServices/
+  # flake-module.nix auto-importer picks up every service directory, so
+  # there is no hand-maintained module list). Imported at the TOP LEVEL
+  # of the flake-parts module — inside `clan = { ... }` the import would
+  # resolve as flake.clan.clan.modules and fail the strict eval.
+  imports = [(relativeToRoot "clanServices/flake-module.nix")];
+
   # ------ Per-System ------ #
   perSystem = {
     pkgs,
@@ -128,10 +136,6 @@ in {
       inventory = import (relativeToRoot "inventory.nix") {inherit customLib;};
       specialArgs = {inherit customLib inputs self;};
       inherit ((import "${inputs.clan-community}/services/rancher/flake-module.nix" {}).clan) exportInterfaces;
-      modules = {
-        "@andrewthomaslee/machine-type" = relativeToRoot "clanServices/machine-type";
-        "@andrewthomaslee/tags" = relativeToRoot "clanServices/tags";
-      };
     };
   };
 }

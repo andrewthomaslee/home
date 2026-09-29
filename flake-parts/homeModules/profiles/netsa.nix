@@ -81,6 +81,8 @@
               home-manager.enable = true;
               # clan-core fleet management
               clan-core.enable = true;
+              # Authoring clan.service modules (clanServices) upstream style
+              clanservices.enable = true;
               # devenv 2.x (CLI, hybrid borg pattern, containers)
               devenv.enable = true;
               # Hermetic NixOS VM tests

@@ -87,6 +87,7 @@ emits a `settings.references.<name>` entry (`path` +
 | `determinate` | Determinate docs map, FlakeHub publishing/cache/private flakes, semver (rolling `0.1.<commits>`), `fh` CLI + `fh apply` |
 | `home-manager` | HM with flakes + flake-parts, worked example: `homeModules/profiles/netsa.nix` |
 | `clan-core` | inventory, clanServices, exports + strict-eval check, vars/generators, clan CLI, machine updates, clanService VM tests |
+| `clanservices` | Authoring clan.service modules in the official style: module skeleton + manifest options, roles/interfaces, perInstance/perMachine args, exports (mkExports/selectExports), vars generators, registration + inventory instances, static-only verification |
 | `devenv` | devenv 2.x CLI reference, CLI-native vs flake embedding, borg hybrid pattern, devcontainer.json, monorepo/polyrepo, containers/K8s, Claude Code integration |
 | `vm-tests` | Hermetic NixOS VM tests: structure, size variants, running, agent loop |
 | `disko` | Disko declarative disk partitioning: `disko.devices` tree, CLI modes vs module auto-injection, clan-core auto-import + module source, ext4/btrfs/zfs recipes, LUKS + clan vars partitioning keys, 2-disk RAID1/ZFS-mirror redundancy |
