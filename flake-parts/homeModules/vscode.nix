@@ -22,26 +22,11 @@
         profiles = {
           default = {
             extensions = with pkgs.unstable.vscode-extensions; [
-              gleam.gleam
               kamadorueda.alejandra
               jnoortheen.nix-ide
-              bradlc.vscode-tailwindcss
               redhat.vscode-yaml
-              redhat.vscode-xml
-              charliermarsh.ruff
-              ms-python.python
-              tamasfe.even-better-toml
-              esbenp.prettier-vscode
-              ecmel.vscode-html-css
               catppuccin.catppuccin-vsc-icons
-              irongeek.vscode-env
-              # hashicorp.terraform
-              budparr.language-hugo-vscode
               gruntfuggly.todo-tree
-              ms-azuretools.vscode-docker
-              github.vscode-github-actions
-              github.vscode-pull-request-github
-              github.codespaces
             ];
             userSettings = {
               security.workspace.trust.untrustedFiles = "open";
@@ -162,27 +147,6 @@
           };
         };
       };
-      # Home-manager Packages
-      home.packages = with pkgs.unstable; [
-        pyrefly
-        ruff
-        helm-ls
-        terraform-ls
-        kubectl
-        kubernetes-helm
-        alejandra
-        devcontainer
-        devpod
-        nixd
-        gleam
-        nodejs
-        kind
-        # mongodb-compass
-        pgadmin4-desktopmode
-        duckdb
-        # herdr
-        actionlint
-      ];
 
       programs.bash.shellAliases = {
         c = "codium .";

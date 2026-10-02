@@ -98,5 +98,7 @@ in {
         extraModules = [(relativeToRoot "users/wife")];
       };
     };
+
+    trusted-nix-caches.roles.default.tags.all = {};
   };
 }

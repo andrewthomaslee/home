@@ -33,12 +33,12 @@
     };
     config = lib.mkIf cfg.enabled {
       home.packages = [
-        pkgs.devenv
+        pkgs.unstable.devenv
       ];
       # initExtra (end of ~/.bashrc) so the hook wraps the PROMPT_COMMAND
       # already chained by the direnv/starship integration above it.
       programs.bash.initExtra = lib.mkIf cfg.autoActivate.enabled ''
-        eval "$(${lib.getExe pkgs.devenv} hook bash)"
+        eval "$(${lib.getExe pkgs.unstable.devenv} hook bash)"
       '';
     };
   };

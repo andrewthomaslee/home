@@ -19,6 +19,7 @@
         };
 
         settings = {
+          accept-flake-config = true;
           download-buffer-size = 524288000; # 500MB
           auto-optimise-store = true;
           trusted-users = ["root" "netsa"];
@@ -35,27 +36,26 @@
           ];
 
           trusted-public-keys = [
+            "openshell.cachix.org-1:OAr5MunsfH5PZvUsfD08OtGx5RtcwdNZGJdU5FqLm5w="
             "nix-cache:4FILs79Adxn/798F8qk2PC1U8HaTlaPqptwNJrXNA1g="
             "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
             "flox-cache-public-1:7F4OyH7ZCnFhcze3fJdfyXYLQw/aV7GEed86nQ7IsOs="
             "devenv.cachix.org-1:w1cLUi8dv3hnoSPGAuibQv+f9TZLr6cv/Hm9XgU50cw="
+            "cache.geninf.io-1:uhEViaczNKSoerYM+w7uqXUzlAhnbEBKsFzgg9n3cvI="
             "cache.clan.lol-1:3KztgSAB5R1M+Dz7vzkBGzXdodizbgLXGXKXlcQLA28="
           ];
 
           extra-substituters = [
-            "https://cache.nixos.org"
             "https://nix-community.cachix.org"
-            "https://cache.lounge.rocks/nix-cache"
-            # devenv flake package deps (its own nix fork, rust, cachix) are only served here
             "https://devenv.cachix.org"
+            "https://cache.geninf.io"
           ];
 
           trusted-substituters = [
-            "https://cache.nixos.org"
-            "https://cache.lounge.rocks"
             "https://cache.flox.dev"
-            "https://devenv.cachix.org"
             "https://cache.clan.lol"
+            "https://cache.lounge.rocks"
+            "https://openshell.cachix.org"
           ];
         };
       };

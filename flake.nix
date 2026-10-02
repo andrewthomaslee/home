@@ -1,5 +1,25 @@
 {
   description = "Dendritic Determinate Flake";
+
+  nixConfig = {
+    extra-substituters = [
+      "https://openshell.cachix.org"
+      "https://devenv.cachix.org"
+      "https://cache.clan.lol"
+      "https://nix-community.cachix.org"
+      "https://chaotic-nyx.cachix.org"
+      "https://cache.geninf.io"
+    ];
+    extra-trusted-public-keys = [
+      "openshell.cachix.org-1:OAr5MunsfH5PZvUsfD08OtGx5RtcwdNZGJdU5FqLm5w="
+      "devenv.cachix.org-1:w1cLUi8dv3hnoSPGAuibQv+f9TZLr6cv/Hm9XgU50cw="
+      "cache.clan.lol-1:3KztgSAB5R1M+Dz7vzkBGzXdodizbgLXGXKXlcQLA28="
+      "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
+      "chaotic-nyx.cachix.org-1:HfnXSw4pj95iI/n8ae7W70yP3m9y9633ndgliTLGsQI="
+      "cache.geninf.io-1:uhEViaczNKSoerYM+w7uqXUzlAhnbEBKsFzgg9n3cvI="
+    ];
+  };
+
   inputs = {
     # Determinate Nix
     # https://docs.determinate.systems/guides/advanced-installation/
@@ -87,6 +107,14 @@
     # the devenv.cachix.org substituter already trusted in
     # nixosModules/nix.nix.
     devenv.url = "github:cachix/devenv?ref=v2.3.1";
+    # Required for devenv container builds:
+    nix2container = {
+      url = "github:nlewo/nix2container";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+    mk-shell-bin.url = "github:rrbutani/nix-mk-shell-bin";
+
+    openshell.url = "github:NVIDIA/OpenShell?ref=v0.1.2";
 
     # ArtifactHub MCP — stdio MCP server for Helm charts on artifacthub.io
     # (opencode mcp server). Repo has no flake.nix, so the source tree is
@@ -132,12 +160,6 @@
     # a deeper skillsDir.
     skills-davidondrej = {
       url = "github:davidondrej/skills";
-      flake = false;
-    };
-
-    # Splashtop Streamer — remote-access daemon, Ubuntu amd64 tarball containing the .deb
-    splashtop-streamer = {
-      url = "https://download.splashtop.com/linux/STB_CSRS_Ubuntu_v3.8.2.0_amd64.tar.gz";
       flake = false;
     };
   };

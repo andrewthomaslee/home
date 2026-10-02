@@ -9,24 +9,25 @@
 #   - flake mode: overlays/default.nix provides `unstable` and `clan-cli`.
 #   - CLI mode: the root devenv.nix overlay provides the same attributes
 #     from the devenv.yaml inputs (pinned to the same revs as flake.lock).
-{
-  pkgs,
-  lib,
-  ...
-}: {
+{pkgs, ...}: {
   # ------ Packages ------ #
-  packages =
-    [
-      pkgs.clan-cli
-    ]
-    ++ (with pkgs.unstable; [
-      alejandra
-      bash
-      bun
-      deadnix
-      disko
-      statix
-    ]);
+  packages = with pkgs; [
+    # core
+    bash
+    clan-cli
+
+    #linters
+    alejandra
+    deadnix
+    statix
+
+    # lsp
+    nixd
+
+    # runtime
+    bun
+    skopeo
+  ];
 
   # ------ Environment ------ #
   # Repo root + clan dir (required by the clan CLI), and the gitignored
@@ -34,7 +35,7 @@
   enterShell = ''
     export REPO_ROOT="$(git rev-parse --show-toplevel)"
     export CLAN_DIR="$REPO_ROOT"
-    eval "$(bunx varlock load --format shell)"
+    eval "$(bunx varlock@1.21.1 load --format shell)"
   '';
 
   # devenv needs to query the working directory; pure evals (flake
@@ -46,11 +47,6 @@
     if pwd == ""
     then "/tmp/devenv-pure-root"
     else pwd;
-
-  # No container use case here; the flake-parts module would generate
-  # container-shell/container-processes outputs that throw at eval time
-  # without nix2container/mk-shell-bin inputs.
-  containers = lib.mkForce {};
 
   # The repo loads secrets via varlock in enterShell, not .env — silence
   # devenv's "consider dotenv" hint.

@@ -37,31 +37,7 @@
       fi
       exec ${lib.getExe pkgs.unstable.github-mcp-server} stdio "$@"
     '';
-    # devenv MCP wrapper: `devenv mcp` requires a devenv project
-    # (devenv.nix in cwd or an ancestor) and hard-exits otherwise. Mirror
-    # devenv's own project discovery (walk up for devenv.nix); when there
-    # is none (e.g. the home repo, which uses plain `nix develop`), fall
-    # back to the pinned agent project generated in xdg.configFile below
-    # so the server always starts and can serve
-    # search_packages / search_options.
-    devenvMcpWrapper = pkgs.writeShellScriptBin "devenv-mcp-opencode" ''
-      dir="$PWD"
-      while [ "$dir" != "/" ]; do
-        if [ -f "$dir/devenv.nix" ]; then
-          exec ${lib.getExe pkgs.devenv} mcp "$@"
-        fi
-        dir="$(dirname "$dir")"
-      done
-      cd "$HOME/.config/devenv-agent"
-      exec ${lib.getExe pkgs.devenv} mcp "$@"
-    '';
-    # Hermetic plugin packages (flake-parts/packages/opencode-plugins.nix).
-    # V2 native-plugin entries: each is an absolute store-path file whose
-    # module default-exports a V2 plugin `{ id, setup|effect }` (the V1
-    # loader accepted default-export hook functions; those no longer run).
-    pluginEntries =
-      lib.optional cfg.plugins.cc-safety-net.enable "${pkgs.cc-safety-net}/share/opencode-plugins/cc-safety-net/dist/index.js"
-      ++ lib.optional cfg.plugins.opencode-mem.enable "${pkgs.opencode-mem}/share/opencode-plugins/opencode-mem/dist/v2/plugin.js";
+
     # ---- References (V2 attachable doc bundles) ---- #
     # Repo-side source: top-level `references/<name>/index.md` (one dir
     # per reference, mirroring the skills/ convention). Enabled
@@ -260,13 +236,6 @@
   in {
     options.homeSpec.programs.opencode = {
       enable = lib.mkEnableOption "default opencode configuration";
-      # Install the Electron desktop app (opencode-desktop). Disable for
-      # headless machines (saves ~2.4 GB: electron + gtk stack).
-      enableDesktop = lib.mkOption {
-        type = lib.types.bool;
-        default = true;
-        description = "Install opencode-desktop (Electron GUI app).";
-      };
       # Install the full heavy development toolset (k3s, rke2, k3d, devpod,
       # devcontainer, podman, gleam, terraform-ls, helm-ls, go_latest).
       # Disable for slim headless agents (keeps docker, kubectl, helm).
@@ -335,20 +304,6 @@
           default = true;
           description = "Enable the mcp-nixos MCP server in opencode settings.";
         };
-        # OpenRouter remote MCP: live model catalog, pricing, credits,
-        # benchmarks, docs search. Hosted; OAuth flow on first use.
-        openrouter.enable = lib.mkOption {
-          type = lib.types.bool;
-          default = true;
-          description = "Enable the OpenRouter remote MCP server in opencode settings.";
-        };
-        # Playwright: browser automation via accessibility snapshots
-        # (hermetic nixpkgs package; browsers pinned in the store).
-        playwright.enable = lib.mkOption {
-          type = lib.types.bool;
-          default = true;
-          description = "Enable the Playwright MCP server (nixpkgs playwright-mcp) in opencode settings.";
-        };
         # GitHub: auth method selected by `auth`; the two methods are
         # mutually exclusive (enum + assertion below). pat-mode derives the
         # clan vars generator via nixosModules/github-mcp.
@@ -378,46 +333,6 @@
               Only used with mcp.github.auth = "pat"; must be null for "oauth".
             '';
           };
-        };
-        # Cloudflare remote MCP servers (hosted by Cloudflare; OAuth on
-        # first use, the docs server is public). Off by default, enabled
-        # via the netsa tag profile for the netsa dev machines.
-        cloudflare.enable = lib.mkOption {
-          type = lib.types.bool;
-          default = false;
-          description = "Enable the Cloudflare Code Mode MCP server (recommended, broad access across Cloudflare APIs through code execution).";
-        };
-        cloudflare-docs.enable = lib.mkOption {
-          type = lib.types.bool;
-          default = false;
-          description = "Enable the Cloudflare Documentation MCP server (up-to-date Cloudflare reference information).";
-        };
-        cloudflare-bindings.enable = lib.mkOption {
-          type = lib.types.bool;
-          default = false;
-          description = "Enable the Cloudflare Workers Bindings MCP server (build Workers apps with storage, AI, and compute primitives).";
-        };
-        cloudflare-builds.enable = lib.mkOption {
-          type = lib.types.bool;
-          default = false;
-          description = "Enable the Cloudflare Workers Builds MCP server (insights and management for Cloudflare Workers Builds).";
-        };
-        cloudflare-browser.enable = lib.mkOption {
-          type = lib.types.bool;
-          default = false;
-          description = "Enable the Cloudflare Browser Run MCP server (fetch web pages, convert to markdown, take screenshots).";
-        };
-        cloudflare-containers.enable = lib.mkOption {
-          type = lib.types.bool;
-          default = false;
-          description = "Enable the Cloudflare Container MCP server (spin up a sandbox development environment).";
-        };
-        # MDN Web Docs remote MCP server (hosted by Mozilla; off by
-        # default, enabled via the netsa tag profile).
-        mdn.enable = lib.mkOption {
-          type = lib.types.bool;
-          default = false;
-          description = "Enable the MDN Web Docs MCP server (up-to-date web API/CSS/JS reference from Mozilla).";
         };
         # ArtifactHub MCP server (local stdio, hermetic nix build; off by
         # default, enabled via the netsa tag profile). Helm-chart tools
@@ -453,14 +368,6 @@
           default = false;
           description = "Enable the devenv MCP server (search nixpkgs packages and devenv options) in opencode settings.";
         };
-        # TypeUI: hosted design-skills MCP for AI-first UI work
-        # (https://mcp.typeui.sh/mcp, OAuth on first use). Off by default,
-        # enabled for the dev profile.
-        typeui.enable = lib.mkOption {
-          type = lib.types.bool;
-          default = false;
-          description = "Enable the TypeUI remote MCP server (design systems and UI prompts) in opencode settings.";
-        };
         # Varlock docs MCP: hosted docs-search server
         # (https://docs.mcp.varlock.dev/mcp, public, no auth). Off by
         # default, enabled via the netsa tag profile.
@@ -468,30 +375,6 @@
           type = lib.types.bool;
           default = false;
           description = "Enable the Varlock docs MCP server (search varlock.dev documentation) in opencode settings.";
-        };
-      };
-
-      # ---- Plugins: homeSpec.programs.opencode.plugins.<name>.enable ---- #
-      plugins = {
-        # CC Safety Net: pre-tool-call guard blocking destructive commands
-        # (git reset --hard, rm -rf on dangerous targets, ...) and secret
-        # access (SSH keys, .env, ~/.aws). Pure-JS plugin, hermetic build;
-        # policy tuning is runtime state via `cc-safety-net gui`.
-        cc-safety-net.enable = lib.mkOption {
-          type = lib.types.bool;
-          default = true;
-          description = "Enable the CC Safety Net plugin (blocks destructive commands and secret access).";
-        };
-        # opencode-mem: persistent project memory with local vector search
-        # (embedded libSQL + onnxruntime embeddings). The default embedding
-        # model (Xenova/nomic-embed-text-v1) is downloaded from Hugging
-        # Face on first use and cached under ~/.opencode-mem. Web UI on
-        # 127.0.0.1:4747. Runtime config at
-        # ~/.config/opencode/opencode-mem.jsonc (plugin writes a template).
-        opencode-mem.enable = lib.mkOption {
-          type = lib.types.bool;
-          default = false;
-          description = "Enable the opencode-mem persistent memory plugin (memory tool + web UI).";
         };
       };
 
@@ -546,41 +429,41 @@
           customSkills = relativeToRoot "skills";
           externalSkills = [
             # Claude skills from anthropics/skills (all skills under skills/)
-            {src = inputs.skills-anthropic;}
+            # {src = inputs.skills-anthropic;}
             # Payload CMS skills (payload, cms-migration)
-            {src = inputs.skills-payloadcms;}
+            # {src = inputs.skills-payloadcms;}
             # davidondrej/skills nests skills one level deeper
             # (skills/<category>/<name>), so each wanted category gets its
             # own entry with a deeper skillsDir; the leaf names are unique
             # across categories, so no linkFarm collisions. Unknown
             # selectSkills names are silently dropped by mkSkills — verify
             # the installed set with ls ~/.config/opencode/skills.
-            {
-              src = inputs.skills-davidondrej;
-              skillsDir = "skills/agent-orchestration";
-              selectSkills = ["git-worktree" "goal-loop" "handoff" "herdr" "fable-review" "fable-safe-prompt" "gpt-review" "total-review"];
-            }
-            {
-              src = inputs.skills-davidondrej;
-              skillsDir = "skills/ops-and-setup";
-              selectSkills = ["create-readonly-db-role" "openrouter" "prompt-for-others" "risky-changes" "setup-help"];
-            }
-            {
-              src = inputs.skills-davidondrej;
-              skillsDir = "skills/research-and-web";
-              selectSkills = ["domain-checker" "who-is-this"];
-            }
-            {
-              src = inputs.skills-davidondrej;
-              skillsDir = "skills/skill-authoring";
-              selectSkills = ["effective-agent-skills"];
-            }
-            # thinking-and-docs: the whole category (no selectSkills —
-            # auto-includes everything there now and future).
-            {
-              src = inputs.skills-davidondrej;
-              skillsDir = "skills/thinking-and-docs";
-            }
+            # {
+            #   src = inputs.skills-davidondrej;
+            #   skillsDir = "skills/agent-orchestration";
+            #   selectSkills = ["git-worktree" "goal-loop" "handoff" "herdr" "fable-review" "fable-safe-prompt" "gpt-review" "total-review"];
+            # }
+            # {
+            #   src = inputs.skills-davidondrej;
+            #   skillsDir = "skills/ops-and-setup";
+            #   selectSkills = ["create-readonly-db-role" "openrouter" "prompt-for-others" "risky-changes" "setup-help"];
+            # }
+            # {
+            #   src = inputs.skills-davidondrej;
+            #   skillsDir = "skills/research-and-web";
+            #   selectSkills = ["domain-checker" "who-is-this"];
+            # }
+            # {
+            #   src = inputs.skills-davidondrej;
+            #   skillsDir = "skills/skill-authoring";
+            #   selectSkills = ["effective-agent-skills"];
+            # }
+            # # thinking-and-docs: the whole category (no selectSkills —
+            # # auto-includes everything there now and future).
+            # {
+            #   src = inputs.skills-davidondrej;
+            #   skillsDir = "skills/thinking-and-docs";
+            # }
           ];
         };
 
@@ -599,89 +482,8 @@
               })
               enabledReferences);
         };
-
-        # devenv MCP fallback project: pinned devenv project the
-        # devenv-mcp-opencode wrapper serves when opencode is opened
-        # outside a devenv project. nixpkgs is pinned to the repo flake's
-        # nixpkgs input as a store path — no runtime fetch and search
-        # results match the fleet's nixpkgs. devenv writes devenv.lock and
-        # runtime state (.devenv/) next to these files on first use.
-        "devenv-agent/devenv.yaml" = lib.mkIf cfg.mcp.devenv.enable {
-          text = ''
-            inputs:
-              nixpkgs:
-                url: path:${inputs.nixpkgs}
-              # devenv 2.x implicitly adds a `devenv` input on first lock
-              # update; pin it to the repo's devenv flake input so the
-              # fallback project stays fully offline (VMs boot without
-              # working DNS).
-              devenv:
-                url: path:${inputs.devenv.outPath}
-          '';
-        };
-        "devenv-agent/devenv.nix" = lib.mkIf cfg.mcp.devenv.enable {
-          text = ''
-            {...}: {
-              # Pinned minimal devenv project: fallback root for the
-              # devenv MCP server (devenv-mcp-opencode wrapper) when
-              # opencode runs outside a devenv project.
-              packages = [];
-            }
-          '';
-        };
       };
 
-      home.packages =
-        (lib.optionals cfg.enableDesktop [
-          # Overlay package: inputs.opencode v2.0.16 with the upstream
-          # postInstall completion fix (see overlays/default.nix).
-          pkgs.opencode-desktop
-        ])
-        ++ (lib.optionals cfg.fullDevTools (with pkgs.unstable; [
-          podman
-          gleam
-          helm-ls
-          terraform-ls
-          go_latest
-          devcontainer
-          k3d
-          (lib.lowPrio k3s)
-          rke2
-          devpod
-          kustomize
-          kubeconform
-          stern
-          kubectx
-          kubectl-neat
-          helm-docs
-          rancher
-          etcd
-          kubevirt
-          kubernetes-helmPlugins.helm-diff
-        ]))
-        ++ (lib.optionals cfg.mcp.playwright.enable [
-          pkgs.playwright-mcp
-        ])
-        ++ (lib.optionals cfg.mcp.github.enable [
-          pkgs.unstable.github-mcp-server
-        ])
-        ++ (lib.optionals cfg.mcp.artifacthub.enable [
-          pkgs.artifacthub-mcp
-        ])
-        ++ (lib.optionals cfg.mcp.devenv.enable [
-          pkgs.devenv
-          # The devenv-mcp-opencode wrapper referenced by the local
-          # mcp.servers.devenv command, also installed on PATH so the
-          # server can be driven manually (the VM test probes it that way).
-          devenvMcpWrapper
-        ])
-        ++ (lib.optionals (cfg.mcp.github.enable && cfg.mcp.github.auth == "pat") [
-          githubMcpWrapper
-        ])
-        # Plugin packages: referenced by store path in settings.plugins, so
-        # keep them in the closure (GC safety).
-        ++ (lib.optional cfg.plugins.cc-safety-net.enable pkgs.cc-safety-net)
-        ++ (lib.optional cfg.plugins.opencode-mem.enable pkgs.opencode-mem);
       assertions = [
         {
           assertion = cfg.mcp.github.auth == "oauth" -> cfg.mcp.github.patFile == null;
@@ -693,66 +495,6 @@
         # Package comes from the overlay (inputs.opencode v2.0.16 with the
         # upstream postInstall completion fix).
         package = pkgs.opencode;
-        extraPackages =
-          (with pkgs.unstable; [
-            actionlint
-            uv
-            nix
-            pyrefly
-            nixd
-            statix
-            deadnix
-            nix-output-monitor
-            yaml-language-server
-            alejandra
-            ruff
-            python3
-            git
-            httpie
-            kubernetes-helm
-            jq
-            yq
-            bun
-            nodejs-slim_latest
-            docker
-            kubernetes
-          ])
-          # Overlay package (self.packages), not in nixpkgs-unstable.
-          ++ [pkgs.opencode-nixd-scaffold]
-          ++ (lib.optionals cfg.fullDevTools (with pkgs.unstable; [
-            podman
-            gleam
-            helm-ls
-            terraform-ls
-            go_latest
-            devcontainer
-            k3d
-            (lib.lowPrio k3s)
-            rke2
-            devpod
-            kustomize
-            kubeconform
-            stern
-            kubectx
-            kubectl-neat
-            helm-docs
-            rancher
-            etcd
-            kubevirt
-            kubernetes-helmPlugins.helm-diff
-          ]))
-          ++ (lib.optionals cfg.mcp.playwright.enable [
-            pkgs.playwright-mcp
-          ])
-          ++ (lib.optionals cfg.mcp.github.enable [
-            pkgs.unstable.github-mcp-server
-          ])
-          ++ (lib.optionals cfg.mcp.artifacthub.enable [
-            pkgs.artifacthub-mcp
-          ])
-          ++ (lib.optionals cfg.mcp.devenv.enable [
-            pkgs.devenv
-          ]);
         tui.theme = "tokyonight";
         settings = lib.mkMerge [
           {
@@ -799,24 +541,6 @@
                 effect = "allow";
               }
             ];
-            # NOTE: V1 settings.lsp was dropped — V2 accepts lsp config but
-            # never runs language servers; diagnostics come from the agent
-            # running the linters/typecheckers in extraPackages directly
-            # (statix/deadnix/nix build, pyrefly check, gleam check, ...).
-            formatter = {
-              nix = {
-                command = ["alejandra" "$FILE"];
-                extensions = [".nix"];
-              };
-              ruff = {
-                command = ["ruff" "format" "$FILE"];
-                extensions = [".py" ".pyi"];
-              };
-              gleam = {
-                command = ["gleam" "format" "$FILE"];
-                extensions = [".gleam"];
-              };
-            };
           }
           (lib.mkIf cfg.mcp.nix.enable {
             mcp.servers.nixos = {
@@ -824,26 +548,7 @@
               command = ["${lib.getExe inputs.mcp-nixos.packages.${pkgs.stdenv.hostPlatform.system}.mcp-nixos}"];
             };
           })
-          (lib.mkIf cfg.mcp.openrouter.enable {
-            mcp.servers.openrouter = {
-              # Remote hosted server: no local install, no docker/uvx.
-              # opencode handles the OAuth login automatically on first
-              # tool use (minted key expires after 7 days).
-              type = "remote";
-              url = "https://mcp.openrouter.ai/mcp";
-            };
-          })
-          (lib.mkIf cfg.mcp.playwright.enable {
-            mcp.servers.playwright = {
-              # Hermetic local server: the nixpkgs wrapper pins the
-              # browser bundle (playwright-driver.browsers) and the
-              # playwright node modules, so nothing is downloaded at
-              # runtime. --headless so it works on displayless agents;
-              # chromium is the nixpkgs default browser.
-              type = "local";
-              command = ["${lib.getExe pkgs.playwright-mcp}" "--headless"];
-            };
-          })
+
           (lib.mkIf cfg.mcp.github.enable {
             mcp.servers.github =
               if cfg.mcp.github.auth == "pat"
@@ -861,52 +566,6 @@
                 type = "remote";
                 url = "https://api.githubcopilot.com/mcp/";
               };
-          })
-          # Cloudflare remote MCP servers: hosted by Cloudflare, no local
-          # install. opencode handles the Cloudflare OAuth flow on first
-          # tool use (the docs server is public).
-          (lib.mkIf cfg.mcp.cloudflare.enable {
-            mcp.servers.cloudflare = {
-              type = "remote";
-              url = "https://mcp.cloudflare.com/mcp";
-            };
-          })
-          (lib.mkIf cfg.mcp.cloudflare-docs.enable {
-            mcp.servers.cloudflare-docs = {
-              type = "remote";
-              url = "https://docs.mcp.cloudflare.com/mcp";
-            };
-          })
-          (lib.mkIf cfg.mcp.cloudflare-bindings.enable {
-            mcp.servers.cloudflare-bindings = {
-              type = "remote";
-              url = "https://bindings.mcp.cloudflare.com/mcp";
-            };
-          })
-          (lib.mkIf cfg.mcp.cloudflare-builds.enable {
-            mcp.servers.cloudflare-builds = {
-              type = "remote";
-              url = "https://builds.mcp.cloudflare.com/mcp";
-            };
-          })
-          (lib.mkIf cfg.mcp.cloudflare-browser.enable {
-            mcp.servers.cloudflare-browser = {
-              type = "remote";
-              url = "https://browser.mcp.cloudflare.com/mcp";
-            };
-          })
-          (lib.mkIf cfg.mcp.cloudflare-containers.enable {
-            mcp.servers.cloudflare-containers = {
-              type = "remote";
-              url = "https://containers.mcp.cloudflare.com/mcp";
-            };
-          })
-          (lib.mkIf cfg.mcp.mdn.enable {
-            # MDN Web Docs, hosted by Mozilla — no local install.
-            mcp.servers.mdn = {
-              type = "remote";
-              url = "https://mcp.mdn.mozilla.net/";
-            };
           })
           (lib.mkIf cfg.mcp.artifacthub.enable {
             # ArtifactHub, local stdio server — hermetic nix build from the
@@ -929,16 +588,6 @@
                 ++ lib.optional cfg.mcp.kubernetes.readOnly "--read-only";
             };
           })
-          (lib.mkIf cfg.mcp.devenv.enable {
-            # devenv MCP: local stdio `devenv mcp` via the wrapper —
-            # serves the cwd's devenv project when there is one, the
-            # pinned ~/.config/devenv-agent project otherwise (devenv
-            # hard-exits outside devenv projects).
-            mcp.servers.devenv = {
-              type = "local";
-              command = ["${devenvMcpWrapper}/bin/devenv-mcp-opencode"];
-            };
-          })
           (lib.mkIf headroomEnabled {
             mcp.servers.headroom = {
               type = "local";
@@ -955,19 +604,6 @@
               deepseek.settings.baseURL = headroomProxyUrl;
               anthropic.settings.baseURL = headroomProxyUrl;
               openai.settings.baseURL = headroomProxyUrl;
-            };
-          })
-          # NOTE: no settings.instructions entries anywhere: opencode v2
-          # does not resolve the instructions config array (see
-          # services/www/src/docs/content/instructions.mdx at the pinned
-          # opencode rev). File-based instructions ride the global
-          # ~/.config/opencode/AGENTS.md (written above); project
-          # AGENTS.md files are discovered automatically.
-          # TypeUI: hosted design-skills MCP (OAuth on first use).
-          (lib.mkIf cfg.mcp.typeui.enable {
-            mcp.servers.typeui = {
-              type = "remote";
-              url = "https://mcp.typeui.sh/mcp";
             };
           })
           # Varlock docs: hosted docs-search server
@@ -1002,14 +638,6 @@
                 effect = "allow";
               }
             ];
-          })
-          # Plugin entries: single definition so mkMerge never sees two
-          # conflicting `plugins` lists. Each entry is an absolute store
-          # path (a V2 plugin module: default export `{ id, setup }`), so
-          # nothing is fetched from npm at runtime; the packages are kept
-          # alive via home.packages.
-          (lib.mkIf (pluginEntries != []) {
-            plugins = pluginEntries;
           })
         ];
       };

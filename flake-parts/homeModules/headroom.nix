@@ -11,7 +11,7 @@
       enable = lib.mkEnableOption "headroom context compression layer";
       package = lib.mkOption {
         type = lib.types.package;
-        default = pkgs.headroom;
+        default = pkgs.headroom-slim;
         defaultText = lib.literalExpression "pkgs.headroom";
         description = "The headroom package to install.";
       };
@@ -49,7 +49,7 @@
         };
         learn = lib.mkOption {
           type = lib.types.bool;
-          default = true;
+          default = false;
           description = "Enable live traffic learning.";
         };
         extraArgs = lib.mkOption {
