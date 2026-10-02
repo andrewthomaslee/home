@@ -18,21 +18,10 @@
     };
 
     config = lib.mkIf cfg.enable {
-      clan.core.vars.generators.tailscale = {
-        share = true;
-        prompts.auth_key.persist = true;
-      };
-
       services.tailscale = {
         inherit (cfg) enable;
         package = pkgs.unstable.tailscale;
         openFirewall = true;
-        authKeyFile = config.clan.core.vars.generators.tailscale.files.auth_key.path;
-        useRoutingFeatures = "server";
-        extraUpFlags = [
-          "--advertise-exit-node"
-          "--advertise-tags=tag:netsam"
-        ];
       };
       networking = {
         networkmanager.unmanaged = ["tailscale0"];
@@ -64,7 +53,7 @@
         };
       };
 
-      systemd.user.services.tailscale-systray = lib.mkIf (cfg.systray && cfg.enable) {
+      systemd.user.services.tailscale-systray = lib.mkIf cfg.systray {
         enable = true;
         description = "Tailscale Systray GUI";
         after = [

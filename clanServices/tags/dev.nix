@@ -25,6 +25,17 @@
           warp.enable = lib.mkForce true;
         };
       };
+      tailscale.configuration = {
+        hostSpec = {
+          networking = {
+            tailscale = {
+              enable = lib.mkForce true;
+              systray = lib.mkForce true;
+            };
+            warp.enable = lib.mkForce false;
+          };
+        };
+      };
     };
   };
 }
