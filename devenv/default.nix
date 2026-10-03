@@ -27,6 +27,9 @@
     # runtime
     bun
     skopeo
+
+    # agents
+    pi-coding-agent
   ];
 
   # ------ Environment ------ #
