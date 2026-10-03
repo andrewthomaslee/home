@@ -35,7 +35,7 @@
       }
       ''
         status=0
-        for input in nixpkgs nixpkgs-unstable clan-core; do
+        for input in nixpkgs nixpkgs-unstable clan-core nix2container mk-shell-bin; do
           flake_rev=$(jq -r ".nodes.\"$input\".locked.rev // empty" "$flakeLock")
           devenv_rev=$(jq -r ".nodes.\"$input\".locked.rev // empty" "$devenvLock")
           if [ -z "$flake_rev" ]; then

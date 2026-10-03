@@ -16,6 +16,10 @@
     bash
     clan-cli
 
+    # git
+    gitMinimal
+    gh
+
     #linters
     alejandra
     deadnix
