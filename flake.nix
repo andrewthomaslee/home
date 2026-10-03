@@ -60,11 +60,6 @@
     flake-parts.follows = "clan-core/flake-parts";
     import-tree.url = "github:denful/import-tree";
     flake-schemas.url = "https://flakehub.com/f/DeterminateSystems/flake-schemas/0";
-    kubenix = {
-      url = "github:hall/kubenix";
-      inputs.nixpkgs.follows = "nixpkgs-unstable";
-      inputs.flake-parts.follows = "flake-parts";
-    };
 
     # ------ Packages ------ #
     # Zen Browser
@@ -79,21 +74,8 @@
       inputs.nixpkgs.follows = "nixpkgs-unstable";
     };
 
-    # neofetch for kube
-    kubefetch.url = "https://flakehub.com/f/andrewthomaslee/kubefetch/*";
-
     # Jovian NixOS
     jovian.url = "github:Jovian-Experiments/Jovian-NixOS";
-
-    # OpenCode
-    # Pinned to the v2.0.16 release tag: v2 is a major rework (new plugin
-    # API, new server API, native V2 config shape); see
-    # https://opencode.ai/docs/migrate-v1/ for the breaking changes this
-    # repo's homeModules/opencode.nix was migrated to.
-    opencode = {
-      url = "github:anomalyco/opencode?ref=v2.0.16";
-      inputs.nixpkgs.follows = "nixpkgs-unstable";
-    };
 
     # MCP-NixOS — MCP server for NixOS / Home Manager / nix-darwin
     # package & option search (opencode mcp server).
@@ -114,6 +96,7 @@
     };
     mk-shell-bin.url = "github:rrbutani/nix-mk-shell-bin";
 
+    # NVIDIA Agent Sandboxing
     openshell.url = "github:NVIDIA/OpenShell?ref=v0.1.2";
 
     # ArtifactHub MCP — stdio MCP server for Helm charts on artifacthub.io
@@ -141,26 +124,6 @@
     agents = {
       url = "git+https://code.m3ta.dev/m3tam3re/AGENTS";
       inputs.nixpkgs.follows = "nixpkgs-unstable";
-    };
-    skills-anthropic = {
-      url = "github:anthropics/skills";
-      flake = false;
-    };
-
-    # Payload CMS AI agent skills (opencode skills; source tree, not a
-    # flake). Root `skills/` dir with `payload` and `cms-migration`.
-    skills-payloadcms = {
-      url = "github:payloadcms/skills";
-      flake = false;
-    };
-
-    # David Ondrej's agent skills (source tree, not a flake). Skills live
-    # two levels deep (skills/<category>/<name>/SKILL.md), so
-    # homeModules/opencode.nix wires one mkSkills entry per category with
-    # a deeper skillsDir.
-    skills-davidondrej = {
-      url = "github:davidondrej/skills";
-      flake = false;
     };
   };
 
