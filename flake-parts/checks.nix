@@ -11,7 +11,7 @@
     # future statix.toml to the suffix list or statix won't see it.
     checks.lint =
       pkgs.runCommand "lint" {
-        nativeBuildInputs = with pkgs.unstable; [alejandra statix deadnix];
+        nativeBuildInputs = with pkgs; [alejandra statix deadnix];
       } ''
         cd ${lib.sources.sourceFilesBySuffices self [".nix"]}
         alejandra --check .

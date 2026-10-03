@@ -59,11 +59,9 @@
       pciutils
       usbutils
       efibootmgr
-      curl
-      wget
       git
-      neovim
-      tmux
+      gh
+      fh
       htop
       btrfs-progs
       dosfstools

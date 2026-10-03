@@ -64,17 +64,13 @@
         };
       };
       # Home Options
-      home.packages = with pkgs;
-        [
-          moscripts
-          kubefetch
-          openshell
-        ]
-        ++ (with pkgs.unstable; [
-          asciinema
-          kalker
-          freelens-bin
-        ]);
+      home.packages = with pkgs; [
+        moscripts
+        openshell
+        asciinema
+        kalker
+        freelens-bin
+      ];
     };
   };
 }
