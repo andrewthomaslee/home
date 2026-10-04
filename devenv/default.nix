@@ -35,7 +35,7 @@
     skopeo
 
     # agents
-    pi-coding-agent
+    opencode
   ];
 
   # ------ Environment ------ #
