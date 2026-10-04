@@ -14,6 +14,8 @@
   packages = with pkgs; [
     # core
     bash
+    cacert
+    nix
     clan-cli
 
     # git
@@ -40,6 +42,7 @@
   # Repo root + clan dir (required by the clan CLI), and the gitignored
   # .env loaded via varlock (SOPS_AGE_KEY, GITHUB_TOKEN, ...).
   enterShell = ''
+    git config core.fileMode false
     export REPO_ROOT="$(git rev-parse --show-toplevel)"
     export CLAN_DIR="$REPO_ROOT"
     eval "$(bunx varlock@1.21.1 load --format shell)"
