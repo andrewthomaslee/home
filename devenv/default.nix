@@ -9,11 +9,15 @@
 #   - flake mode: overlays/default.nix provides `unstable` and `clan-cli`.
 #   - CLI mode: the root devenv.nix overlay provides the same attributes
 #     from the devenv.yaml inputs (pinned to the same revs as flake.lock).
-{pkgs, ...}: {
-  # ------ Packages ------ #
-  packages = with pkgs; [
+{
+  pkgs,
+  lib,
+  ...
+}:
+with pkgs; let
+  packages = [
     # core
-    bash
+    bashInteractive
     cacert
     nix
     clan-cli
@@ -26,6 +30,7 @@
     alejandra
     deadnix
     statix
+    actionlint
 
     # lsp
     nixd
@@ -35,17 +40,43 @@
     skopeo
 
     # agents
-    opencode
+    pi-coding-agent
   ];
+in {
+  # ------ Packages ------ #
+  inherit packages;
+
+  # ------ Containers ------ #
+  # Generic image: never bake the host worktree into a container. In CLI
+  # mode `devenv container build` raw-copies the whole project into a
+  # `devenv-container-home` store path, ignoring .gitignore — so .env,
+  # .secrets and .baton-pass would otherwise ship in the image. Humans get
+  # the tree via the editor's bind-mount; agents clone at runtime.
+  #
+  # `lib.mkForce` REPLACES the default (list options concatenate, a plain
+  # assignment would append). Verify the resolved option type on the host:
+  #   devenv eval containers.shell.copyToRoot
+  # If it is a single path rather than a list, use `lib.mkForce null`.
+  containers.shell = {
+    name = "home-shell";
+    registry = "oci://ghcr.io/andrewthomaslee/home";
+    maxLayers = 128;
+    copyToRoot = lib.mkForce [];
+  };
 
   # ------ Environment ------ #
   # Repo root + clan dir (required by the clan CLI), and the gitignored
-  # .env loaded via varlock (SOPS_AGE_KEY, GITHUB_TOKEN, ...).
+  # .env loaded via varlock when present. Both are guarded so the same
+  # module also works in a fresh agent clone (no .env, no prior git repo).
   enterShell = ''
-    git config core.fileMode false
-    export REPO_ROOT="$(git rev-parse --show-toplevel)"
-    export CLAN_DIR="$REPO_ROOT"
-    eval "$(bunx varlock@1.21.1 load --format shell)"
+    if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+      git config core.fileMode false
+      export REPO_ROOT="$(git rev-parse --show-toplevel)"
+      export CLAN_DIR="$REPO_ROOT"
+    fi
+    if [ -f "$PWD/.env" ]; then
+      eval "$(bunx varlock@1.21.1 load --format shell)"
+    fi
   '';
 
   # devenv needs to query the working directory; pure evals (flake

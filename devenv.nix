@@ -9,6 +9,11 @@
 {inputs, ...}: {
   imports = [./devenv];
 
+  # Agent sandbox variant activated with `devenv --profile agent shell`.
+  # Shares the generic image (no host worktree) and adds agent-runtime
+  # conveniences (token credential helper, ephemeral agent state).
+  profiles.agent.module.imports = [./devenv/agent.nix];
+
   overlays = [
     (_final: prev: {
       unstable = import inputs.nixpkgs-unstable {

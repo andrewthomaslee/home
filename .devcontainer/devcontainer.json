@@ -1,19 +1,21 @@
 {
+  "name": "home (devenv)",
   "build": {
     "dockerfile": "Dockerfile",
     "context": ".."
   },
+  "remoteUser": "root",
+  "mounts": [
+    "source=home-nix-store,target=/nix,type=volume"
+  ],
+  "postCreateCommand": "devenv allow && devenv shell -- true",
   "customizations": {
     "vscode": {
       "extensions": [
         "mkhl.direnv",
-        "jnoortheen.nix-ide"
+        "jnoortheen.nix-ide",
+        "arrterian.nix-env-selector"
       ]
     }
-  },
-  "mounts": [
-    "source=nix-store,target=/nix,type=volume"
-  ],
-  "postCreateCommand": "git config --global --add safe.directory /workspaces/home",
-  "remoteUser": "root"
+  }
 }

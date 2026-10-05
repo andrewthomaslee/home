@@ -1,0 +1,9 @@
+id: pi-agent
+resource_version: 1
+display_name: Pi agent sandbox
+description: Generic devenv image, runtime clone, OpenRouter + GitHub
+image: shell:latest
+policy: ./openshell/policies/nix.yaml
+providers:
+  - openrouter
+  - github
