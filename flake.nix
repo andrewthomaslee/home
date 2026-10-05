@@ -9,6 +9,9 @@
       "https://nix-community.cachix.org"
       "https://chaotic-nyx.cachix.org"
       "https://cache.geninf.io"
+      # numtide/llm-agents.nix builds kimi-code from source; its daily CI
+      # pushes the result here, so consuming the input does not rebuild it.
+      "https://cache.numtide.com"
     ];
     extra-trusted-public-keys = [
       "openshell.cachix.org-1:OAr5MunsfH5PZvUsfD08OtGx5RtcwdNZGJdU5FqLm5w="
@@ -17,6 +20,7 @@
       "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
       "chaotic-nyx.cachix.org-1:HfnXSw4pj95iI/n8ae7W70yP3m9y9633ndgliTLGsQI="
       "cache.geninf.io-1:uhEViaczNKSoerYM+w7uqXUzlAhnbEBKsFzgg9n3cvI="
+      "niks3.numtide.com-1:DTx8wZduET09hRmMtKdQDxNNthLQETkc/yaX7M4qK0g="
     ];
   };
 
@@ -120,6 +124,14 @@
 
     # Whisper Dictation — local push-to-talk speech-to-text daemon (whisper.cpp)
     whisper-dictation.url = "github:jacopone/whisper-dictation";
+
+    # numtide/llm-agents.nix — Nix packages for AI coding agents, daily
+    # updated and built from source. Used for the Kimi Code CLI
+    # (packages.<system>.kimi-code, exposed here as pkgs.kimi-code via
+    # overlays/default.nix). nixpkgs is deliberately NOT followed: the
+    # package is a from-source pnpm build, and only the pinned nixpkgs
+    # combination is covered by the numtide binary cache (see nixConfig).
+    llm-agents.url = "github:numtide/llm-agents.nix";
 
     agents = {
       url = "git+https://code.m3ta.dev/m3tam3re/AGENTS";

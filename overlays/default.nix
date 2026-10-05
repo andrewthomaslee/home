@@ -23,6 +23,12 @@
   artifacthub-mcp = self.packages.${final.stdenv.hostPlatform.system}.artifacthub-mcp;
   kubernetes-mcp-server = self.packages.${final.stdenv.hostPlatform.system}.kubernetes-mcp-server;
 
+  # Kimi Code CLI from numtide/llm-agents.nix (from-source pnpm build; binary
+  # is `kimi`). Referenced by flake-parts/homeModules/kimi-code.nix. Taken
+  # from the input's own package set, not its overlay, so the numtide binary
+  # cache still hits (see the llm-agents input comment in flake.nix).
+  kimi-code = inputs.llm-agents.packages.${final.stdenv.hostPlatform.system}.kimi-code;
+
   apply-and-reboot = self.packages.${final.stdenv.hostPlatform.system}.apply-and-reboot;
   apply-to-reboot = self.packages.${final.stdenv.hostPlatform.system}.apply-to-reboot;
   apply-now = self.packages.${final.stdenv.hostPlatform.system}.apply-now;

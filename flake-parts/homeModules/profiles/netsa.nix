@@ -26,6 +26,8 @@
           starship.enable = true;
           vscode.enable = true;
           openshell.enable = true;
+          # Kimi Code CLI (numtide/llm-agents.nix)
+          kimi-code.enable = true;
           opencode = {
             enable = true;
             # Dev-profile references (off by module default): attachable
