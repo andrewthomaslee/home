@@ -47,7 +47,9 @@ _: {
 
     # `gateway add` errors when the gateway already exists (User source),
     # so the activation is gated on the metadata file the command writes.
-    register = cfg.gateway.register && cfg.enable;
+    # Skipped entirely when a system gateway is mirrored: the symlinked
+    # metadata.json already satisfies the check.
+    register = cfg.gateway.register && cfg.enable && cfg.systemGateway == null;
   in {
     options.homeSpec.programs.openshell = {
       enable = lib.mkEnableOption "the NVIDIA OpenShell CLI user environment";
@@ -79,6 +81,25 @@ _: {
           default = true;
           description = "Register the gateway via home.activation on activation. Idempotent: skipped once gateway metadata exists. The command also selects the gateway as active.";
         };
+      };
+
+      systemGateway = lib.mkOption {
+        type = lib.types.nullOr lib.types.str;
+        default = null;
+        example = "local";
+        description = ''
+          Name of a gateway registration seeded system-wide by the NixOS
+          module (hostSpec.services.openshell.gateway) to mirror into this
+          user's ~/.config/openshell. The registration metadata and the mTLS
+          bundle are symlinked from /etc/openshell — necessary because the
+          CLI reads the mtls bundle only from the per-user config, never
+          from the system registry — and the registration is made the user's
+          active gateway declaratively. null disables the mirror (use
+          gateway.register for a plaintext self-registered gateway instead).
+          Mutually exclusive with gateway.register: the symlinked
+          metadata.json satisfies register's idempotency check, and the
+          active gateway is managed declaratively while this is set.
+        '';
       };
 
       settings = lib.mkOption {
@@ -164,10 +185,31 @@ _: {
         '');
       };
 
-      xdg.configFile = {
-        "openshell/gateway.toml".source = gatewayConfig;
-        "openshell/policy.yaml" = lib.mkIf (policyFile != null) {source = policyFile;};
-      };
+      xdg.configFile =
+        {
+          "openshell/gateway.toml".source = gatewayConfig;
+          "openshell/policy.yaml" = lib.mkIf (policyFile != null) {source = policyFile;};
+        }
+        # Mirror of the NixOS module's system-seeded registration: the CLI
+        # reads the mTLS bundle only from the per-user config, so link the
+        # metadata + bundle from /etc/openshell (out-of-store symlinks — the
+        # targets are root-owned /etc files, and the CLI never rewrites them;
+        # mutable per-user state like last_sandbox still lives in the real
+        # directory next to these links).
+        // lib.optionalAttrs (cfg.systemGateway != null) {
+          "openshell/gateways/${cfg.systemGateway}/metadata.json".source =
+            config.lib.file.mkOutOfStoreSymlink "/etc/openshell/gateways/${cfg.systemGateway}/metadata.json";
+          "openshell/gateways/${cfg.systemGateway}/mtls/ca.crt".source =
+            config.lib.file.mkOutOfStoreSymlink "/etc/openshell/gateways/${cfg.systemGateway}/mtls/ca.crt";
+          "openshell/gateways/${cfg.systemGateway}/mtls/tls.crt".source =
+            config.lib.file.mkOutOfStoreSymlink "/etc/openshell/gateways/${cfg.systemGateway}/mtls/tls.crt";
+          "openshell/gateways/${cfg.systemGateway}/mtls/tls.key".source =
+            config.lib.file.mkOutOfStoreSymlink "/etc/openshell/gateways/${cfg.systemGateway}/mtls/tls.key";
+          # A real file (not a symlink into root-owned /etc) so
+          # `openshell gateway select` keeps working for the user; it is
+          # reset to the system gateway on each home activation.
+          "openshell/active_gateway".text = cfg.systemGateway;
+        };
     };
   };
 }

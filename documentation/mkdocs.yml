@@ -20,6 +20,8 @@ nav:
       - KubeVirt AI Agent: harness/kubevirt-agent.md
   - Whisper Dictation:
       - Overview: whisper-dictation/index.md
+  - OpenShell:
+      - Overview: openshell/index.md
   - Minecraft:
       - Overview: minecraft/index.md
       - mc.andrewlee.fun: minecraft/mc-andrewlee-fun.md

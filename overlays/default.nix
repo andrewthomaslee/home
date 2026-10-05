@@ -18,6 +18,10 @@
   longhornctl = self.packages.${final.stdenv.hostPlatform.system}.longhornctl;
 
   openshell = self.packages.${final.stdenv.hostPlatform.system}.openshell;
+  openshell-gateway =
+    self.packages.${final.stdenv.hostPlatform.system}.openshell-gateway;
+  openshell-driver-vm =
+    self.packages.${final.stdenv.hostPlatform.system}.openshell-driver-vm;
   headroom = self.packages.${final.stdenv.hostPlatform.system}.headroom;
   headroom-slim = self.packages.${final.stdenv.hostPlatform.system}.headroom-slim;
   artifacthub-mcp = self.packages.${final.stdenv.hostPlatform.system}.artifacthub-mcp;
