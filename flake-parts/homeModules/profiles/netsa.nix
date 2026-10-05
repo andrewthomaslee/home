@@ -25,6 +25,7 @@
           ssh.enable = true;
           starship.enable = true;
           vscode.enable = true;
+          openshell.enable = true;
           opencode = {
             enable = true;
             # Dev-profile references (off by module default): attachable
@@ -66,7 +67,6 @@
       # Home Options
       home.packages = with pkgs; [
         moscripts
-        openshell
         asciinema
         kalker
         freelens-bin
