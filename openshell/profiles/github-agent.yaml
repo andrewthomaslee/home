@@ -1,0 +1,72 @@
+# Custom OpenShell provider profile: GitHub with agent write access.
+#
+# The built-in `github` profile is read-only (no git push, no issues/PRs),
+# which is right for generic use but too tight for a coding agent that must
+# open PRs. This variant grants read-write on api.github.com and adds the
+# git-receive-pack rule so `git push` over smart HTTP works. Use a
+# DEDICATED GitHub account/bot for this: create a fine-grained PAT scoped
+# to the repos the agent may touch, then:
+#
+#   export GITHUB_TOKEN=github_pat_...   # the bot account's PAT
+#   openshell profile import --file openshell/profiles/github-agent.yaml
+#   openshell provider create --name github-agent --type github-agent \
+#     --credential GITHUB_TOKEN
+#
+# ⚠️ Breadth warning: read-write allows POST/PUT/PATCH on every
+# api.github.com path (repos, issues, PRs, actions, settings the token can
+# see). A compromised sandbox can do anything the PAT can. Scope the PAT
+# down (single repo, no admin) rather than widening the profile later.
+id: github-agent
+resource_version: 1
+display_name: GitHub Agent
+description: GitHub API and git operations with write access for coding agents
+category: source_control
+credentials:
+  - name: api_token
+    description: GitHub token (dedicated bot account PAT recommended)
+    env_vars:
+      - GITHUB_TOKEN
+      - GH_TOKEN
+    required: true
+    auth_style: bearer
+    header_name: authorization
+    query_param: ""
+endpoints:
+  - host: api.github.com
+    port: 443
+    protocol: rest
+    access: read-write
+    enforcement: enforce
+  - host: api.github.com
+    port: 443
+    protocol: graphql
+    access: read-write
+    enforcement: enforce
+    path: /graphql
+  - host: github.com
+    port: 443
+    protocol: rest
+    enforcement: enforce
+    rules:
+      - allow:
+          method: GET
+          path: "**"
+      - allow:
+          method: HEAD
+          path: "**"
+      - allow:
+          method: OPTIONS
+          path: "**"
+      - allow:
+          method: POST
+          path: "/**/git-upload-pack"
+      - allow:
+          method: POST
+          path: "/**/git-receive-pack"
+binaries:
+  - /nix/store/*-git-*/bin/git
+  - /nix/store/*-gh-*/bin/gh
+inference_capable: false
+discovery:
+  credentials:
+    - api_token

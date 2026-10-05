@@ -413,7 +413,11 @@ _: {
           # kvm: /dev/kvm for the libkrun driver. keys: sops-nix creates the
           # /run/secrets.d directory chain root:keys 0710, so this is what
           # lets the service reach its owner-tagged secret files.
-          extraGroups = ["kvm" "keys"];
+          # docker: lets the VM driver resolve sandbox images from the host
+          # container engine's local image store (e.g. dockerTools images
+          # loaded with `docker load`) before falling back to a registry
+          # pull.
+          extraGroups = ["kvm" "keys" "docker"];
           home = "/var/lib/openshell";
           description = "OpenShell gateway / compute driver service user";
         };

@@ -1,0 +1,31 @@
+# Sandbox policy for pi coding-agent sandboxes (pi-agent image).
+#
+# Network admission deliberately lives in the ATTACHED PROVIDER profiles
+# (kimi-for-coding + github-agent): their endpoint/binary bindings are
+# composed into the effective policy at attach time, and the gateway binds
+# the injected credentials to exactly those endpoints. This file carries
+# the filesystem contract only; with no network_policies of its own,
+# nothing beyond the attached profiles is reachable.
+version: 1
+
+filesystem_policy:
+  include_workdir: true
+  read_only:
+    - /bin
+    - /usr
+    - /lib
+    - /lib64
+    - /etc
+    - /proc
+    - /nix
+    - /nix/store
+    - /dev/urandom
+  read_write:
+    - /sandbox
+    - /tmp
+    - /home
+    - /env
+    - /dev/null
+
+landlock:
+  compatibility: best_effort

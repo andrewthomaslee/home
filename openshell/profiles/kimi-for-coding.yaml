@@ -1,0 +1,44 @@
+# Custom OpenShell provider profile: Moonshot AI "Kimi for Coding"
+# (Anthropic-compatible endpoint used by the pi coding agent,
+# https://api.kimi.com/coding).
+#
+# There is no built-in profile for this endpoint, so this one is modeled
+# directly on the built-in `github` profile (see `openshell profile export
+# github --output yaml`). Import once per gateway, then create a provider
+# bound to the endpoint:
+#
+#   export KIMI_API_KEY=$(jq -r '."kimi-coding".key' ~/.pi/agent/auth.json)
+#   openshell profile import --file openshell/profiles/kimi-for-coding.yaml
+#   openshell provider create --name kimi-for-coding --type kimi-for-coding \
+#     --credential KIMI_API_KEY    # bare KEY reads the value from the env
+id: kimi-for-coding
+resource_version: 1
+display_name: Kimi for Coding
+description: Moonshot AI Kimi coding endpoint (api.kimi.com, Anthropic-compatible)
+category: inference
+inference_capable: true
+credentials:
+  - name: api_key
+    description: Kimi for Coding API key
+    env_vars:
+      - KIMI_API_KEY
+    required: true
+    auth_style: bearer
+    header_name: authorization
+    query_param: ""
+endpoints:
+  - host: api.kimi.com
+    port: 443
+    protocol: rest
+    # pi streams POST /coding/v1/messages; read-write covers POST/PUT/PATCH
+    # and still blocks DELETE.
+    access: read-write
+    enforcement: enforce
+binaries:
+  # pi-agent image (flake-parts/ociImages/pi-agent.nix). pi's bin is a
+  # wrapper whose process image is the wrapped node binary, so pin both.
+  - /nix/store/*-pi-coding-agent-*/bin/pi
+  - /nix/store/*-nodejs*/bin/node
+discovery:
+  credentials:
+    - api_key

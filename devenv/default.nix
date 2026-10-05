@@ -38,6 +38,7 @@ with pkgs; let
     # runtime
     bun
     skopeo
+    python3Minimal
 
     # agents
     pi-coding-agent
