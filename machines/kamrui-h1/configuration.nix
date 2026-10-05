@@ -5,6 +5,7 @@ _: {
     system.jovian.enable = true;
 
     services = {
+      openshell.gateway.enable = true;
       # Push-to-talk speech-to-text (whisper.cpp, Vulkan on the AMD iGPU).
       # Hotkey: hold Ctrl+Period. C270 webcam mic is the recording source.
       # The push-to-talk keyboard is pinned in ~/.config/whisper-dictation/
