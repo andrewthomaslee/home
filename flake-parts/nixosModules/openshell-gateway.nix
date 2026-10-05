@@ -18,10 +18,22 @@ _: {
   # Secrets (clan vars generators, provisionSecrets = true):
   #   openshell-local-ca            (shared) instance CA; ca.key never deployed
   #   openshell-local-gateway-tls   gateway server cert/key (SANs below)
-  #   openshell-local-client-tls    machine-wide CLI + supervisor client identity
   #   openshell-local-jwt           Ed25519 gateway JWT keys
+  #   openshell-local-client-tls    machine-wide CLI + supervisor identity
   # Run `clan vars generate <machine>` after enabling. Set provisionCerts =
   # false and the *File options to bring external material instead.
+  #
+  # Ownership (hard-won — clan vars deployment model): sops-nix deploys
+  # secret files root:root 0400 under /run/secrets.d/<gen>/vars/... whose
+  # directories are root:keys 0710. A service user therefore needs (a)
+  # membership in the `keys` group for directory traversal and (b) ownership
+  # (or group+mode) on the files it reads — both declared per generator
+  # file via owner/group/mode, which clan maps onto sops.secrets. The
+  # machine-wide client key additionally has to be readable by every CLI
+  # user; it is deployed world-readable (0644 — the documented machine-wide
+  # identity threat model) to /etc/openshell/.../tls.key by overriding the
+  # path on the clan-mapped sops secret, so the gateway's guest identity
+  # and all CLI users share a single deployment (no diverging copies).
   flake.nixosModules.openshell-gateway = {
     config,
     options,
@@ -296,7 +308,15 @@ _: {
           # Gateway server identity.
           openshell-local-gateway-tls = {
             files."gateway.crt".secret = false;
-            files."gateway.key" = {};
+            # Owned outright by the service user: `keys` group membership
+            # (users.users.openshell) grants traversal of the 0710
+            # /run/secrets directories, ownership the read.
+            files."gateway.key" = {
+              owner = "openshell";
+              group = "openshell";
+              mode = "0400";
+              restartUnits = ["openshell-gateway.service"];
+            };
             dependencies = ["openshell-local-ca"];
             runtimeInputs = [pkgs.openssl];
             script = ''
@@ -312,11 +332,16 @@ _: {
             '';
           };
 
-          # Machine-wide client identity: the openshell CLI's mTLS bundle and
-          # the compute driver's supervisor-side identity (guest_tls_*).
+          # Machine-wide CLI identity and the gateway's guest (supervisor)
+          # identity. Deployed world-readable by sops-nix at /etc/openshell/
+          # .../tls.key via the sops.secrets path override below — both
+          # consumers read that one file.
           openshell-local-client-tls = {
             files."client.crt".secret = false;
-            files."client.key" = {};
+            files."client.key" = {
+              mode = "0644";
+              restartUnits = ["openshell-gateway.service"];
+            };
             dependencies = ["openshell-local-ca"];
             runtimeInputs = [pkgs.openssl];
             script = ''
@@ -336,7 +361,13 @@ _: {
           # authentication minted from these.
           openshell-local-jwt = {
             files = {
-              "signing.pem" = {};
+              # Same ownership model as gateway.key above.
+              "signing.pem" = {
+                owner = "openshell";
+                group = "openshell";
+                mode = "0400";
+                restartUnits = ["openshell-gateway.service"];
+              };
               "public.pem".secret = false;
               "kid".secret = false;
             };
@@ -349,10 +380,40 @@ _: {
           };
         };
 
+        # Materialize the machine-wide client key as a real file in the
+        # system registry by overriding the path on the sops secret clan
+        # vars already maps. A single deployment serves the gateway's
+        # guest identity (the generator file's .path follows this
+        # override, so the TOML picks it up through fileFor) and every CLI
+        # user (via /etc/openshell directly or the home-manager mirror).
+        # environment.etc cannot do this: it would only symlink the
+        # root:root 0400 /run/secrets target, which non-root users cannot
+        # read, and its mode is ignored on symlinks.
+        # The guard mirrors the filter in clan-core's generators-to-sops
+        # (the secret only exists once the var has been generated and
+        # committed); defining it early would create a bogus entry
+        # pointing at the dummy sopsFile. Lazy `&&` keeps the clan option
+        # access inside the condition unevaluated for provisionSecrets =
+        # false consumers (vm test, external flakes).
+        sops.secrets = let
+          clientKeySecret = "vars/per-machine/${config.clan.core.settings.machine.name}/openshell-local-client-tls/client.key";
+        in
+          lib.mkIf (
+            cfg.provisionSecrets
+            && builtins.pathExists "${config.clan.core.settings.directory}/${clientKeySecret}/secret"
+          ) {
+            ${clientKeySecret} = {
+              path = "/etc/openshell/gateways/${cfg.name}/mtls/tls.key";
+            };
+          };
+
         users.users.openshell = {
           isSystemUser = true;
           group = "openshell";
-          extraGroups = ["kvm"];
+          # kvm: /dev/kvm for the libkrun driver. keys: sops-nix creates the
+          # /run/secrets.d directory chain root:keys 0710, so this is what
+          # lets the service reach its owner-tagged secret files.
+          extraGroups = ["kvm" "keys"];
           home = "/var/lib/openshell";
           description = "OpenShell gateway / compute driver service user";
         };
@@ -407,9 +468,11 @@ _: {
           };
           "openshell/gateways/${cfg.name}/mtls/ca.crt".source = clientCa;
           "openshell/gateways/${cfg.name}/mtls/tls.crt".source = clientCert;
-          # Machine-wide identity by design (no per-user identities); the
-          # file must be readable by every CLI user.
-          "openshell/gateways/${cfg.name}/mtls/tls.key" = {
+          # Machine-wide identity by design (no per-user identities). With
+          # provisionSecrets, sops-nix materializes this file (sops.secrets
+          # override above); only external material (provisionSecrets =
+          # false, e.g. the vm test) needs the etc link.
+          "openshell/gateways/${cfg.name}/mtls/tls.key" = lib.mkIf (!cfg.provisionSecrets) {
             source = clientKey;
             mode = "0644";
           };

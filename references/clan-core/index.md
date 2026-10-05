@@ -554,8 +554,40 @@ Generator option anatomy:
   machines consume) instead of per-machine copies.
 - `files.<name>` — declared outputs. `secret = true` (default)
   encrypts; `secret = false` stores plaintext. Extra consumer wiring:
-  `owner`, `mode` (`"0400"`), `neededFor = "services"` installs the
-  decrypted file before the units that read it start.
+  `owner` (default `"root"`), `group` (default `"root"` on NixOS,
+  `"wheel"` on darwin), `mode` (`"0400"`), and `neededFor`
+  (`"services"` default — decrypted to `/run/secrets/...` before units
+  start; `"users"` to `/run/secrets-for-users` with owner/group forced
+  root, e.g. `hashedPasswordFile`; `"activation"` to
+  `/var/lib/sops-nix/activation/...`; `"partitioning"` to
+  `/run/partitioning-secrets/...` before disko). `restartUnits` (sops-nix
+  only, NixOS only) restarts the listed units when the var rotates.
+
+**Deployment permissions (hard-won, verified against clan-core
+`be949cb`).** sops-nix deploys secret files `root:root 0400` under
+`/run/secrets.d/<gen>/vars/...`, and every directory in that chain is
+`root:keys 0710` — so a non-root service user cannot read (or even
+traverse to) a secret unless you do both of:
+
+1. add the service user to the `keys` group (directory traversal), and
+2. tag the generator file with `owner`/`group`/`mode` (clan maps these
+   onto `sops.secrets`, which chowns the deployed file).
+
+A secret that must be readable by ordinary users (a machine-wide client
+identity, a shared TLS bundle) cannot live under `/run/secrets` at all:
+override `path` on the clan-mapped `sops.secrets` entry to materialize
+a real copy elsewhere (e.g. `/etc/...`), and set a readable `mode` on
+the generator file. Two traps: guard the override with
+`builtins.pathExists "<dir>/vars/.../<file>/secret"` (clan's own filter —
+defining the entry before the var is generated points it at the dummy
+sopsFile), and never read `config.sops.secrets` from inside a
+`sops.secrets` definition (infinite recursion — the membership check
+must not come from the option you are defining). `environment.etc` is
+not an alternative: it symlinks the `/run/secrets` target (mode ignored
+on symlinks, target unreadable).
+
+Reference implementation: `flake-parts/nixosModules/openshell-gateway.nix`
+in the home repo.
 - `prompts.<name>` — ask the operator for a value instead of computing.
   `type = "hidden"` for secrets, `persist = true` to keep an existing
   answer when regenerating.

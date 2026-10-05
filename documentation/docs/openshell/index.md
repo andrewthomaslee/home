@@ -18,7 +18,11 @@ module (`flake-parts/nixosModules/openshell-gateway.nix`, exported as
   `openshell-local-gateway-tls`, `openshell-local-client-tls`,
   `openshell-local-jwt` (Ed25519). Run `clan vars generate <machine>` after
   enabling. `provisionSecrets = false` plus the `*File` options accepts
-  externally managed material (this is how the vm test works).
+  externally managed material (this is how the vm test works). File
+  ownership is part of the design: `gateway.key`/`signing.pem` are owned by
+  the `openshell` user, the machine-wide `client.key` is deployed
+  world-readable to `/etc/openshell/.../tls.key` — see the ownership
+  lessons below.
 - **CLI**: `pkgs.openshell` installed for all users; the system registry
   `/etc/openshell` seeds a `local` gateway registration with the machine's
   mTLS bundle and sets it active. Home-manager users get the per-user
@@ -202,6 +206,25 @@ inventories**:
   sandbox).
 - **The release `openshell-driver-vm` binary is glibc-dynamic** — needs
   `autoPatchelfHook` on NixOS.
+- **clan vars secrets are unreachable by service users unless you say so.**
+  sops-nix deploys secret files `root:root 0400` under
+  `/run/secrets.d/<gen>/vars/...` whose directories are `root:keys 0710`.
+  A non-root service user needs (a) membership in the `keys` group (dir
+  traversal) and (b) `owner`/`group`/`mode` on the generator *file* —
+  these are real per-file options (`modules/clan/export-modules/generic-generator.nix`
+  in clan-core, mapped onto `sops.secrets`), as is `restartUnits`, which
+  restarts the unit when the var rotates. Without them the gateway
+  crash-loops on `Permission denied (os error 13)` reading its JWT key.
+- **`environment.etc` cannot carry secret material.** An etc entry whose
+  source is a `/run/secrets` path is just a symlink — the `mode` is ignored
+  and non-root readers hit the unreadable target (both the service user
+  and CLI users, via the home-manager mirror, failed this way). To make a
+  secret readable beyond root, override `path` on the clan-mapped
+  `sops.secrets` entry (guard with `builtins.pathExists` on
+  `vars/.../<file>/secret`, mirroring clan's own filter, and never read
+  `config.sops.secrets` from inside a `sops.secrets` definition — infinite
+  recursion). The generator file's `.path` follows the override, so the
+  gateway config and every CLI user share one deployment.
 - Open question never resolved (clan-core at the pinned rev): during a
   `clanTest` machine eval, an import of `<serviceDir>/tests/default.nix`
   was demanded even though nothing referenced it — likely an undocumented
