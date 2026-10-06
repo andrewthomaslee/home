@@ -1,0 +1,169 @@
+# Sandbox policy for the devenv-agent image (devenv shells.agent
+# container): pi coding agent on kimi-for-coding, its own GitHub
+# identity, nix build, and (TCG — the VM driver exposes no /dev/kvm)
+# nixos vm tests. Attach providers at create time:
+#
+#   openshell sandbox create --name agent --from devenv-agent:latest \
+#     --provider kimi-for-coding --provider github-agent \
+#     --policy openshell/policies/devenv-agent.yaml --cpu 4 --memory 8Gi \
+#     -- bash -l
+#
+# The kimi/github credential bindings come from the attached profiles;
+# the rules here additionally pin them to binaries and admit the nix
+# build/test endpoints. Run commands through the image entrypoint so
+# PATH picks up the devenv environment:
+#   openshell sandbox exec -n agent -- <entrypoint> nix build .
+version: 1
+
+filesystem_policy:
+  include_workdir: true
+  read_only:
+    - /bin
+    - /usr
+    - /lib
+    - /lib64
+    - /etc
+    - /proc
+    - /dev
+    - /dev/urandom
+  read_write:
+    - /sandbox
+    - /tmp
+    - /nix
+    - /env
+    - /home
+    - /dev/null
+    # nix opens a pseudoterminal master for build output; interactive pi
+    # sessions need it too.
+    - /dev/ptmx
+    - /dev/pts
+
+landlock:
+  compatibility: best_effort
+
+network_policies:
+  kimi_for_coding:
+    name: kimi_for_coding
+    endpoints:
+      - host: api.kimi.com
+        port: 443
+        protocol: rest
+        enforcement: enforce
+        access: read-write
+    binaries:
+      - { path: /nix/store/*-pi-coding-agent-*/bin/pi }
+      - { path: /nix/store/*-nodejs*/bin/node }
+
+  github:
+    name: github
+    endpoints:
+      - host: api.github.com
+        port: 443
+        protocol: rest
+        enforcement: enforce
+        access: read-write
+      - host: github.com
+        port: 443
+        protocol: rest
+        enforcement: enforce
+        rules:
+          - allow:
+              method: GET
+              path: "**"
+          - allow:
+              method: HEAD
+              path: "**"
+          - allow:
+              method: OPTIONS
+              path: "**"
+          - allow:
+              method: POST
+              path: "/**/git-upload-pack"
+          - allow:
+              method: POST
+              path: "/**/git-receive-pack"
+      - host: codeload.github.com
+        port: 443
+        protocol: rest
+        enforcement: enforce
+        access: read-only
+    binaries:
+      - { path: /nix/store/*-git-*/bin/git }
+      - { path: /nix/store/*-git-minimal-*/bin/git }
+      - { path: /nix/store/*-gh-*/bin/gh }
+
+  nix_binary_cache:
+    name: nix_binary_cache
+    endpoints:
+      - host: cache.nixos.org
+        port: 443
+        protocol: rest
+        enforcement: enforce
+        access: read-only
+    binaries:
+      - { path: /nix/store/*-nix-*/bin/nix }
+
+  # Public flake inputs (nixpkgs et al.): unauthenticated GitHub tarball
+  # + smart-HTTP hosts. Private repos ride the attached github-agent
+  # provider instead.
+  flake_inputs:
+    name: flake_inputs
+    endpoints:
+      - host: github.com
+        port: 443
+        protocol: rest
+        enforcement: enforce
+        rules:
+          - allow:
+              method: GET
+              path: "**"
+          - allow:
+              method: HEAD
+              path: "**"
+          - allow:
+              method: OPTIONS
+              path: "**"
+          - allow:
+              method: POST
+              path: "/>/git-upload-pack"
+      - host: codeload.github.com
+        port: 443
+        protocol: rest
+        enforcement: enforce
+        access: read-only
+      - host: api.github.com
+        port: 443
+        protocol: rest
+        enforcement: enforce
+        access: read-only
+      # Unlocked refs like nixpkgs# resolve through the global flake
+      # registry; locked flake builds (a repo with flake.lock) never
+      # touch these two hosts. channels redirects to releases.
+      - host: channels.nixos.org
+        port: 443
+        protocol: rest
+        enforcement: enforce
+        access: read-only
+      - host: releases.nixos.org
+        port: 443
+        protocol: rest
+        enforcement: enforce
+        access: read-only
+    binaries:
+      - { path: /nix/store/*-nix-*/bin/nix }
+      - { path: /nix/store/*-git-*/bin/git }
+      - { path: /nix/store/*-git-minimal-*/bin/git }
+
+  # FlakeHub: substituters baked into the image nix.conf (see devenv/
+  # agent.nix) + api host for flakehub: inputs.
+  flakehub:
+    name: flakehub
+    endpoints:
+      - { host: cache.flakehub.com, port: 443, protocol: rest,
+          enforcement: enforce, access: read-only }
+      - { host: edge.cache.flakehub.com, port: 443, protocol: rest,
+          enforcement: enforce, access: read-only }
+      - { host: api.flakehub.io, port: 443, protocol: rest,
+          enforcement: enforce, access: read-only }
+    binaries:
+      - { path: /nix/store/*-nix-*/bin/nix }

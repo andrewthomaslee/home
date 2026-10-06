@@ -1,8 +1,31 @@
 _: {
-  perSystem = {self', ...}: {
+  perSystem = {
+    self',
+    pkgs,
+    config,
+    ...
+  }: {
     packages = {
       devShell = self'.devShells.default;
       agentShell = self'.devShells.agent;
+
+      # The OpenShell sandbox image as a buildable package (CI: nix build
+      # .#agent-image). Loading into the host docker store — where the
+      # VM driver resolves images first — is `nix run .#load-agent-image`.
+      agent-image = config.devenv.shells.agent.containers.shell.derivation;
+    };
+
+    apps.load-agent-image = let
+      container = config.devenv.shells.agent.containers.shell;
+    in {
+      type = "app";
+      program = builtins.toString (pkgs.writeShellScript "load-agent-image" ''
+        set -euo pipefail
+        # copy-container <image-spec> <registry>; "docker-daemon:" loads
+        # into the local docker store as devenv-agent:latest.
+        exec ${container.copyScript} \
+          ${container.derivation} docker-daemon:
+      '');
     };
 
     devenv.shells = {
