@@ -230,3 +230,22 @@ Narrow additive grants: `openshell policy update agent
   dies opening a pseudoterminal master.
 - The built-in `github` profile is read-only; pushing needs
   `openshell/profiles/github-agent.yaml`.
+- Provider-injected credential env values are opaque supervisor handles
+  (`openshell:…`), not the raw secret — the policy proxy swaps the real
+  credential in at egress. Consequences: tools that validate token format
+  locally (`gh auth status`) report the env token as "invalid" even
+  though real API calls through the proxy work; and a rotated secret only
+  reaches new processes (restart long-running agents).
+- nixpkgs-wrapped CLIs (e.g. `gh` → `bin/.gh-wrapped`) must be pinned by
+  their kernel-resolved exe path in profile/policy `binaries` — the
+  supervisor matches `/proc/<pid>/exe`, not the symlink (the DENIED log
+  line says this too).
+
+## Shell completions
+
+`homeSpec.programs.openshell.completions.enable` (default true) installs
+bash/fish/zsh completions generated from the installed CLI at package
+build time (`home.packages` → `openshell-completions`). Requires the
+shell's completion loader — `programs.bash.enableCompletion` is already
+enabled for netsa. Apply with the normal home/nixos deploy (`apply-now
+home` or `sudo nixos-rebuild switch`).

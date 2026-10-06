@@ -64,8 +64,11 @@ endpoints:
           method: POST
           path: "/**/git-receive-pack"
 binaries:
+  # gh is a wrapper in nixpkgs: the kernel-resolved exe is bin/.gh-wrapped
+  # (the supervisor matches /proc/pid/exe, not the symlink), so pin both.
   - /nix/store/*-git-*/bin/git
   - /nix/store/*-gh-*/bin/gh
+  - /nix/store/*-gh-*/bin/.gh-wrapped
 inference_capable: false
 discovery:
   credentials:

@@ -88,9 +88,12 @@ network_policies:
         enforcement: enforce
         access: read-only
     binaries:
+      # gh is a wrapper in nixpkgs: the supervisor matches the
+      # kernel-resolved exe (bin/.gh-wrapped), not the symlink.
       - { path: /nix/store/*-git-*/bin/git }
       - { path: /nix/store/*-git-minimal-*/bin/git }
       - { path: /nix/store/*-gh-*/bin/gh }
+      - { path: /nix/store/*-gh-*/bin/.gh-wrapped }
 
   nix_binary_cache:
     name: nix_binary_cache

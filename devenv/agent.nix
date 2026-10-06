@@ -88,6 +88,14 @@ in {
     # Ephemeral repo clone: keep the coding agent's state out of it.
     REPO_URL = "https://github.com/andrewthomaslee/${repo}.git";
 
+    # Commit identity: the external-systems machine account, so the
+    # agent's commits/pushes are attributed to the bot (and its PRs are
+    # visibly authored by the bot, not by the operator).
+    GIT_AUTHOR_NAME = "andrewthomaslee-agent";
+    GIT_AUTHOR_EMAIL = "agent@external.systems";
+    GIT_COMMITTER_NAME = "andrewthomaslee-agent";
+    GIT_COMMITTER_EMAIL = "agent@external.systems";
+
     CLAN_DIR = repoDir;
     REPO_ROOT = repoDir;
     PI_CODING_AGENT_DIR = "/tmp/pi-agent";
