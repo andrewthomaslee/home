@@ -176,16 +176,17 @@ _: {
 
       printf '%s\n' 'NAME="code-agent"' 'ID="code-agent"' > $out/etc/os-release
 
-      # Git defaults: a neutral fallback identity (per-repo config
-      # overrides it) and a credential helper scoped to github.com that
-      # feeds git the provider-injected $GITHUB_TOKEN — without it git
-      # prompts for credentials on every https push. Scoped by URL on
-      # purpose: only github.com receives the (opaque) handle; the
-      # supervisor substitutes the real token at egress.
+      # Git defaults: the org bot identity (andrewthomaslee-agent, per
+      # the external-systems org — per-repo config can still override)
+      # and a credential helper scoped to github.com that feeds git the
+      # provider-injected $GITHUB_TOKEN — without it git prompts for
+      # credentials on every https push. Scoped by URL on purpose: only
+      # github.com receives the (opaque) handle; the supervisor
+      # substitutes the real token at egress.
       cat > $out/etc/gitconfig <<'EOF'
       [user]
-      	name = code-agent
-      	email = code-agent@localhost
+      	name = andrewthomaslee-agent
+      	email = andrewthomaslee-agent@users.noreply.github.com
       [credential "https://github.com"]
       	helper = "!f() { echo username=x-access-token; echo password=$GITHUB_TOKEN; }; f"
       EOF
