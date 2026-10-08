@@ -1,6 +1,6 @@
 ---
 name: openebs
-description: OpenEBS cloud-native storage (4.6.x): the umbrella Helm chart's five CSI engines (Local PV hostpath/LVM/ZFS/rawfile + Replicated PV Mayastor), per-engine node prerequisites (HugePages, nvme_tcp, VGs/zpools), StorageClass parameter tables, DiskPool CRs, NVMe-oF TCP/RDMA, KubeVirt live migration, CloudNativePG storage choice, air-gapped install (incl. verbatim save/push scripts), upgrades, and troubleshooting symptom tables. Load when provisioning Kubernetes storage classes, OpenEBS/Mayastor, or choosing stateful workload storage.
+description: "OpenEBS cloud-native storage (4.6.x): the umbrella Helm chart's five CSI engines (Local PV hostpath/LVM/ZFS/rawfile + Replicated PV Mayastor), per-engine node prerequisites (HugePages, nvme_tcp, VGs/zpools), StorageClass parameter tables, DiskPool CRs, NVMe-oF TCP/RDMA, KubeVirt live migration, CloudNativePG storage choice, air-gapped install (incl. verbatim save/push scripts), upgrades, and troubleshooting symptom tables. Load when provisioning Kubernetes storage classes, OpenEBS/Mayastor, or choosing stateful workload storage."
 ---
 
 # openebs

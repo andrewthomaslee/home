@@ -1,6 +1,6 @@
 ---
 name: home-manager
-description: home-manager with flakes and flake-parts: NixOS-module integration, the homeSpec.* namespace, the homeModules.default composition filter, and a worked user-profile example (flake-parts/homeModules/profiles/netsa.nix). Load when building or changing a home-manager user profile.
+description: "home-manager with flakes and flake-parts: NixOS-module integration, the homeSpec.* namespace, the homeModules.default composition filter, and a worked user-profile example (flake-parts/homeModules/profiles/netsa.nix). Load when building or changing a home-manager user profile."
 ---
 
 # home-manager

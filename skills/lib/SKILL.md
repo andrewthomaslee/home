@@ -1,6 +1,6 @@
 ---
 name: lib
-description: Custom libs: this repo's customLib (lib/default.nix — relativeToRoot, the mkLib root-binding factory, the four injection channels: perSystem _module.args, nixosModules _module.args, home-manager extraSpecialArgs, clan specialArgs — and the specialArgs-vs-_module.args circularity gotcha in nixosModules/networking.nix) and the AGENTS flake lib (inputs.agents.lib — mkSkills for composing/cherry-picking skill dirs into ~/.config/opencode/skills via selectSkills, loadAgents, agentsJson, skills-runtime package). Load when using customLib/relativeToRoot, wiring skills via inputs.agents.lib.mkSkills, editing lib/default.nix, or consuming inputs.home.lib from another flake.
+description: "Custom libs: this repo's customLib (lib/default.nix — relativeToRoot, the mkLib root-binding factory, the four injection channels: perSystem _module.args, nixosModules _module.args, home-manager extraSpecialArgs, clan specialArgs — and the specialArgs-vs-_module.args circularity gotcha in nixosModules/networking.nix) and the AGENTS flake lib (inputs.agents.lib — mkSkills for composing/cherry-picking skill dirs into ~/.config/opencode/skills via selectSkills, loadAgents, agentsJson, skills-runtime package). Load when using customLib/relativeToRoot, wiring skills via inputs.agents.lib.mkSkills, editing lib/default.nix, or consuming inputs.home.lib from another flake."
 ---
 
 # Custom Libs — home customLib + AGENTS lib

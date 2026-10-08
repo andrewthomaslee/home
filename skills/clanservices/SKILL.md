@@ -1,6 +1,6 @@
 ---
 name: clanservices
-description: Authoring clan.service modules (clanServices) in the official clan-core style: module skeleton (_class, manifest incl. categories/readme/constraints), roles + interfaces (JSON-serializability), perInstance/perMachine argument tables, multi-instance namespacing, experimental exports (mkExports/selectExports/scope ownership), vars generators, passing self/pkgs (importApply vs wrapper), this repo's flake-module.nix registration + inventory.nix instances, and static-only verification. Load when adding or changing anything under clanServices/.
+description: "Authoring clan.service modules (clanServices) in the official clan-core style: module skeleton (_class, manifest incl. categories/readme/constraints), roles + interfaces (JSON-serializability), perInstance/perMachine argument tables, multi-instance namespacing, experimental exports (mkExports/selectExports/scope ownership), vars generators, passing self/pkgs (importApply vs wrapper), this repo's flake-module.nix registration + inventory.nix instances, and static-only verification. Load when adding or changing anything under clanServices/."
 ---
 
 # clanservices — authoring clan.service modules

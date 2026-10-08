@@ -1,6 +1,6 @@
 ---
 name: vm-tests
-description: Hermetic NixOS VM tests: hermeticity rule, structure (nixosLib.runTest modules under legacyPackages, never checks), sm/md/lg size variants, running via .#vm-test (sandboxed vs driver mode), the agent loop, and patterns/anti-patterns. Load when creating, running, or debugging a VM test.
+description: "Hermetic NixOS VM tests: hermeticity rule, structure (nixosLib.runTest modules under legacyPackages, never checks), sm/md/lg size variants, running via .#vm-test (sandboxed vs driver mode), the agent loop, and patterns/anti-patterns. Load when creating, running, or debugging a VM test."
 ---
 
 # vm-tests

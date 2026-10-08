@@ -1,6 +1,6 @@
 ---
 name: nix-style
-description: Nix code style + tool loop (user preferences): attribute nesting/quoting/inherit rules, module-system and repo-root-path conventions, the mandatory alejandra/statix/deadnix tool loop, devShell awareness, and the flake-repo agent contract. Use when writing or editing any .nix file.
+description: "Nix code style + tool loop (user preferences): attribute nesting/quoting/inherit rules, module-system and repo-root-path conventions, the mandatory alejandra/statix/deadnix tool loop, devShell awareness, and the flake-repo agent contract. Use when writing or editing any .nix file."
 ---
 
 # nix-style — Nix code style and tool loop

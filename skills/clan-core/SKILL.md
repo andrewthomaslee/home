@@ -1,6 +1,6 @@
 ---
 name: clan-core
-description: Fleet management with clan-core: inventory.nix (machines/instances/roles/tags), clanServices (perInstance/perMachine), build-time exports + the strict-eval check, the clan CLI, vars generators, machine update flows (FlakeHub pull vs clan machines update), and clanService NixOS VM tests. Load when working on anything clan.*; for writing a new clanService, the clanservices reference covers authoring.
+description: "Fleet management with clan-core: inventory.nix (machines/instances/roles/tags), clanServices (perInstance/perMachine), build-time exports + the strict-eval check, the clan CLI, vars generators, machine update flows (FlakeHub pull vs clan machines update), and clanService NixOS VM tests. Load when working on anything clan.*; for writing a new clanService, the clanservices reference covers authoring."
 ---
 
 # clan-core

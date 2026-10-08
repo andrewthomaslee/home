@@ -1,6 +1,6 @@
 ---
 name: cilium
-description: Cilium docs (stable 1.20.x): the v2 CRD-based BGP control plane (CiliumBGPClusterConfig/PeerConfig/Advertisement/NodeConfigOverride, advertisements, auto-discovery, timers/graceful restart, no-BFD gotcha), LB IPAM pools, L2 announcements, network policy language, troubleshooting conditions + symptom table, and the operation/drain/upgrade playbook. Load when working on Cilium networking, BGP, LoadBalancer IPs, or Cilium policies.
+description: "Cilium docs (stable 1.20.x): the v2 CRD-based BGP control plane (CiliumBGPClusterConfig/PeerConfig/Advertisement/NodeConfigOverride, advertisements, auto-discovery, timers/graceful restart, no-BFD gotcha), LB IPAM pools, L2 announcements, network policy language, troubleshooting conditions + symptom table, and the operation/drain/upgrade playbook. Load when working on Cilium networking, BGP, LoadBalancer IPs, or Cilium policies."
 ---
 
 # cilium

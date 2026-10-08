@@ -1,6 +1,6 @@
 ---
 name: flakeparts
-description: flake-parts module system: mkFlake/perSystem mechanics, what the infra provides (self', inputs', flake, withSystem), input handling (follows, FlakeHub URLs, flake = false pins), the checks.lint gate, and integrations (clan-core, home-manager, devenv, mkdocs-flake). Load when editing flake.nix or any flake-parts module.
+description: "flake-parts module system: mkFlake/perSystem mechanics, what the infra provides (self', inputs', flake, withSystem), input handling (follows, FlakeHub URLs, flake = false pins), the checks.lint gate, and integrations (clan-core, home-manager, devenv, mkdocs-flake). Load when editing flake.nix or any flake-parts module."
 ---
 
 # flake-parts

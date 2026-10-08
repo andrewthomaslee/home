@@ -32,9 +32,19 @@ skills/
 ```markdown
 ---
 name: my-skill
-description: When this skill should be used (drives agent triggering).
+description: "When this skill should be used (drives agent triggering)."
 ---
 ```
+
+**Always double-quote the `description`** (escaping any embedded `\` and `"`).
+pi and kimi-code parse the frontmatter with JS YAML libraries that reject a
+`: ` (colon+space) inside an unquoted scalar — `description: foo: bar` fails
+with "nested mappings are not allowed in compact mappings" (pi) /
+"bad indentation of a mapping entry" (kimi) and the skill is **silently
+skipped** (kimi logs `Skipping invalid skill`; pi reports a skill conflict).
+`checks.skill-frontmatter` (`flake-parts/checks.nix`) fails `nix flake check`
+on unparseable frontmatter, so CI catches it before hosts or the sandbox
+image pick the skill up.
 
 The `description` is the only trigger mechanism — write it as a
 when-to-use sentence naming the phrases a user would say. Deep
