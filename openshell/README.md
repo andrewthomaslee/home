@@ -89,13 +89,14 @@ devenv is human-only and nothing else ships an OCI. What it bakes in:
     extra-trusted-public-keys = nix-community.cachix.org-1:…" nix profile install nix-community#…`
 - **Three AI coding agents** (§3) from the `llm-agents` flake input,
   pre-wired against the kimi-for-coding / claude providers.
-- **Repo skills baked at `/opt/skills`** (the home repo's `skills/` tree)
-  and wired into every CLI: pi via `~/.pi/agent/settings.json`
+- **Repo skills baked at `/opt/skills`** — the same merged skill tree
+  `inputs.agents.lib.mkSkills` builds for the NixOS hosts (the home
+  repo's `skills/` tree + external flake-input skill sources), wired
+  into every CLI: pi via `~/.pi/agent/settings.json`
   (`skills: ["/opt/skills"]`), kimi-code via `~/.kimi-code/skills`,
   claude via `~/.claude/skills`, plus the `~/.agents/skills` standard
   location — all baked at both `$HOME` roots (`/sandbox` under the
-  supervisor, `/home/agent` for plain docker). The repo's `references/`
-  tree ships read-only at `/opt/references` for on-demand reads.
+  supervisor, `/home/agent` for plain docker).
 - **Nix language tooling**: `nixd`, `alejandra`, `statix`, `deadnix` —
   agent-edited `.nix` files can be vetted in-sandbox without a TCG
   package build.
@@ -318,6 +319,11 @@ Narrow additive grants: `openshell policy update code
   keep them as files in `openshell/profiles/` (versioned), import with
   `profile import`. Provider *creation* stays manual (it holds secrets);
   the commands above are the runbook.
+- **Provider catalog definitions**: `openshell/providers/` holds
+  versioned provider *definitions* (credential env vars, endpoints,
+  allowed binaries — no secrets), e.g. `github.yaml`, `openrouter.yaml`.
+  Import with `openshell provider import --file openshell/providers/<name>.yaml`;
+  creating the actual provider with the secret stays manual.
 - **Sandbox policy default**: `homeSpec.programs.openshell.sandboxPolicy`
   (flake-parts/homeModules/openshell.nix) renders
   `~/.config/openshell/policy.yaml` + `OPENSHELL_SANDBOX_POLICY` — a

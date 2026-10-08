@@ -20,11 +20,14 @@ architecture and the lessons that shaped the design, see the
   - `claude` — Claude Teams subscription bearer (`$ANTHROPIC_AUTH_TOKEN`
     from the attached provider); onboarding pre-completed and the
     `platform.claude.com` startup preflight admitted by the policy.
-- **Repo skills at `/opt/skills`**, wired into all three CLIs
-  (`~/.pi/agent/settings.json`, `~/.kimi-code/skills`,
-  `~/.claude/skills`, `~/.agents/skills`) — advertised by
-  name+description, loaded on demand (`/skill:<name>` in pi/kimi).
-  Deep docs ship read-only at `/opt/references`.
+- **Repo skills at `/opt/skills`** — the same merged skill tree
+  `inputs.agents.lib.mkSkills` builds for the NixOS hosts (the home
+  repo's `skills/` tree + external flake-input skill sources), wired
+  into all three CLIs (`~/.pi/agent/settings.json`,
+  `~/.kimi-code/skills`, `~/.claude/skills`, `~/.agents/skills`) —
+  advertised by name+description, loaded on demand (`/skill:<name>` in
+  pi/kimi). Deep-dive repo knowledge (the former `/opt/references`
+  bundles) now lives as skills in the same tree.
 - **Baked git identity + credentials**: commits are authored as the org
   bot (`andrewthomaslee-agent`), and a github.com-scoped credential
   helper feeds git the provider-injected `$GITHUB_TOKEN` — `git push`

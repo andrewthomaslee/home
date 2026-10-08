@@ -1,49 +1,52 @@
-# OpenCode Skills — Declarative Skill Management
+# Agent Skills — Declarative Skill Management
 
-OpenCode skills are packaged instructions (`SKILL.md` + optional
-supporting files) that extend agent capabilities. This flake manages
-them declaratively: `flake-parts/homeModules/opencode.nix` builds a
-single merged skills folder and symlinks it to `~/.config/opencode/skills`
-via `xdg.configFile`. Every machine with
-`homeSpec.programs.opencode.enable` gets the same global skill set.
+Agent skills are packaged instructions (`SKILL.md` + optional supporting
+files) that extend agent capabilities. This flake manages them
+declaratively for **all four coding agents** from one module,
+`flake-parts/homeModules/agents.nix`, under the `homeSpec.agents`
+namespace:
 
-Deep "how things work" documentation has moved to attachable OpenCode
-V2 reference bundles (repo-root `references/` tree) — see
-[References](references.md).
+| Option | What enabling it does |
+|---|---|
+| `homeSpec.agents.skills.enabled` | Build the shared skills tree and wire it into every enabled agent's skills dir. Defaults to true when any agent is enabled. |
+| `homeSpec.agents.opencode.enabled` | opencode + the shared tree at `~/.config/opencode/skills` |
+| `homeSpec.agents.pi.enabled` | pi + the shared tree at `~/.agents/skills` (Agent Skills standard location) |
+| `homeSpec.agents.kimi.enabled` | kimi-code + the shared tree at `~/.kimi-code/skills` (`$KIMI_CODE_HOME/skills`) |
+| `homeSpec.agents.claude.enabled` | claude-code + the shared tree at `~/.claude/skills` |
+
+The dev profile (`flake-parts/homeModules/profiles/netsa.nix`) enables
+skills plus all four agents.
 
 ## Composition
 
 Merging is done by `inputs.agents.lib.mkSkills`
 ([AGENTS](https://code.m3ta.dev/m3tam3re/AGENTS)), which builds a
-`pkgs.linkFarm "opencode-skills"` — one symlink per skill directory:
+`pkgs.linkFarm` — one symlink per skill directory — from the repo's
+`skills/` tree plus external flake-input skill sources:
 
 ```nix
-xdg.configFile."opencode/skills".source = inputs.agents.lib.mkSkills {
+skillsDir = inputs.agents.lib.mkSkills {
   inherit pkgs;
-  customSkills = ../../skills;
+  customSkills = relativeToRoot "skills";
   externalSkills = [
     {src = inputs.skills-anthropic;}   # anthropics/skills, skills/ dir
-    {src = inputs.skills-payloadcms;}  # payloadcms/skills, skills/ dir
-  ];
+  ] ++ cfg.skills.extraSources;
 };
 ```
+
+The same helper builds the tree baked at `/opt/skills` in the OpenShell
+sandbox image, so hosts and sandboxes run the identical skill set (see
+the [Code-Agent Image](openshell/code-agent-image.md)).
 
 ### Sources
 
 | Source | Type | Skills |
 |---|---|---|
-| `skills/` (this repo) | custom | `baton-pass` (session handoff via `.baton-pass/`), `add-skill-or-reference` (how to extend this repo's skills/references) |
-| [anthropics/skills](https://github.com/anthropics/skills) | external | docx, pdf, pptx, xlsx, mcp-builder, frontend-design, ... |
-| [payloadcms/skills](https://github.com/payloadcms/skills) | external | `payload` (Payload development guidelines), `cms-migration` (CMS → Payload migration workflow) |
+| `skills/` (this repo) | custom | `baton-pass` plus the repo-knowledge skills (`nix-style`, `flakeparts`, `import-tree`, `determinate`, `home-manager`, `clan-core`, `clanservices`, `devenv`, `vm-tests`, `lib`, `disko`, `cilium`, `openebs`) — the former attachable reference bundles, migrated to skills |
 
-The former `nix-flake` and `devenv` custom skills were migrated to the
-attachable reference bundles — see [References](references.md); their
-deep material (clan-core, clan-vars, flakehub-ci, import-tree,
-vm-tests, the devenv guide) lives there now.
-
-External sources are flake inputs with `flake = false`; `mkSkills` reads each
-repo's `skills/` directory (override with `skillsDir`, cherry-pick with
-`selectSkills = [...]`).
+External sources are flake inputs (usually `flake = false`); `mkSkills`
+reads each repo's `skills/` directory (override with `skillsDir`,
+cherry-pick with `selectSkills = [...]`).
 
 ### Precedence
 
@@ -67,15 +70,14 @@ so untracked files are invisible to `nix build` / `nix flake check`.
 
 No Nix changes are needed: the `mkSkills` call merges the whole `skills/`
 tree automatically. Custom skills are global (no per-profile opt-in) and
-override same-named external skills.
-
-The `add-skill-or-reference` custom skill carries these instructions to
-agents at runtime — keep it in sync when the wiring changes. To add a
-reference bundle instead, see [References](references.md).
+override same-named external skills. Keep `skills/README.md`'s skill list
+in sync.
 
 ## Adding an external source
 
-Add a `flake = false` input in `flake.nix` and an entry in `externalSkills`:
+Add a `flake = false` input in `flake.nix`, then either append to
+`externalSkills` in `flake-parts/homeModules/agents.nix` (fleet-wide) or
+set the per-machine option:
 
 ```nix
 # flake.nix
@@ -86,22 +88,21 @@ skills-acme = {
 ```
 
 ```nix
-# flake-parts/homeModules/opencode.nix
-externalSkills = [
-  {src = inputs.skills-anthropic;}
-  {src = inputs.skills-payloadcms;}
+# per machine / profile
+homeSpec.agents.skills.extraSources = [
   {src = inputs.skills-acme;}
 ];
 ```
 
-The repo root must contain a `skills/` directory (or set `skillsDir`).
+If the sandbox image should ship the same skills, add the source to
+`externalSkills` in `flake-parts/ociImages/code-agent.nix` too.
 
 ## Verify
 
 - Eval + symlink path:
-  `nix eval --raw .#nixosConfigurations.<name>.config.home-manager.users.netsa.xdg.configFile."opencode/skills".source`
-  — prints the `opencode-skills` linkFarm store path; `ls` it to see the
-  merged skill set.
+  `nix eval --raw .#nixosConfigurations.<name>.config.home-manager.users.netsa.home.file.\".agents/skills\".source`
+  — prints the `mkSkills` store path; `ls` it to see the merged skill set
+  (opencode's copy is `xdg.configFile.\"opencode/skills\".source`).
 - `nix flake check --show-trace` evaluates all machines (CI parity).
 - Build a machine toplevel to exercise the module end-to-end:
   `nix build .#nixosConfigurations.ghost.config.system.build.toplevel`

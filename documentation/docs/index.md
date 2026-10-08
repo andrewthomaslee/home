@@ -24,10 +24,10 @@
 ## Features
 
 ### ☸️ **Kubernetes**
-`GitOps` • `K3s` • `Helm` • `FluxCD` • `Argo` • `Sealed Secrets`• `Cilium Cluster Mesh` • `Cloudflare Tunnels`
+`K3s` • `Rancher` • `Cloudflare WARP`
 
 ### ❄️ **NixOS**
-`Determinate Systems` • `Clan.lol` • `flake-parts` • `dendritic` • `home-manager` • `Tailscale` • `Modded Minecraft Server` • `KDE` • `Wayland`
+`Determinate Systems` • `Clan.lol` • `flake-parts` • `dendritic` • `home-manager` • `Tailscale` • `OpenShell` • `Modded Minecraft Server` • `KDE` • `Wayland`
 
 Networking (`flake-parts/nixosModules/networking.nix`): WAN TCP BBR congestion
 control + `fq` qdisc with 16M send buffers for lossy long-RTT uplinks, WiFi
@@ -57,11 +57,10 @@ jovian-enabled machine runs the Valve jovian kernel.
     flake.nix       # Flake that controls the project
     flake.lock      # Flake's lock file
     inventory.nix   # Clan.lol Inventory of all NixOS machines and Services
-    .envrc          # direnv configuration
     .env.schema     # Varlock schema
 
     machines/       # NixOS Machines
-    clanServices/   # Clan.lol Services    
+    clanServices/   # Clan.lol Services
     lib/            # Custom functions accessible via `lib.custom`
     overlays/       # Overlays for Nixpkgs. Adds `pkgs.unstable`
 
@@ -69,10 +68,13 @@ jovian-enabled machine runs the Valve jovian kernel.
                         # Auto-imported via import-tree: every .nix file
                         # here loads, there is no import list to update
         default.nix     # Default flake-parts configuration
+        checks.nix      # checks.lint (alejandra/statix/deadnix) + devenv-lock-drift
+        tests.nix       # Auto-discovers vm-tests/ into sm/md/lg variants
         devShells.nix   # Development Shells
         apps/           # Applications `nix run .#<app>`
         packages/       # Packages `nix build .#<package>`
-        homeModules/    # Home-manager Modules
+        ociImages/      # OCI images (code-agent-image)
+        homeModules/    # Home-manager Modules (incl. profiles/)
         nixosModules/   # NixOS Modules
 
     devenv/             # Shared devenv module (both `devenv shell` and `nix develop`)
@@ -85,9 +87,10 @@ jovian-enabled machine runs the Valve jovian kernel.
         docs/           # Documentation source
 
     .github/workflows/    # GitHub Actions workflows
-        ci.yml            # Flake Health Checker ( Run on push )
+        ci.yml            # CI: nix flake check (lint gate) on push ( Run on push )
         machines.yml      # Build Machines + Publish to FlakeHub ( Run on trigger )
         release.yml       # Tagged release + Build Machines + Build Docs & devShells + Publish to FlakeHub ( Run on trigger )
+        oci.yml           # Publish OCI images & manifests (manual dispatch)
 
     .devcontainer/          # Devcontainer
 
@@ -95,6 +98,9 @@ jovian-enabled machine runs the Valve jovian kernel.
     vars/                   # Clan.lol implementaion of SOPS
 
 ## Flake Outputs
+
+Flake outputs as of the last refresh — regenerate after output changes with
+`nix run .#update-flake-show` (writes both this file and `README.md`).
 
 ```console
 $ nix flake show
@@ -104,6 +110,7 @@ $ nix flake show
 │       ├───apply-and-reboot: app: Apply latest NixOS configuration + delayed reboot to allow Terraform/SSH to exit cleanly
 │       ├───fetch-kubeconfig: app: no description
 │       ├───get-keys: app: no description
+│       ├───load-code-agent-image: app: no description
 │       ├───update-flake-show: app: no description
 │       ├───vm-test: app: no description
 │       └───watch-documentation: app: Run mkdocs in watch mode over your documentation folder. Automatically rebuilds your docs on changes.
@@ -130,7 +137,6 @@ $ nix flake show
 │   ├───ghost: NixOS configuration
 │   ├───hp-notebook: NixOS configuration
 │   ├───kamrui-h1: NixOS configuration
-│   ├───kubevirt-agent: NixOS configuration
 │   ├───nixos: NixOS configuration
 │   └───nixos-installer: NixOS configuration
 ├───nixosModules
@@ -150,15 +156,14 @@ $ nix flake show
 │   ├───jovian: NixOS module
 │   ├───kde: NixOS module
 │   ├───lan: NixOS module
-│   ├───longhorn: NixOS module
 │   ├───motd: NixOS module
 │   ├───nix: NixOS module
 │   ├───nix-ld: NixOS module
 │   ├───ollama: NixOS module
+│   ├───openshell-gateway: NixOS module
 │   ├───openssh: NixOS module
 │   ├───rancher: NixOS module
 │   ├───sound: NixOS module
-│   ├───splashtop-streamer: NixOS module
 │   ├───storagebox: NixOS module
 │   ├───tailscale: NixOS module
 │   ├───virtualization: NixOS module
@@ -170,31 +175,26 @@ $ nix flake show
 │   └───default: Nixpkgs overlay
 ├───packages
 │   └───x86_64-linux
-│       ├───ai-agent: package 'docker-image-ai-agent.tar.gz'
-│       ├───ai-agent-oci: package 'ai-agent-oci'
 │       ├───apply-and-reboot: package 'apply-and-reboot'
 │       ├───apply-dry-activate: package 'apply-dry-activate'
 │       ├───apply-now: package 'apply-now'
 │       ├───apply-test: package 'apply-test'
 │       ├───apply-to-boot: package 'apply-to-reboot'
 │       ├───artifacthub-mcp: package 'artifacthub-mcp-1.1.1'
-│       ├───cc-safety-net: package 'cc-safety-net-2.4.6'
+│       ├───code-agent-image: package 'docker-image-code-agent.tar.gz'
 │       ├───devShell: package 'devenv-shell'
 │       ├───devenv-test: package 'devenv-test'
 │       ├───devenv-up: package 'devenv-up'
 │       ├───documentation: package 'mkdocs-flake-documentation'
-│       ├───get-keys: package 'get-keys'
 │       ├───hcloud-ip: package 'hcloud-ip-v0.0.1'
 │       ├───headroom: package 'headroom-ai-0.37.0'
 │       ├───headroom-slim: package 'headroom-ai-0.37.0'
 │       ├───kubernetes-mcp-server: package 'kubernetes-mcp-server-0.0.66'
-│       ├───kubevirt-image: package 'nixos-disk-image'
 │       ├───longhornctl: package 'longhornctl-v1.12.0'
-│       ├───opencode-mem: package 'opencode-mem-2.26.0'
-│       ├───opencode-nixd-scaffold: package 'opencode-nixd-scaffold'
-│       ├───splashtop-streamer: package 'splashtop-streamer-3.8.2.0'
-│       ├───tfctl: package 'tfctl-0.16.4'
-│       └───vcluster: package 'vcluster-v0.36.1'
+│       ├───openshell: package 'openshell-0.1.2'
+│       ├───openshell-driver-vm: package 'openshell-driver-vm-0.1.2'
+│       ├───openshell-gateway: package 'openshell-gateway-0.1.2'
+│       └───tfctl: package 'tfctl-0.16.4'
 └───templates
     └───self: template: This Flake
 ```

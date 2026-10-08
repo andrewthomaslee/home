@@ -9,8 +9,8 @@
   in {
     options.homeSpec.programs.devenv = {
       # devenv 2.x developer-environments CLI (flake package, via
-      # overlays/default.nix). Also the binary behind the opencode devenv
-      # MCP server (mcp.devenv in homeModules/opencode.nix).
+      # overlays/default.nix); `devenv mcp` is available for MCP clients
+      # that invoke it themselves.
       enabled = lib.mkOption {
         type = lib.types.bool;
         default = false;

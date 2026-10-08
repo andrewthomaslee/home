@@ -75,6 +75,21 @@ _: {
       '';
     };
 
+    # Repo skill set baked read-only at /opt/skills, built by
+    # inputs.agents.lib.mkSkills — the same helper (and the same repo
+    # skills/ + external-sources composition) home-manager installs for
+    # the agents on NixOS hosts (homeSpec.agents.skills in
+    # flake-parts/homeModules/agents.nix). Wired into pi/kimi/claude in
+    # agentDirs above.
+    skillsTree = inputs'.agents.lib.mkSkills {
+      inherit pkgs;
+      customSkills = relativeToRoot "skills";
+      # No external sources baked today; home-manager's
+      # homeSpec.agents.skills.extraSources is the per-machine escape
+      # hatch — add any source used there here too.
+      externalSkills = [];
+    };
+
     # /bin + /usr/bin toolset (the sshd default PATH covers /bin) plus
     # merged /etc contributions (ssl certs, ssh client config, nix
     # profile snippets, /usr/bin/env).
@@ -284,15 +299,11 @@ _: {
       ln -s /opt/skills $out/home/agent/.agents/skills
     '';
 
-    # Repo agent material baked read-only at /opt: the home repo's
-    # skills/ tree (wired into pi/kimi/claude in agentDirs above) and
-    # references/ tree (deep "how it works" docs these CLIs don't
-    # auto-discover — agents reach them through the skills that point
-    # there, or on an explicit read).
+    # Repo agent material baked read-only at /opt: the merged skills
+    # tree (wired into pi/kimi/claude in agentDirs above).
     agentMaterial = pkgs.runCommand "code-agent-material" {} ''
       mkdir -p $out/opt
-      cp -r ${relativeToRoot "skills"} $out/opt/skills
-      cp -r ${relativeToRoot "references"} $out/opt/references
+      cp -r ${skillsTree} $out/opt/skills
     '';
 
     # pi user settings: the baked skills tree as an explicit resource

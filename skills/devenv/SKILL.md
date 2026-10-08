@@ -1,3 +1,8 @@
+---
+name: devenv
+description: devenv 2.x dev environments: full CLI reference, devenv.yaml inputs/lock discipline, CLI-native vs flake embedding (and why CLI is the default for dev shells), the borg hybrid pattern (one shared module, two lockfiles, drift check), devcontainer.json, monorepo/polyrepo, containers/OCI/K8s, and the Claude Code integration. Load when writing devenv.nix/devenv.yaml/.devcontainer or running devenv commands.
+---
+
 # devenv
 
 devenv declares complete development environments (packages, languages,
@@ -231,7 +236,7 @@ Agent-relevant behavior: devenv detects coding agents (`CLAUDECODE`,
 output); opt out with `DEVENV_NO_AI_AGENT=1`. `devenv mcp` exposes
 options/packages search and process tools to MCP clients — in this
 fleet it is wired for opencode (the `devenv` MCP server) in
-`flake-parts/homeModules/opencode.nix`, and the home repo ships a
+`flake-parts/homeModules/agents.nix`, and the home repo ships a
 pinned fallback project (`~/.config/devenv-agent`) so the MCP works
 even outside a devenv project.
 

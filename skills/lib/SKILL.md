@@ -1,3 +1,8 @@
+---
+name: lib
+description: Custom libs: this repo's customLib (lib/default.nix — relativeToRoot, the mkLib root-binding factory, the four injection channels: perSystem _module.args, nixosModules _module.args, home-manager extraSpecialArgs, clan specialArgs — and the specialArgs-vs-_module.args circularity gotcha in nixosModules/networking.nix) and the AGENTS flake lib (inputs.agents.lib — mkSkills for composing/cherry-picking skill dirs into ~/.config/opencode/skills via selectSkills, loadAgents, agentsJson, skills-runtime package). Load when using customLib/relativeToRoot, wiring skills via inputs.agents.lib.mkSkills, editing lib/default.nix, or consuming inputs.home.lib from another flake.
+---
+
 # Custom Libs — home customLib + AGENTS lib
 
 Two libs matter here:
@@ -146,9 +151,12 @@ Mechanics:
 
 ### Worked example (this repo)
 
+`flake-parts/homeModules/agents.nix` builds the tree once and symlinks
+it into every enabled agent's skills dir:
+
 ```nix
-# flake-parts/homeModules/opencode.nix
-"opencode/skills".source = inputs.agents.lib.mkSkills {
+# flake-parts/homeModules/agents.nix
+skillsDir = inputs.agents.lib.mkSkills {
   inherit pkgs;
   customSkills = relativeToRoot "skills";
   externalSkills = [
@@ -164,6 +172,11 @@ Mechanics:
     {src = inputs.skills-davidondrej; skillsDir = "skills/thinking-and-docs";} # whole category
   ];
 };
+# then per enabled agent (homeSpec.agents.<agent>.enabled):
+xdg.configFile."opencode/skills".source = skillsDir;  # opencode
+home.file.".agents/skills".source = skillsDir;        # pi
+home.file.".kimi-code/skills".source = skillsDir;      # kimi-code
+home.file.".claude/skills".source = skillsDir;         # claude-code
 ```
 
 Cherry-pick patterns:

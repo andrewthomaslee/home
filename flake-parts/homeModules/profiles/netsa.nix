@@ -6,6 +6,15 @@
       # homeSpec options
       homeSpec = {
         xdg.enable = true;
+        # AI coding agents: the shared repo skill set (skills/ merged via
+        # inputs.agents.lib.mkSkills) is wired into every enabled agent.
+        agents = {
+          skills.enabled = true;
+          opencode.enabled = true;
+          kimi.enabled = true;
+          pi.enabled = true;
+          claude.enabled = true;
+        };
         programs = {
           plasma-manager.enable = true;
           docker.enable = true;

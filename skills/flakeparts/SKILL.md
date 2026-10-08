@@ -1,3 +1,8 @@
+---
+name: flakeparts
+description: flake-parts module system: mkFlake/perSystem mechanics, what the infra provides (self', inputs', flake, withSystem), input handling (follows, FlakeHub URLs, flake = false pins), the checks.lint gate, and integrations (clan-core, home-manager, devenv, mkdocs-flake). Load when editing flake.nix or any flake-parts module.
+---
+
 # flake-parts
 
 How the flake-parts module system works, what its infrastructure
@@ -58,7 +63,7 @@ Conventions worth copying (from the home repo):
 - Expensive, KVM-dependent, or VM-booting outputs must NOT go in `checks`
   (`nix flake check` evaluates and often builds `checks`). Expose them
   under `legacyPackages.<system>.vmTests` — `nix flake check` does not
-  walk it. Writing and running them: the `vm-tests` reference.
+  walk it. Writing and running them: the `vm-tests` skill.
 - Do not add a `nixConfig` block requiring extra
   `trusted-public-keys`/`extra-substituters` trust from consumers. In CI,
   caching is configured by the runner-side actions, not by the flake.
@@ -67,7 +72,7 @@ Conventions worth copying (from the home repo):
 
 Every `.nix` file under `flake-parts/` is loaded automatically — there is
 no import list to update. Mechanics, `_`-prefix escape hatch, tree layout
-conventions and agent rules: the `import-tree` reference. Short version:
+conventions and agent rules: the `import-tree` skill. Short version:
 
 ```nix
 imports = [(inputs.import-tree ./flake-parts)];
@@ -81,7 +86,7 @@ purely organizational (`flake-parts/packages/foo.nix` defines
 
 - FlakeHub flakes by URL with semver wildcards:
   `https://flakehub.com/f/<org>/<repo>/*` (latest), `/0` or `/1.2` for a
-  major or major.minor constraint — the `determinate` reference covers
+  major or major.minor constraint — the `determinate` skill covers
   the versioning scheme.
 - Deduplicate big inputs with `follows`
   (`nixpkgs.follows = "clan-core/nixpkgs";`) so one nixpkgs instance
@@ -122,7 +127,7 @@ which CI already runs:
 
 Filtering the source to `.nix` files keeps docs/asset changes from
 invalidating the check and keeps secrets out of its closure. The
-day-to-day loop using these tools: the `nix-style` reference.
+day-to-day loop using these tools: the `nix-style` skill.
 
 ## Available integrations in this repo
 

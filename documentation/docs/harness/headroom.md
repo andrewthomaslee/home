@@ -4,7 +4,7 @@
 of the [OpenCode harness](index.md): a local compression proxy between the
 agent and the upstream LLM providers (DeepSeek, Anthropic, OpenAI, ...).
 This flake packages it, integrates it with OpenCode declaratively, and
-ships a [VM test](vm-tests.md) that validates the whole stack.
+exposes it as a standalone proxy service.
 
 ## What Headroom does
 
@@ -62,9 +62,10 @@ CPython 3.10–3.13), patched with `autoPatchelfHook` and propagated with the
 - top-level output: `nix build .#headroom`
 - overlay: `pkgs.headroom`
 
-A trimmed variant `packages.headroom-slim` (core+proxy+code+mcp deps only —
-no torch/sentence-transformers/OCR) is what the headless agent image uses;
-see [KubeVirt AI Agent](kubevirt-agent.md#image-optimization-trim-compress).
+A full variant `packages.headroom` (adds torch/sentence-transformers/OCR
+for the ML compressors and memory features) is built from the same
+wheel; the home-manager module installs `headroom-slim` by default and
+can be pointed at the full package via `homeSpec.programs.headroom.package`.
 
 ## Home-manager module
 
@@ -74,13 +75,13 @@ see [KubeVirt AI Agent](kubevirt-agent.md#image-optimization-trim-compress).
 | Option | Default | Description |
 |---|---|---|
 | `enable` | `false` | Install headroom and enable the integration |
-| `package` | `pkgs.headroom` | Headroom package to install |
+| `package` | `pkgs.headroom-slim` | Headroom package to install |
 | `proxy.enable` | `true` | Run `headroom proxy` as a systemd **user** service |
 | `proxy.port` | `8787` | Proxy listen port |
 | `proxy.host` | `127.0.0.1` | Proxy bind host |
 | `proxy.mode` | `cache` | `cache` (prefix-cache friendly) or `token` (max compression) |
 | `proxy.memory` | `false` | Persistent cross-session memory (off by default: proxy-injected memory tools have no executor in opencode; also pulls embedding models at startup) |
-| `proxy.learn` | `true` | Live traffic learning |
+| `proxy.learn` | `false` | Live traffic learning |
 | `proxy.extraArgs` | `[]` | Extra CLI args for `headroom proxy` |
 
 The service (`headroom-proxy.service`) is `Restart=always` and
@@ -88,12 +89,12 @@ The service (`headroom-proxy.service`) is `Restart=always` and
 
 !!! note "First boot with memory/learn"
     `--memory`/`--learn` pull embedding models from Hugging Face on first
-    startup; with an empty `HOME` cache this can stall boot for a long
-    while. The VM test disables both for a fast, hermetic smoke run.
+    startup; with an empty `HOME` cache this can stall the service for a
+    long while. Leave both off for a fast first boot.
 
 ## OpenCode integration
 
-`flake-parts/homeModules/opencode.nix` declaratively merges the following
+`flake-parts/homeModules/agents.nix` declaratively merges the following
 into `programs.opencode.settings` when headroom is enabled (no
 `headroom wrap opencode` needed — wrap is unusable on a read-only
 home-manager config):

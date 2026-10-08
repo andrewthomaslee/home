@@ -1,10 +1,15 @@
+---
+name: openebs
+description: OpenEBS cloud-native storage (4.6.x): the umbrella Helm chart's five CSI engines (Local PV hostpath/LVM/ZFS/rawfile + Replicated PV Mayastor), per-engine node prerequisites (HugePages, nvme_tcp, VGs/zpools), StorageClass parameter tables, DiskPool CRs, NVMe-oF TCP/RDMA, KubeVirt live migration, CloudNativePG storage choice, air-gapped install (incl. verbatim save/push scripts), upgrades, and troubleshooting symptom tables. Load when provisioning Kubernetes storage classes, OpenEBS/Mayastor, or choosing stateful workload storage.
+---
+
 # openebs
 
 [OpenEBS](https://openebs.io/docs) is the CNCF Sandbox cloud-native storage
 platform for Kubernetes: one umbrella Helm chart that deploys five CSI
 storage engines — four node-local engines (Local PV Hostpath, LVM, ZFS,
 Rawfile) and one replicated engine (Replicated PV Mayastor, NVMe-oF
-TCP). Load this reference when working on OpenEBS, Kubernetes storage
+TCP). Load this skill when working on OpenEBS, Kubernetes storage
 classes / CSI provisioning, or stateful workload storage choices.
 
 This reference is written against **OpenEBS 4.6.x** (umbrella chart
@@ -545,7 +550,7 @@ permanent). All they need is for a VG (`lvmvg`) or zpool
 more PVs), ZFS an existing zpool (striped/mirror/raidz). On this
 flake, machines declare their disk layouts with disko — use it to
 carve the dedicated VG or pool before installing the driver (see
-`references/disko/index.md`).
+`skills/disko/SKILL.md`).
 
 - Keep storage-pool devices out of the boot/root pool; LocalPV volume
   data lands directly in the VG/zpool, one LV or dataset/zvol per PV.

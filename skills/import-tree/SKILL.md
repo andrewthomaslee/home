@@ -1,3 +1,8 @@
+---
+name: import-tree
+description: flake-parts auto-import via import-tree: provenance, mechanics (_-prefix escape hatch, .nix-only, one module-system eval), tree layout conventions, and agent rules (no import list ever). Load when adding, moving, or drafting files under flake-parts/.
+---
+
 # import-tree
 
 How flake-parts auto-import works: every `.nix` file under `flake-parts/`

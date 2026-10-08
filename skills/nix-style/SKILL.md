@@ -1,3 +1,8 @@
+---
+name: nix-style
+description: Nix code style + tool loop (user preferences): attribute nesting/quoting/inherit rules, module-system and repo-root-path conventions, the mandatory alejandra/statix/deadnix tool loop, devShell awareness, and the flake-repo agent contract. Use when writing or editing any .nix file.
+---
+
 # nix-style — Nix code style and tool loop
 
 How to write and change Nix code in flake repos: the style guide, the
@@ -18,7 +23,7 @@ one. Repo-specific facts live in each repo's `AGENTS.md`.
 - No secrets in Nix source or the store (it is world-readable). Secrets
   come from a provisioning layer (sops-nix, clan vars, CI OIDC, GitHub
   Actions secrets), never from expressions — clan vars are documented in
-  the `clan-core` reference.
+  the `clan-core` skill.
 - Never reach for `--impure`, `--no-sandbox`, `sandbox = false`, or
   `builtins.readFile /etc/...` to make something build. Impurity hides
   bugs, breaks FlakeHub Cache reproducibility, and fails on CI. If
@@ -192,7 +197,7 @@ eval channel, so the helper is always safe there.
   the bug link where a workaround exists.
 - One concern per file; let the repo's auto-import mechanism pick it up
   (flake-parts + import-tree style: new files are auto-loaded, there is
-  no import list to update) — see the `import-tree` reference.
+  no import list to update) — see the `import-tree` skill.
 
 ### Formatting
 
@@ -274,7 +279,7 @@ nix run nixpkgs#deadnix -- --fail .
 These three tools belong in the repo's devShell (`packages = [alejandra
 statix deadnix ...]`) **and** in a gate, so lint/format failures break
 the build instead of relying on an agent's goodwill. The gate is either a
-`checks.lint` derivation or a CI step — see the `flake-parts` reference
+`checks.lint` derivation or a CI step — see the `flake-parts` skill
 for a worked example.
 
 When fixing mechanically, run the fixers in this order: `deadnix -e .`,

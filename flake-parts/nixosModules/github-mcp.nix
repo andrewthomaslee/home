@@ -1,7 +1,7 @@
 _: {
   # ------ NixOS Modules ------ #
   # Self-configuring GitHub MCP support. All user-facing options live under
-  # homeSpec.programs.opencode (homeModules/opencode.nix) — this module has
+  # homeSpec.agents.opencode (homeModules/agents.nix) — this module has
   # none of its own. For every home-manager user whose opencode config has
   # mcp.github.enable + mcp.github.auth = "pat", it declares the clan vars
   # generator provisioning the PAT; sops-nix deploys it to
@@ -12,7 +12,7 @@ _: {
   # Provisioning (interactive, no fake values in the repo):
   #   clan vars set github-mcp pat <machine>   (or: clan vars generate)
   #
-  # NOTE: this scan mirrors the option paths in homeModules/opencode.nix by
+  # NOTE: this scan mirrors the option paths in homeModules/agents.nix by
   # hand (defensive `or` access to avoid fixpoint recursion). If you rename
   # or restructure those options, update BOTH places — a stale scan
   # silently stops declaring the generator (regression seen when the flat
@@ -32,7 +32,7 @@ _: {
       lib.mapAttrsToList
       (
         userName: hmUser: let
-          oc = hmUser.homeSpec.programs.opencode or null;
+          oc = hmUser.homeSpec.agents.opencode or null;
           gh =
             if oc != null
             then (oc.mcp or {}).github or {}
@@ -42,7 +42,7 @@ _: {
           (
             oc
             != null
-            && (oc.enable or false)
+            && (oc.enabled or false)
             && (gh.enable or false)
             && ((gh.auth or "oauth") == "pat")
           )

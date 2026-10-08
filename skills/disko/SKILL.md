@@ -1,3 +1,8 @@
+---
+name: disko
+description: Disko declarative disk partitioning: the disko.devices tree, CLI modes (destroy/format/mount) vs the NixOS module's auto-injected fileSystems/boot/swapDevices, how clan-core auto-imports machines/<name>/disko.nix and carries the disko module, filesystem recipes (ext4, btrfs subvolumes, zfs pools/mirror), LUKS + clan vars neededFor=\"partitioning\" key patterns (incl. initrd SSH unlock), and 2-disk RAID1/ZFS-mirror redundancy for critical machines. Load when writing or editing machines/<host>/disko.nix or working on encrypted/redundant disk layouts.
+---
+
 # disko
 
 [disko](https://github.com/nix-community/disko) is nix-community's
@@ -6,7 +11,7 @@ describes disks, partitions, RAID arrays, LUKS containers and
 filesystems; from it disko either (a) partitions/formats/mounts the real
 disks via a CLI, or (b) — as a NixOS module — generates the
 `fileSystems`, `swapDevices` and `boot` config the system needs to boot
-that layout. Load this reference when writing or editing
+that layout. Load this skill when writing or editing
 `machines/<host>/disko.nix`, adding a machine, or building an encrypted
 or redundant (2-disk) layout.
 

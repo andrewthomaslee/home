@@ -1,3 +1,8 @@
+---
+name: home-manager
+description: home-manager with flakes and flake-parts: NixOS-module integration, the homeSpec.* namespace, the homeModules.default composition filter, and a worked user-profile example (flake-parts/homeModules/profiles/netsa.nix). Load when building or changing a home-manager user profile.
+---
+
 # home-manager
 
 How home-manager works, how it composes with flakes and flake-parts, and
@@ -51,7 +56,7 @@ repo's pattern:
 
 - Modules live at `flake-parts/homeModules/<name>.nix` and define
   `flake.homeModules.<name>` (directory name is organizational only —
-  the file declares its own attribute; see the `import-tree` reference).
+  the file declares its own attribute; see the `import-tree` skill).
 - The default module `flake.homeModules.default` does the composition:
   `nixpkgs.allowUnfree`, the repo overlay, stateVersion, and `imports`
   of every non-`profile-` module in `self.homeModules` (a filter in
@@ -155,7 +160,7 @@ The steps to add the same shape for a new user:
    enable the heavy MCPs only on dev profiles).
 4. **`git add`** the files, then run the tool loop
    (`nix fmt .` → `statix check .` → `deadnix --fail .` →
-   `nix flake check`) — the `nix-style` reference.
+   `nix flake check`) — the `nix-style` skill.
 
 ## Machine-conditional HM config
 

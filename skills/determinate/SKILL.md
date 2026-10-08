@@ -1,3 +1,8 @@
+---
+name: determinate
+description: Determinate Systems + FlakeHub: where the docs live (docs.determinate.systems), publishing, FlakeHub Cache/private flakes/resolved store paths, semver (tagged vs rolling 0.1.<commits-on-branch>), and the fh CLI incl. fh apply deployment. Load when touching flake input URLs, releases, or machine deploys.
+---
+
 # Determinate Systems and FlakeHub
 
 Determinate Nix, FlakeHub, and the `fh` CLI: where the docs live, how
@@ -136,6 +141,6 @@ default output with a URL path is possible with the full
 `https://flakehub.com/f/:org/:project/:version-req#:output` form —
 `fh apply` accepts it verbatim.
 
-Where this fits in CI: the `flake-parts` reference (`checks` gate) and
+Where this fits in CI: the `flake-parts` skill (`checks` gate) and
 workflow files `release.yml`/`machines.yml` handle building + publishing;
-this reference covers what machines do with the result.
+this skill covers what machines do with the result.

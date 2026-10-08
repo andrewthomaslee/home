@@ -1,3 +1,8 @@
+---
+name: clanservices
+description: Authoring clan.service modules (clanServices) in the official clan-core style: module skeleton (_class, manifest incl. categories/readme/constraints), roles + interfaces (JSON-serializability), perInstance/perMachine argument tables, multi-instance namespacing, experimental exports (mkExports/selectExports/scope ownership), vars generators, passing self/pkgs (importApply vs wrapper), this repo's flake-module.nix registration + inventory.nix instances, and static-only verification. Load when adding or changing anything under clanServices/.
+---
+
 # clanservices — authoring clan.service modules
 
 How to author a clanService in the official clan-core style. The module
@@ -235,8 +240,7 @@ clan.core.vars.generators.borgbackup = {
 `false` for files only other machines read, e.g. CA public keys),
 generator-level `share = true` for fleet-shared vars. Generate with
 `clan vars generate <machine>`; secrets live in the repo's `vars/` tree,
-never in Nix source. Full vars reference: the `clan-core` opencode
-reference.
+never in Nix source. Full vars reference: the `clan-core` skill.
 
 ## Passing self / pkgs into a service
 

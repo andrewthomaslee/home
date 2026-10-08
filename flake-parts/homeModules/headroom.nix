@@ -12,7 +12,7 @@
       package = lib.mkOption {
         type = lib.types.package;
         default = pkgs.headroom-slim;
-        defaultText = lib.literalExpression "pkgs.headroom";
+        defaultText = lib.literalExpression "pkgs.headroom-slim";
         description = "The headroom package to install.";
       };
       proxy = {

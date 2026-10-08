@@ -46,6 +46,7 @@ Flake outputs that make this work:
 | `packages.openshell`, `openshell-gateway`, `openshell-driver-vm` | CLI (built from the pinned input), gateway/driver release binaries |
 | `openshell/policies/code-agent.yaml` | The sandbox security contract (filesystem + network) |
 | `openshell/profiles/*.yaml` | Provider profiles (kimi-for-coding, claude-code, github-agent) |
+| `openshell/providers/*.yaml` | Provider catalog definitions (github, openrouter) — no secrets; import with `openshell provider import --file` |
 
 ## 1. Consuming the gateway NixOS module
 
@@ -121,13 +122,14 @@ What the image bakes in (all nixpkgs/`llm-agents`-pinned, no secrets):
   subscription over the wire Moonshot's own CLI speaks), and `claude-code`
   (baked onboarding skip; `$ANTHROPIC_AUTH_TOKEN` from the attached
   provider).
-- **Repo skills baked at `/opt/skills`** (the home repo's `skills/` tree),
-  wired into all three CLIs — pi via `~/.pi/agent/settings.json`
+- **Repo skills baked at `/opt/skills`** — the same merged skill tree
+  `inputs.agents.lib.mkSkills` builds for the NixOS hosts (the home
+  repo's `skills/` tree + external flake-input skill sources), wired
+  into all three CLIs — pi via `~/.pi/agent/settings.json`
   (`skills: ["/opt/skills"]`), kimi-code via `~/.kimi-code/skills`,
   claude via `~/.claude/skills`, plus the `~/.agents/skills` standard
   location — at both `$HOME` roots (`/sandbox` under the supervisor,
-  `/home/agent` in plain docker). The repo's `references/` tree ships at
-  `/opt/references` for on-demand reads.
+  `/home/agent` in plain docker).
 - **Nix language tooling**: `nixd`, `alejandra`, `statix`, `deadnix`.
 - **Non-API agent traffic disabled in env** (kimi models.dev catalog
   refresh + telemetry; claude updater/telemetry/error-reporting) so the

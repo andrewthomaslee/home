@@ -1,17 +1,20 @@
-# Repo-local opencode Skills and References
+# Repo-local Agent Skills
 
-Repo-local agent material for opencode, merged into `~/.config/opencode/`
-by `flake-parts/homeModules/opencode.nix`:
+Repo-local agent material, merged into every AI coding agent's skills
+dir by `flake-parts/homeModules/agents.nix`
+(`homeSpec.agents.skills.enabled`):
 
-- **Skills** (`~/.config/opencode/skills`) — behavior/procedure packs
-  merged by `inputs.agents.lib.mkSkills` (a `pkgs.linkFarm` over custom +
-  external skill sources). Always discoverable via their frontmatter
-  description; the agent loads `SKILL.md` when the description matches.
-- **References** (`~/.config/opencode/references`) — topic doc bundles
-  (OpenCode V2 `references` config field), one directory per reference
-  from this repo's top-level `references/` tree, advertised via
-  `settings.references` with a description and attachable by alias.
-  Deep "how things work" material lives here so skills stay lean.
+- **opencode** — `~/.config/opencode/skills`
+- **pi** — `~/.agents/skills` (Agent Skills standard location)
+- **kimi-code** — `~/.kimi-code/skills` (`$KIMI_CODE_HOME/skills`)
+- **claude-code** — `~/.claude/skills`
+
+The merged tree is built by `inputs.agents.lib.mkSkills`
+([AGENTS](https://code.m3ta.dev/m3tam3re/AGENTS)): a `pkgs.linkFarm`
+over the repo's `skills/` directory plus external flake-input skill
+sources. The same tree is baked read-only at `/opt/skills` in the
+OpenShell sandbox OCI image (`flake-parts/ociImages/code-agent.nix`),
+so hosts and sandboxes run the identical skill set.
 
 ## Skill convention
 
@@ -33,77 +36,95 @@ description: When this skill should be used (drives agent triggering).
 ---
 ```
 
-Keep `SKILL.md` lean (rules the agent needs every time) and push
-detail into the shared `references/` tree instead — reference aliases
-are advertised with when-to-use descriptions, so there is no reason to
-duplicate deep material per skill.
+The `description` is the only trigger mechanism — write it as a
+when-to-use sentence naming the phrases a user would say. Deep
+"how things work" material lives in the skill body (loaded on demand
+via the skill mechanism itself); keep `SKILL.md` structured with a
+clear first paragraph and skim-friendly sections.
+
+## Adding a skill — no Nix changes
+
+1. Create `skills/<kebab-case-name>/SKILL.md` with frontmatter
+   (`name`, `description`).
+2. Optional: supporting files (or a `references/` subdir) inside the
+   skill dir for progressive disclosure.
+3. **That is the whole wiring.** `flake-parts/homeModules/agents.nix`
+   merges the entire `skills/` tree via
+   `inputs.agents.lib.mkSkills { customSkills = relativeToRoot "skills"; }`
+   into the shared `skillsDir`, which every enabled agent's config
+   symlinks. Skills are global: every machine/user with
+   `homeSpec.agents.<agent>.enabled` (and thus
+   `homeSpec.agents.skills.enabled`, on by default with any agent) gets
+   them — there is no per-skill option. Custom skills override external
+   skills on name collision.
+
+## Adding skills from an external flake input
+
+1. Add the source repo as a flake input in `flake.nix` (usually
+   `flake = false`).
+2. Add an entry to `externalSkills` in
+   `flake-parts/homeModules/agents.nix` (global) or set
+   `homeSpec.agents.skills.extraSources` (per machine). Each entry is
+   `{src = ...;}` with optional `skillsDir` (when the repo nests its
+   skills below the root) and `selectSkills` (cherry-pick by name —
+   unknown names are silently dropped, so verify the installed set).
+3. If the sandbox image should ship the same skills, add the source to
+   `externalSkills` in `flake-parts/ociImages/code-agent.nix` too.
+
+Among external sources, earlier entries win name collisions; custom
+skills (`skills/`) always win.
+
+## House rules
+
+- Update this README: the Current skills list below is the
+  human-facing index of this tree.
+- `git add` every new file before any `nix build` / `nix flake check` —
+  Nix evaluates the flake from the git tree; untracked files do not
+  exist.
+- Markdown alone needs no lint loop; if a `.nix` file changed, run the
+  mandatory loop before declaring done: `nix fmt .` → `statix check .`
+  → `deadnix --fail .`, then `nix flake check`.
+- Public repo: no secrets in any file (skills, README included).
+- Changes reach machines via the FlakeHub pull deploy (release →
+  `fh apply`), not immediately — say so if instant availability is
+  expected.
 
 ## Current skills
+
+Workflow / behavior skills:
 
 - `baton-pass` — session handoff: saves the full state of an in-progress
   task to `.baton-pass/` (timestamped markdown file + `LATEST.md`
   pointer, auto-gitignored) so a different agent or model can resume
   where the session stopped, or resume from an existing handoff.
   Language- and repo-agnostic.
-- `add-skill-or-reference` — how to extend this repo's agent material:
-  the skill-vs-reference decision, file layout, the Nix wiring each
-  needs (skills need none; references need `availableReferences` +
-  profile enable), and the house rules (git add before eval, lint loop
-  when .nix changed, README updates). Home-repo-specific.
 
-## Reference convention
+Repo knowledge skills (deep "how things work" docs, loaded on demand by
+their description):
 
-One directory per reference under the repo-root `references/` tree,
-each with an `index.md`:
-
-```
-references/
-  nix-style/index.md     # Nix style guide + mandatory tool loop
-  flake-parts/index.md
-  import-tree/index.md
-  determinate/index.md
-  home-manager/index.md
-  clan-core/index.md
-  devenv/index.md
-  vm-tests/index.md
-  disko/index.md
-```
-
-Enabling is per profile:
-`homeSpec.programs.opencode.references.<name>.enable` (description has
-a module default per alias, overridable via
-`...references.<name>.description`). When enabled, the module installs
-`~/.config/opencode/references/<name>` (symlink to the store copy) and
-emits a `settings.references.<name>` entry (`path` +
-`description`), which opencode advertises in agent instructions.
-
-## Current references
-
-| Alias | Covers |
-|---|---|
-| `nix-style` | Nix code style (nesting, quoting, inherit, repo-root paths, module system), the mandatory alejandra/statix/deadnix tool loop, devShell + agent rules |
-| `flake-parts` | mkFlake/perSystem mechanics, what the infra provides, input handling, lint gate, integrations |
-| `import-tree` | flake-parts auto-import: mechanics, tree layout conventions, agent rules |
-| `determinate` | Determinate docs map, FlakeHub publishing/cache/private flakes, semver (rolling `0.1.<commits>`), `fh` CLI + `fh apply` |
-| `home-manager` | HM with flakes + flake-parts, worked example: `homeModules/profiles/netsa.nix` |
-| `clan-core` | inventory, clanServices, exports + strict-eval check, vars/generators, clan CLI, machine updates, clanService VM tests |
-| `clanservices` | Authoring clan.service modules in the official style: module skeleton + manifest options, roles/interfaces, perInstance/perMachine args, exports (mkExports/selectExports), vars generators, registration + inventory instances, static-only verification |
-| `devenv` | devenv 2.x CLI reference, CLI-native vs flake embedding, borg hybrid pattern, devcontainer.json, monorepo/polyrepo, containers/K8s, Claude Code integration |
-| `vm-tests` | Hermetic NixOS VM tests: structure, size variants, running, agent loop |
-| `disko` | Disko declarative disk partitioning: `disko.devices` tree, CLI modes vs module auto-injection, clan-core auto-import + module source, ext4/btrfs/zfs recipes, LUKS + clan vars partitioning keys, 2-disk RAID1/ZFS-mirror redundancy |
-
-## Precedence
-
-- Custom skills (this folder) override external skills with the same
-  name.
-- Among external sources (`anthropics/skills`, `payloadcms/skills`),
-  earlier entries in `externalSkills` win collisions.
-
-## Notes
-
-- Nix evaluates the flake from the git tree: `git add` new skill or
-  reference files before `nix build` / `nix flake check` will see them.
-- Skills are global (all machines with
-  `homeSpec.programs.opencode.enable`). References are opt-in per
-  profile (currently `profile-netsa`). For project-level skills, use a
-  project `.agents/skills` directory instead.
+- `nix-style` — Nix code style + the mandatory alejandra/statix/deadnix
+  tool loop (user preferences).
+- `flakeparts` — flake-parts module system mechanics, inputs, the
+  checks.lint gate, integrations.
+- `import-tree` — flake-parts auto-import via import-tree: mechanics,
+  tree layout, agent rules.
+- `determinate` — Determinate Systems + FlakeHub: docs map, publishing,
+  cache/private flakes, semver, `fh` CLI + `fh apply`.
+- `home-manager` — home-manager with flakes + flake-parts, the
+  homeSpec.* namespace, worked profile example.
+- `clan-core` — fleet management: inventory, clanServices, vars
+  generators, clan CLI, machine update flows, clanService VM tests.
+- `clanservices` — authoring clan.service modules in the official
+  clan-core style.
+- `devenv` — devenv 2.x dev environments: CLI reference, borg hybrid
+  pattern, devcontainer, containers/OCI/K8s.
+- `vm-tests` — hermetic NixOS VM tests: structure, sm/md/lg tiers,
+  running, agent loop.
+- `lib` — this repo's customLib + the AGENTS flake lib (`mkSkills`
+  skill composition).
+- `disko` — declarative disk partitioning: devices tree, LUKS + clan
+  vars keys, redundancy recipes.
+- `cilium` — Cilium 1.20.x: BGP control plane CRDs, LB IPAM, network
+  policy, troubleshooting playbook.
+- `openebs` — OpenEBS 4.6.x Kubernetes CSI storage: engines, per-node
+  prerequisites, StorageClasses, upgrades, troubleshooting.

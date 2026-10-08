@@ -1,10 +1,15 @@
+---
+name: clan-core
+description: Fleet management with clan-core: inventory.nix (machines/instances/roles/tags), clanServices (perInstance/perMachine), build-time exports + the strict-eval check, the clan CLI, vars generators, machine update flows (FlakeHub pull vs clan machines update), and clanService NixOS VM tests. Load when working on anything clan.*; for writing a new clanService, the clanservices reference covers authoring.
+---
+
 # clan-core
 
 [Clan](https://docs.clan.lol) is a toolset for managing a fleet of NixOS
 machines declaratively from one flake. `clan-core` is the flake input
 that provides that toolset: a flake-parts module (`clan` option), the
 `clan` CLI, a library of prebuilt services, a secrets system (vars), and
-clanLib. Load this reference when a flake has a `clan-core` input.
+clanLib. Load this skill when a flake has a `clan-core` input.
 
 Worked examples are from the home repo (`andrewthomaslee/home`) and the
 fleet repo (`andrewthomaslee/borg`) — the patterns are generic;
@@ -452,7 +457,7 @@ The check serializes with `builtins.toJSON` to mirror
 
 The CLI is the fleet's control plane. It needs `CLAN_DIR` pointing at
 the repo root (the home repo's devShell shellHook sets it via varlock —
-see the `nix-style` reference, "DevShell and the agent") and the flake
+see the `nix-style` skill, "DevShell and the agent") and the flake
 must be in the git tree.
 
 | Command | What it does |
@@ -487,7 +492,7 @@ tags, and vars, which remain the source of truth either way:
 - **Pull-based (the home repo's style)** — CI publishes a release to
   FlakeHub; machines run the `apply-*` packages (`apply-now home`,
   `apply-and-reboot home` for a clean remote reboot). `fh apply`
-  mechanics: the `determinate` reference. CI never SSH-pushes; the
+  mechanics: the `determinate` skill. CI never SSH-pushes; the
   `deployment.requireExplicitUpdate` option (set in
   `flake-parts/nixosModules/clan.nix`) makes machines refuse implicit
   remote updates, so a stray `clan machines update` fails loudly instead
@@ -702,7 +707,7 @@ clanServices are plain NixOS config in the end, so the hermetic VM-test
 harness tests them directly. The test file imports the repo's
 `nixosModules.default` (not the clan machinery) and flips the
 `hostSpec.*` options the service's `perInstance`/`perMachine` modules
-would set — see the `vm-tests` reference for the full hermeticity rule,
+would set — see the `vm-tests` skill for the full hermeticity rule,
 size variants, and the agent loop. The clan-specific additions:
 
 - Import `inputs.clan-core.nixosModules.clanCore` and set minimal
@@ -742,7 +747,7 @@ configs and generated files end-to-end inside the VM.
   `clan.exports`.
 - **Machine-eval arg circularity** — machine modules get args via
   `clan.specialArgs`, but a module's *config value* cannot use them
-  (see the `relativeToRoot` exception in the `nix-style` reference).
+  (see the `relativeToRoot` exception in the `nix-style` skill).
 - **`deployment.requireExplicitUpdate`** — the home repo sets it
   (`flake-parts/nixosModules/clan.nix`) so machines refuse implicit
   remote updates; pull-based deployment instead.
