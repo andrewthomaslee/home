@@ -22,6 +22,7 @@ nav:
       - Overview: whisper-dictation/index.md
   - OpenShell:
       - Overview: openshell/index.md
+      - Code-Agent Image (User Guide): openshell/code-agent-image.md
   - Minecraft:
       - Overview: minecraft/index.md
       - mc.andrewlee.fun: minecraft/mc-andrewlee-fun.md

@@ -14,6 +14,11 @@ an OCI image built by this flake. All sandbox egress is deny-by-default
 `devenv` on this repo is for humans only; the sandbox image is a
 separate, purpose-built artifact.
 
+> **Day-to-day usage** (build/load the image, create a sandbox, run the
+> agents, refresh after changes): see the
+> [Code-Agent Image user guide](code-agent-image.md). This page is the
+> architecture reference and design log.
+
 ## Architecture
 
 ```

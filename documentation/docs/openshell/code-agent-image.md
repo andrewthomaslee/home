@@ -1,0 +1,150 @@
+# Code-Agent Image — User Guide
+
+Day-to-day guide for the pre-baked `code-agent` OCI image: what it ships,
+how to build/load/refresh it, and how to work in a sandbox. For the
+architecture and the lessons that shaped the design, see the
+[OpenShell overview](index.md).
+
+## What the image gives you
+
+- **Toolset on PATH** (`/bin`, `/usr/local/bin`, login shells): bash,
+  coreutils, git, gh, curl, jq, ripgrep, openssh, tmux, nix — plus the
+  Nix language tooling (`nixd`, `alejandra`, `statix`, `deadnix`).
+- **Three pre-wired AI agents** (no interactive login ever):
+  - `pi` — Kimi for Coding subscription, key from the attached provider's
+    `$KIMI_API_KEY`.
+  - `kimi` — same subscription via a baked `~/.kimi-code/config.toml`
+    (`type = "kimi"`, `https://api.kimi.com/coding/v1`,
+    `apiKeyEnv = "KIMI_API_KEY"`). Do **not** run `/login` — the OAuth
+    hosts are unreachable on purpose.
+  - `claude` — Claude Teams subscription bearer (`$ANTHROPIC_AUTH_TOKEN`
+    from the attached provider); onboarding pre-completed and the
+    `platform.claude.com` startup preflight admitted by the policy.
+- **Repo skills at `/opt/skills`**, wired into all three CLIs
+  (`~/.pi/agent/settings.json`, `~/.kimi-code/skills`,
+  `~/.claude/skills`, `~/.agents/skills`) — advertised by
+  name+description, loaded on demand (`/skill:<name>` in pi/kimi).
+  Deep docs ship read-only at `/opt/references`.
+- **Baked git identity + credentials**: commits are authored as the org
+  bot (`andrewthomaslee-agent`), and a github.com-scoped credential
+  helper feeds git the provider-injected `$GITHUB_TOKEN` — `git push`
+  over https works without prompting. Nothing secret is in the image.
+- **nix with flakes**, pre-initialized store db, and baked substituters:
+  FlakeHub caches + the clan niks3 cache (`cache.geninf.io`, keys baked).
+  The sandbox policy additionally admits `cache.nixos.org`, the clan
+  cache hosts, and any `*.cachix.org` cache.
+- **VSCodium Remote-SSH server pre-baked** — first connect is instant,
+  offline (see the overview for editor setup).
+
+## Build and load
+
+```bash
+nix run .#load-code-agent-image    # builds + copies into the host docker store
+```
+
+The VM driver resolves the host docker store first; an OCI registry pull
+is the fallback. The flake evaluates from the git tree — `git add` new
+`.nix` files before building.
+
+## Create a sandbox
+
+```bash
+openshell sandbox create --name code --from code-agent:latest \
+  --policy openshell/policies/code-agent.yaml \
+  --provider kimi-for-coding --provider claude-code --provider github-agent \
+  --cpu 4 --memory 8Gi --detach -- bash -l
+
+openshell sandbox connect code     # attach; Ctrl-P Ctrl-Q detaches
+openshell sandbox exec -n code -- nix --version
+```
+
+Providers are created once per gateway (see
+[the overview](index.md#4-ai-coding-agents--interactive-and-remote) for
+the profile import / provider create commands); attach them at create
+time or later with `openshell sandbox provider attach code <name> --wait`.
+
+## Working in the sandbox
+
+```bash
+pi            # kimi-for-coding, ready to prompt
+kimi          # same subscription, ready to prompt (model preselected)
+claude        # subscription token via provider; lands on a prompt
+
+nix profile install nixpkgs#hello          # substitution-only (no /dev/kvm)
+# a Cachix-backed package: name the cache + key for nix
+NIX_CONFIG="$NIX_CONFIG extra-substituters = https://nix-community.cachix.org \
+  extra-trusted-public-keys = nix-community.cachix.org-1:…" \
+  nix profile install nix-community#…
+
+git push                                     # bot identity + token helper baked
+openshell logs code --tail --source sandbox  # DENIED lines = policy misses
+```
+
+Agent egress is deny-by-default; the policy admits nix caches, GitHub
+(read), `git.clan.lol` (read-write git transport), the kimi/claude API
+endpoints, and the VSCodium bootstrap fallback.
+
+## Refreshing the image / sandbox
+
+After changing `flake-parts/ociImages/code-agent.nix`, the policy, or the
+profiles:
+
+```bash
+# 1. lint gate (CI runs this on push — fail fast locally)
+nix fmt . && statix check . && deadnix --fail .
+nix flake check --show-trace
+
+# 2. rebuild + load
+nix run .#load-code-agent-image
+
+# 3. recreate the sandbox — filesystem-policy and image changes
+#    (e.g. /opt, /etc/gitconfig, NIX_CONFIG) only apply to new sandboxes;
+#    network_policies hot-reload, everything else does not.
+openshell sandbox delete code
+openshell sandbox create --name code --from code-agent:latest \
+  --policy openshell/policies/code-agent.yaml \
+  --provider kimi-for-coding --provider claude-code --provider github-agent \
+  --cpu 4 --memory 8Gi --detach -- bash -l
+
+# 4. smoke-test the fresh sandbox
+openshell sandbox exec -n code -- git config user.name    # andrewthomaslee-agent
+openshell sandbox exec -n code -- ls /opt/skills ~/.kimi-code ~/.claude/skills
+openshell sandbox exec -n code -- nix --version
+openshell logs code --tail --source sandbox              # expect no DENIED spam
+```
+
+A network-only policy tweak (new host, new rule) can go into a **running**
+sandbox without recreation:
+
+```bash
+openshell policy get code --base | sed '1,/^---$/d' > /tmp/p.yaml
+# edit network_policies in /tmp/p.yaml
+openshell policy set code --policy /tmp/p.yaml --wait
+```
+
+Provider credential rotations need a sandbox restart (injected values
+reach only new processes):
+
+```bash
+openshell provider update github-agent --credential GITHUB_TOKEN
+openshell sandbox stop code && openshell sandbox start code
+```
+
+## Troubleshooting
+
+- **`Unable to connect to Anthropic services`** (claude): the
+  `platform.claude.com` preflight is blocked — make sure the sandbox was
+  created with the current `openshell/policies/code-agent.yaml` (hot-reload
+  the `claude_code` rule if not).
+- **kimi shows `Model: not set, run /login or /provider`**: the baked
+  `~/.kimi-code/config.toml` is missing → the sandbox is running an old
+  image; rebuild + recreate. Never `/login`.
+- **`DENIED` lines in the sandbox log**: something is reaching beyond the
+  policy — add a narrowly-scoped rule (see
+  [the overview's policy section](index.md#3-sandboxes-policies-providers)).
+- **`gh auth status` says the token is invalid**: expected — the env value
+  is an opaque supervisor handle; real API calls through the proxy work
+  (the push test in the git history verifies this).
+- **nix substitution falls back to building**: TCG builds crawl (no
+  `/dev/kvm` in sandboxes). Check the cache is in `NIX_CONFIG`
+  (substituter **and** trusted public key) and admitted by the policy.
