@@ -208,7 +208,9 @@ claude   # Claude Teams subscription token via attached claude-code provider
 ```
 
 **From the outside via VSCodium** (review/editing without entering the
-sandbox): the CLI emits a working Remote-SSH config:
+sandbox): the CLI emits a working Remote-SSH config, and `code-sandbox`
+already appends it to `~/.ssh/config.local` at create time (managed
+per-sandbox block, replaced not duplicated; `--no-ssh-config` to skip):
 
 ```bash
 openshell sandbox ssh-config code >> ~/.ssh/config

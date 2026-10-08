@@ -62,7 +62,10 @@ one shot: it builds the image, loads it into docker as
 creates a sandbox named `<name>-<imghash>` (default name: `code`) with
 the repo policy and the kimi/github providers. If that sandbox already
 exists it prompts to delete and recreate (`-y` to skip the prompt) — the
-hash suffix means "same name" always implies "older image".
+hash suffix means "same name" always implies "older image". It then
+appends the generated Remote-SSH config to `~/.ssh/config.local` as a
+managed block (replaced, not duplicated, on re-runs; disable with
+`--no-ssh-config`, override the path with `--ssh-config-file`).
 
 ```bash
 code-sandbox              # create/update the default 'code' sandbox
@@ -70,7 +73,7 @@ code-sandbox work --cpu 8 --memory 16Gi
 code-sandbox -y           # non-interactive recreate if it exists
 code-sandbox connect work-<hash>   # attach (Ctrl-P Ctrl-Q detaches)
 code-sandbox exec work-<hash> -- nix --version
-code-sandbox delete work-<hash>
+code-sandbox delete work-<hash>    # (the ssh config block is left behind; harmless)
 ```
 
 The equivalent manual steps:

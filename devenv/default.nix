@@ -33,12 +33,19 @@ with pkgs; let
           --cpu N        CPUs for the sandbox (default: 4)
           --memory SIZE  memory for the sandbox (default: 8Gi)
       -h, --help         this help
+          --no-ssh-config           don't append the Remote-SSH config (default: append)
+          --ssh-config-file FILE    where to append it (default: ~/.ssh/config.local)
 
     The sandbox is named <name>-<imghash> (default name: code), and the
     image is loaded as code-agent:<imghash> — both content-addressed, so
     an existing sandbox name means an older image and prompts for
     replacement. Recreate to pick up image or policy changes; only
     network policy tweaks hot-reload.
+
+    Unless disabled, the generated Remote-SSH config is appended to the
+    ssh config file as a managed, per-sandbox comment-delimited block —
+    re-running replaces the block for that sandbox instead of
+    duplicating it.
     USAGE
       exit "''${1:-0}"
     }
@@ -54,12 +61,15 @@ with pkgs; let
       esac
     fi
 
-    name="" yes=0 cpu=4 memory="8Gi"
+    name="" yes=0 cpu=4 memory="8Gi" ssh_config=1 ssh_config_file="$HOME/.ssh/config.local"
     while [ $# -gt 0 ]; do
       case "$1" in
         -y | --yes) yes=1; shift ;;
         --cpu) cpu="''${2:?--cpu needs a value}"; shift 2 ;;
         --memory) memory="''${2:?--memory needs a value}"; shift 2 ;;
+        --ssh-config) ssh_config=1; shift ;;
+        --no-ssh-config) ssh_config=0; shift ;;
+        --ssh-config-file) ssh_config_file="''${2:?--ssh-config-file needs a value}"; shift 2 ;;
         -h | --help) usage 0 ;;
         --) shift; break ;;
         -*)
@@ -136,6 +146,29 @@ with pkgs; let
       --detach -- bash -l
 
     echo "code-sandbox: done. Attach with:  code-sandbox connect $name"
+
+    # Append the generated Remote-SSH config (the equivalent of
+    # `openshell sandbox ssh-config $name >> ~/.ssh/config.local`) as a
+    # managed, comment-delimited block: any block previously appended
+    # for this sandbox is replaced first, so re-runs stay idempotent.
+    if [ "$ssh_config" = 1 ]; then
+      mkdir -p "$(dirname "$ssh_config_file")"
+      tmp="$ssh_config_file.code-sandbox.tmp"
+      if [ -f "$ssh_config_file" ]; then
+        sed "/^# code-sandbox: $name\$/,/^# end code-sandbox: $name\$/d" \
+          "$ssh_config_file" >"$tmp"
+      else
+        : >"$tmp"
+      fi
+      {
+        echo "# code-sandbox: $name"
+        openshell sandbox ssh-config "$name"
+        echo "# end code-sandbox: $name"
+      } >>"$tmp"
+      chmod 600 "$tmp"
+      mv "$tmp" "$ssh_config_file"
+      echo "code-sandbox: ssh config for '$name' appended to $ssh_config_file"
+    fi
   '';
 
   packages = [
