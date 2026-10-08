@@ -66,7 +66,11 @@ devenv is human-only and nothing else ships an OCI. What it bakes in:
 
 - **Toolset on the sshd default PATH** (`/bin` + `/usr/local/bin` +
   `/etc/profile`): bash, coreutils, git, gh, curl, jq, ripgrep, openssh,
-  tmux, nix — as user `agent` (UID 1000) with a real `/etc/passwd`.
+  tmux, nix — as user `agent` (UID 1000) with a real `/etc/passwd`. A
+  baked `/etc/gitconfig` adds a neutral fallback identity and a
+  github.com-scoped credential helper that feeds git the
+  provider-injected `$GITHUB_TOKEN` (https push works without prompting;
+  verified against the org repo).
 - **nix runtime package adds**: `NIX_CONFIG` carries flakes plus
   `sandbox = false` and `filter-syscalls = false` — the microVM is the
   isolation boundary and the supervisor's seccomp stack blocks nix's
