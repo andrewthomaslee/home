@@ -189,6 +189,35 @@
       export PATH="/usr/local/bin:$PATH"
       EOF
 
+      # nix config on disk (see nixConfig above): unlike $NIX_CONFIG in
+      # the image Env, every nix invocation reads this — VSCodium-server
+      # and sshd-spawned shells can run with a store-only or scrubbed
+      # env, which is exactly how `nix run` ended up with flakes
+      # disabled.
+      mkdir -p $out/etc/nix
+      cat > $out/etc/nix/nix.conf <<'EOF'
+      ${nixConfig}
+      EOF
+
+      # Pin the flake registry so `nix run nixpkgs#…` resolves offline:
+      # the default registry is an indirection through
+      # channels.nixos.org/flake-registry.json, which the sandbox policy
+      # does not admit (and nix reports "you don't have Internet
+      # access"). Point the `nixpkgs` alias at the image's own nixpkgs
+      # checkout (pkgs.path carries flake.nix), and binaries still come
+      # from the admitted cache.nixos.org substituter.
+      cat > $out/etc/nix/registry.json <<'EOF'
+      {
+        "flakes": [
+          {
+            "from": {"id": "nixpkgs", "type": "indirect"},
+            "to": {"path": "${nixpkgsFlake}", "type": "path"}
+          }
+        ],
+        "version": 2
+      }
+      EOF
+
       printf '%s\n' 'NAME="code-agent"' 'ID="code-agent"' > $out/etc/os-release
 
       # Git defaults: the org bot identity (andrewthomaslee-agent, per
@@ -365,7 +394,14 @@
 
     tmpDir = pkgs.runCommand "code-agent-tmp" {} "mkdir -p $out/tmp";
 
-    # Multiline NIX_CONFIG: flakes on; the microVM is the isolation
+    # The nixpkgs checkout the registry.json pin points at, as a real
+    # derivation: pkgs.path is a bare flake-input source (no derivation
+    # context), which nix2container cannot stage into copyToRoot.
+    nixpkgsFlake = pkgs.runCommand "code-agent-nixpkgs-flake" {} ''
+      cp -r --reflink=auto ${pkgs.path} $out
+    '';
+
+    # Multiline nix config: flakes on; the microVM is the isolation
     # boundary and the OpenShell supervisor's seccomp stack blocks nix's
     # builder-child filter ("unable to load seccomp BPF program:
     # Operation not permitted"), so builders skip their own filter.
@@ -373,6 +409,10 @@
     # plus clan-core's niks3 cache (cache.geninf.io; objects may be
     # signed under either cache.geninf.io-1 or cache.clan.lol-1, so both
     # keys are trusted — keys verbatim from the cache's own usage page).
+    # Baked at BOTH /etc/nix/nix.conf (rootfs below, picked up by every
+    # nix invocation including sshd-spawned shells that drop env) and
+    # $NIX_CONFIG (image Env below) — nix.conf alone would suffice, but
+    # NIX_CONFIG wins when set, so both carry the same content.
     nixConfig = lib.concatStringsSep "\n" [
       "experimental-features = nix-command flakes"
       "sandbox = false"
@@ -385,7 +425,10 @@
       name = "code-agent";
       tag = "latest";
 
-      copyToRoot = [baseTools rootfs agentDirs agentMaterial tmpDir];
+      # nixpkgsFlake is the nixpkgs checkout the registry.json pin above
+      # points at — copied into the image explicitly: it is not part of
+      # any other closure copied here.
+      copyToRoot = [baseTools rootfs agentDirs agentMaterial tmpDir nixpkgsFlake];
 
       # Register the image store paths in the nix db at build time so
       # `nix` works in-sandbox without a db init.

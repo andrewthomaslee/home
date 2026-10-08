@@ -16,7 +16,10 @@ separate, purpose-built artifact.
 
 > **Day-to-day usage** (build/load the image, create a sandbox, run the
 > agents, refresh after changes): see the
-> [Code-Agent Image user guide](code-agent-image.md). This page is the
+> [Code-Agent Image user guide](code-agent-image.md). The short version:
+> the dev shell's `code-sandbox` script builds the image, loads it into
+> docker under a content-hash tag, and creates/replaces a sandbox
+> (`code-sandbox`, `code-sandbox connect <name>`). This page is the
 > architecture reference and design log.
 
 ## Architecture
@@ -146,6 +149,15 @@ After loading, create a sandbox (§3) and attach providers (§4).
 
 ## 3. Sandboxes, policies, providers
 
+Day-to-day, don't type the create command — the dev shell ships
+`code-sandbox`, which builds the image, loads it as
+`code-agent:<imghash>` (content-hash tag, never mutable `latest`), and
+creates a sandbox named `<name>-<imghash>` (default `code`) with this
+policy and the kimi/github providers, prompting to delete-and-replace
+when the name already exists (an existing name always means an older
+image, thanks to the hash suffix; `-y` skips the prompt). Manual
+equivalent:
+
 ```bash
 openshell sandbox create --name code --from code-agent:latest \
   --policy openshell/policies/code-agent.yaml \
@@ -156,6 +168,9 @@ openshell sandbox connect code                    # attach; Ctrl-P Ctrl-Q detach
 openshell sandbox exec -n code -- nix --version   # sibling process, sandbox keeps running
 openshell logs code --tail --source sandbox       # DENIED lines show what policy blocked
 ```
+
+(For scripting against the CLI: `openshell ... | grep -q` panics the CLI
+on EPIPE — see §5; `code-sandbox` redirects to a file for this reason.)
 
 - **Policy** (`openshell/policies/code-agent.yaml`): filesystem contract
   (read-only `/nix/store` world + baked `/opt` material, read-write

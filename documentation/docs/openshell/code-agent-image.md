@@ -34,8 +34,13 @@ architecture and the lessons that shaped the design, see the
   over https works without prompting. Nothing secret is in the image.
 - **nix with flakes**, pre-initialized store db, and baked substituters:
   FlakeHub caches + the clan niks3 cache (`cache.geninf.io`, keys baked).
-  The sandbox policy additionally admits `cache.nixos.org`, the clan
-  cache hosts, and any `*.cachix.org` cache.
+  The config lives at `/etc/nix/nix.conf` (not just `$NIX_CONFIG`), so it
+  holds in every shell — including VSCodium-server-spawned ones. The
+  flake registry is pinned in-image: `nixpkgs` resolves to the image's
+  own nixpkgs checkout (no `channels.nixos.org` lookup, which the policy
+  blocks), so `nix run nixpkgs#hello` works offline, fetching binaries
+  from the admitted `cache.nixos.org`. The sandbox policy additionally
+  admits the clan cache hosts and any `*.cachix.org` cache.
 - **VSCodium Remote-SSH server pre-baked** — first connect is instant,
   offline (see the overview for editor setup).
 
@@ -50,6 +55,25 @@ is the fallback. The flake evaluates from the git tree — `git add` new
 `.nix` files before building.
 
 ## Create a sandbox
+
+The dev shell ships a `code-sandbox` script that does all of the below in
+one shot: it builds the image, loads it into docker as
+`code-agent:<imghash>` (content-hash tag, never mutable `latest`), and
+creates a sandbox named `<name>-<imghash>` (default name: `code`) with
+the repo policy and the kimi/github providers. If that sandbox already
+exists it prompts to delete and recreate (`-y` to skip the prompt) — the
+hash suffix means "same name" always implies "older image".
+
+```bash
+code-sandbox              # create/update the default 'code' sandbox
+code-sandbox work --cpu 8 --memory 16Gi
+code-sandbox -y           # non-interactive recreate if it exists
+code-sandbox connect work-<hash>   # attach (Ctrl-P Ctrl-Q detaches)
+code-sandbox exec work-<hash> -- nix --version
+code-sandbox delete work-<hash>
+```
+
+The equivalent manual steps:
 
 ```bash
 openshell sandbox create --name code --from code-agent:latest \
@@ -73,7 +97,8 @@ pi            # kimi-for-coding, ready to prompt
 kimi          # same subscription, ready to prompt (model preselected)
 claude        # subscription token via provider; lands on a prompt
 
-nix profile install nixpkgs#hello          # substitution-only (no /dev/kvm)
+nix run nixpkgs#hello                # pinned registry, substitution-only (no /dev/kvm)
+nix profile install nixpkgs#hello    # same, persists into the profile
 # a Cachix-backed package: name the cache + key for nix
 NIX_CONFIG="$NIX_CONFIG extra-substituters = https://nix-community.cachix.org \
   extra-trusted-public-keys = nix-community.cachix.org-1:…" \
@@ -89,8 +114,9 @@ endpoints, and the VSCodium bootstrap fallback.
 
 ## Refreshing the image / sandbox
 
-After changing `flake-parts/ociImages/code-agent.nix`, the policy, or the
-profiles:
+`code-sandbox` already does this whole flow — re-running it builds the
+image, loads it under the new content hash, and (after the replace
+prompt) recreates the sandbox. To do it manually:
 
 ```bash
 # 1. lint gate (CI runs this on push — fail fast locally)
@@ -101,8 +127,8 @@ nix flake check --show-trace
 nix run .#load-code-agent-image
 
 # 3. recreate the sandbox — filesystem-policy and image changes
-#    (e.g. /opt, /etc/gitconfig, NIX_CONFIG) only apply to new sandboxes;
-#    network_policies hot-reload, everything else does not.
+#    (e.g. /opt, /etc/gitconfig, NIX_CONFIG, /etc/nix) only apply to new
+#    sandboxes; network_policies hot-reload, everything else does not.
 openshell sandbox delete code
 openshell sandbox create --name code --from code-agent:latest \
   --policy openshell/policies/code-agent.yaml \
