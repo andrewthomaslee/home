@@ -14,13 +14,7 @@ with pkgs; let
   packages = [
     # core
     bashInteractive
-    cacert
-    nix
     clan-cli
-
-    # git
-    gitMinimal
-    gh
 
     #linters
     alejandra
@@ -35,9 +29,6 @@ with pkgs; let
     bun
     skopeo
     python3Minimal
-
-    # agents
-    pi-coding-agent
   ];
 in {
   # ------ Packages ------ #
