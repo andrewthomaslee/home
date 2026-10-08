@@ -31,9 +31,11 @@ _: {
     pkgs,
     inputs',
     self',
+    customLib,
     ...
   }: let
     inherit (pkgs) lib;
+    inherit (customLib) relativeToRoot;
     n2c = inputs'.nix2container.packages.nix2container;
 
     # VSCodium release whose vscodium-reh server matches the fleet's
@@ -100,6 +102,13 @@ _: {
         tmux
         less
         nix
+        # Nix language server + the repo's lint trio: agent-edited
+        # .nix files can be vetted in-sandbox (runtime `nix profile
+        # install` adds work too, but TCG builds crawl — bake them).
+        nixd
+        alejandra
+        statix
+        deadnix
         # AI coding agents (all from the llm-agents flake input, see
         # overlays/default.nix): pi runs on bun, kimi-code and
         # claude-code are bundled node/bun apps — closures carry their
@@ -154,6 +163,10 @@ _: {
       ln -s ${pkgs.pi-coding-agent}/bin/pi          $out/usr/local/bin/pi
       ln -s ${pkgs.kimi-code}/bin/kimi              $out/usr/local/bin/kimi
       ln -s ${pkgs.claude-code}/bin/claude          $out/usr/local/bin/claude
+      ln -s ${pkgs.nixd}/bin/nixd                   $out/usr/local/bin/nixd
+      ln -s ${pkgs.alejandra}/bin/alejandra         $out/usr/local/bin/alejandra
+      ln -s ${pkgs.statix}/bin/statix               $out/usr/local/bin/statix
+      ln -s ${pkgs.deadnix}/bin/deadnix             $out/usr/local/bin/deadnix
 
       # Login shells (interactive SSH + VSCodium terminal) read
       # /etc/profile: put the layer on PATH there too.
@@ -203,7 +216,7 @@ _: {
         -C /etc/ld.so.cache
     '';
 
-    # Home, workdir, and the pre-baked VSCodium server slot. Owned
+    # Home, workdir, and the pre-baked per-agent wiring. Owned
     # 1000:1000 via perms below (OpenShell runs USER-less images as
     # UID/GID 1000; the image declares that user explicitly).
     agentDirs = pkgs.runCommand "code-agent-dirs" {} ''
@@ -213,6 +226,7 @@ _: {
       # under the supervisor): script present means "already installed",
       # so connect is instant and offline.
       ln -s ${vscodium-server} $out/sandbox/.vscodium-server/bin/${vscodiumCommit}
+
       # pi's kimi-for-coding wiring: models.json overrides the built-in
       # kimi-coding provider to read its key from $KIMI_API_KEY (env
       # interpolation, no key in the image). Baked at both $HOME roots:
@@ -221,6 +235,94 @@ _: {
       mkdir -p $out/sandbox/.pi/agent $out/home/agent/.pi/agent
       cp ${pi-models} $out/sandbox/.pi/agent/models.json
       cp ${pi-models} $out/home/agent/.pi/agent/models.json
+      # pi skills: explicit resource path at the canonical baked
+      # location (the ~/.agents/skills symlink below is the same tree
+      # via the Agent Skills standard location, belt and braces).
+      cp ${pi-settings} $out/sandbox/.pi/agent/settings.json
+      cp ${pi-settings} $out/home/agent/.pi/agent/settings.json
+
+      # kimi-code: config.toml pre-wires the Kimi for Coding
+      # subscription (no /login — the OAuth hosts are deliberately
+      # unreachable under the sandbox policy); skills dir at the
+      # location kimi scans ($KIMI_CODE_HOME/skills).
+      mkdir -p $out/sandbox/.kimi-code $out/home/agent/.kimi-code
+      cp ${kimi-config} $out/sandbox/.kimi-code/config.toml
+      cp ${kimi-config} $out/home/agent/.kimi-code/config.toml
+      ln -s /opt/skills $out/sandbox/.kimi-code/skills
+      ln -s /opt/skills $out/home/agent/.kimi-code/skills
+
+      # claude: personal skills dir + first-run onboarding skipped
+      # (settings.json and the legacy ~/.claude.json both carry
+      # hasCompletedOnboarding — claude merges either).
+      mkdir -p $out/sandbox/.claude $out/home/agent/.claude
+      cp ${claude-settings} $out/sandbox/.claude/settings.json
+      cp ${claude-settings} $out/home/agent/.claude/settings.json
+      cp ${claude-settings} $out/sandbox/.claude.json
+      cp ${claude-settings} $out/home/agent/.claude.json
+      ln -s /opt/skills $out/sandbox/.claude/skills
+      ln -s /opt/skills $out/home/agent/.claude/skills
+
+      # Agent Skills standard location, scanned by pi and claude-code
+      # (and walked as a project-root skill dir from any /sandbox cwd).
+      mkdir -p $out/sandbox/.agents $out/home/agent/.agents
+      ln -s /opt/skills $out/sandbox/.agents/skills
+      ln -s /opt/skills $out/home/agent/.agents/skills
+    '';
+
+    # Repo agent material baked read-only at /opt: the home repo's
+    # skills/ tree (wired into pi/kimi/claude in agentDirs above) and
+    # references/ tree (deep "how it works" docs these CLIs don't
+    # auto-discover — agents reach them through the skills that point
+    # there, or on an explicit read).
+    agentMaterial = pkgs.runCommand "code-agent-material" {} ''
+      mkdir -p $out/opt
+      cp -r ${relativeToRoot "skills"} $out/opt/skills
+      cp -r ${relativeToRoot "references"} $out/opt/references
+    '';
+
+    # pi user settings: the baked skills tree as an explicit resource
+    # path (absolute paths are supported; resolves regardless of HOME).
+    pi-settings = pkgs.writeText "pi-settings.json" ''
+      {
+        "skills": ["/opt/skills"]
+      }
+    '';
+
+    # kimi-code pre-wired for the Kimi for Coding subscription — the
+    # same api.kimi.com/coding product pi's built-in kimi-coding provider
+    # uses, over the wire Moonshot's own CLI speaks to it (the kimi
+    # wire's managed default base URL is exactly .../coding/v1, Bearer
+    # auth via apiKeyEnv — the OpenAI-style chat-completions surface,
+    # not the Anthropic /messages one). The key is the provider-injected
+    # $KIMI_API_KEY, so no /login and no auth.kimi.com egress. If
+    # Moonshot ever moves the wire, the Anthropic-protocol variant is
+    # type = "anthropic" + baseUrl = "https://api.kimi.com/coding".
+    kimi-config = pkgs.writeText "kimi-config.toml" ''
+      defaultProvider = "kimi-for-coding"
+      defaultModel = "kimi-for-coding"
+
+      [providers.kimi-for-coding]
+      type = "kimi"
+      baseUrl = "https://api.kimi.com/coding/v1"
+      apiKeyEnv = "KIMI_API_KEY"
+
+      [models.kimi-for-coding]
+      provider = "kimi-for-coding"
+      model = "kimi-for-coding"
+      maxContextSize = 1048576
+      maxOutputSize = 32768
+    '';
+
+    # Claude Code: skip the first-run onboarding prompts (theme/terms).
+    # Auth itself is the attached claude-code provider's job
+    # ($ANTHROPIC_AUTH_TOKEN); the platform.claude.com preflight is
+    # admitted by the policy, and the updater/telemetry env in the
+    # image config keeps non-API traffic off the DENIED log.
+    claude-settings = pkgs.writeText "claude-settings.json" ''
+      {
+        "hasCompletedOnboarding": true,
+        "theme": "dark"
+      }
     '';
 
     # pi's built-in kimi-coding provider, pointed at the key the
@@ -241,20 +343,23 @@ _: {
     # boundary and the OpenShell supervisor's seccomp stack blocks nix's
     # builder-child filter ("unable to load seccomp BPF program:
     # Operation not permitted"), so builders skip their own filter.
-    # FlakeHub substituters mirror the host caches (public keys only).
+    # FlakeHub substituters mirror the host caches (public keys only),
+    # plus clan-core's niks3 cache (cache.geninf.io; objects may be
+    # signed under either cache.geninf.io-1 or cache.clan.lol-1, so both
+    # keys are trusted — keys verbatim from the cache's own usage page).
     nixConfig = lib.concatStringsSep "\n" [
       "experimental-features = nix-command flakes"
       "sandbox = false"
       "filter-syscalls = false"
-      "extra-substituters = https://cache.flakehub.com/ https://edge.cache.flakehub.com/"
-      "extra-trusted-public-keys = cache.flakehub.com-3:hJuILl5sVK4iKm86JzgdXW12Y2Hwd5G07qKtHTOcDCM= cache.flakehub.com-4:Asi8qIv291s0aYLyH6IOnr5Kf6+OF14WVjkE6t3xMio= cache.flakehub.com-5:zB96CRlL7tiPtzA9/WKyPkp3A2vqxqgdgyTVNGShPDU= cache.flakehub.com-6:W4EGFwAGgBj3he7c5fNh9NkOXw0PUVaxygCVKeuvaqU= cache.flakehub.com-7:mvxJ2DZVHn/kRxlIaxYNMuDG1OvMckZu32um1TadOR8= cache.flakehub.com-8:moO+OVS0mnTjBTcOUh2kYLQEd59ExzyoW1QgQ8XAARQ= cache.flakehub.com-9:wChaSeTI6TeCuV/Sg2513ZIM9i0qJaYsF+lZCXg0J6o= cache.flakehub.com-10:2GqeNlIp6AKp4EF2MVbE1kBOp9iBSyo0UPR9KoR0o1Y="
+      "extra-substituters = https://cache.flakehub.com/ https://edge.cache.flakehub.com/ https://cache.geninf.io/"
+      "extra-trusted-public-keys = cache.flakehub.com-3:hJuILl5sVK4iKm86JzgdXW12Y2Hwd5G07qKtHTOcDCM= cache.flakehub.com-4:Asi8qIv291s0aYLyH6IOnr5Kf6+OF14WVjkE6t3xMio= cache.flakehub.com-5:zB96CRlL7tiPtzA9/WKyPkp3A2vqxqgdgyTVNGShPDU= cache.flakehub.com-6:W4EGFwAGgBj3he7c5fNh9NkOXw0PUVaxygCVKeuvaqU= cache.flakehub.com-7:mvxJ2DZVHn/kRxlIaxYNMuDG1OvMckZu32um1TadOR8= cache.flakehub.com-8:moO+OVS0mnTjBTcOUh2kYLQEd59ExzyoW1QgQ8XAARQ= cache.flakehub.com-9:wChaSeTI6TeCuV/Sg2513ZIM9i0qJaYsF+lZCXg0J6o= cache.flakehub.com-10:2GqeNlIp6AKp4EF2MVbE1kBOp9iBSyo0UPR9KoR0o1Y= cache.geninf.io-1:uhEViaczNKSoerYM+w7uqXUzlAhnbEBKsFzgg9n3cvI= cache.clan.lol-1:3KztgSAB5R1M+Dz7vzkBGzXdodizbgLXGXKXlcQLA28="
     ];
   in {
     packages.code-agent-image = n2c.buildImage {
       name = "code-agent";
       tag = "latest";
 
-      copyToRoot = [baseTools rootfs agentDirs tmpDir];
+      copyToRoot = [baseTools rootfs agentDirs agentMaterial tmpDir];
 
       # Register the image store paths in the nix db at build time so
       # `nix` works in-sandbox without a db init.
@@ -299,6 +404,23 @@ _: {
           # provider (models.json above reads it from $KIMI_API_KEY).
           "PI_PROVIDER=kimi-coding"
           "PI_MODEL=kimi-for-coding"
+          # kimi-code: no models.dev catalog fetch on start (no catalog
+          # egress under the sandbox policy — the provider/model is
+          # baked in config.toml) and no telemetry.
+          "KIMI_CODE_MODEL_CATALOG_REFRESH_ON_START=false"
+          "KIMI_DISABLE_TELEMETRY=1"
+          # claude-code: updater/telemetry/error-reporting/survey traffic
+          # all targets hosts the policy does not admit; disabling keeps
+          # the DENIED log to real API traffic. (The startup connectivity
+          # preflight is NOT telemetry — platform.claude.com is admitted
+          # in openshell/policies/code-agent.yaml for it and for
+          # `claude auth login` token polling.)
+          "DISABLE_AUTOUPDATER=1"
+          "DISABLE_TELEMETRY=1"
+          "DISABLE_ERROR_REPORTING=1"
+          "DISABLE_BUG_COMMAND=1"
+          "DISABLE_GROWTHBOOK=1"
+          "DISABLE_FEEDBACK_SURVEY=1"
         ];
         Cmd = ["${pkgs.bashInteractive}/bin/bash" "-l"];
       };

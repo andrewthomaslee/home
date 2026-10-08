@@ -70,11 +70,35 @@ devenv is human-only and nothing else ships an OCI. What it bakes in:
 - **nix runtime package adds**: `NIX_CONFIG` carries flakes plus
   `sandbox = false` and `filter-syscalls = false` — the microVM is the
   isolation boundary and the supervisor's seccomp stack blocks nix's
-  builder-child filter. FlakeHub substituters mirror the host caches.
+  builder-child filter. FlakeHub substituters mirror the host caches,
+  and clan-core's niks3 cache (`cache.geninf.io`, keys baked) is
+  pre-trusted too. The policy admits `cache.nixos.org`, the clan cache
+  hosts, and any `*.cachix.org` cache.
   Add packages at runtime with `nix profile install nixpkgs#<pkg>`
   (**substitution-only**: no `/dev/kvm` in sandboxes, so TCG builds
   crawl). The image's nix db is initialized at build time
-  (`initializeNixDatabase`).
+  (`initializeNixDatabase`). For another Cachix-backed package, pass the
+  cache
+  + public key with the install (policy alone doesn't make nix use it):
+  `NIX_CONFIG="$NIX_CONFIG extra-substituters = https://nix-community.cachix.org \
+    extra-trusted-public-keys = nix-community.cachix.org-1:…" nix profile install nix-community#…`
+- **Three AI coding agents** (§3) from the `llm-agents` flake input,
+  pre-wired against the kimi-for-coding / claude providers.
+- **Repo skills baked at `/opt/skills`** (the home repo's `skills/` tree)
+  and wired into every CLI: pi via `~/.pi/agent/settings.json`
+  (`skills: ["/opt/skills"]`), kimi-code via `~/.kimi-code/skills`,
+  claude via `~/.claude/skills`, plus the `~/.agents/skills` standard
+  location — all baked at both `$HOME` roots (`/sandbox` under the
+  supervisor, `/home/agent` for plain docker). The repo's `references/`
+  tree ships read-only at `/opt/references` for on-demand reads.
+- **Nix language tooling**: `nixd`, `alejandra`, `statix`, `deadnix` —
+  agent-edited `.nix` files can be vetted in-sandbox without a TCG
+  package build.
+- **Non-API traffic silenced in env**: kimi's models.dev catalog refresh
+  and telemetry, and claude's updater/telemetry/error-reporting, are
+  disabled (`KIMI_CODE_MODEL_CATALOG_REFRESH_ON_START=false`,
+  `DISABLE_AUTOUPDATER`, `DISABLE_TELEMETRY`, ...) so the policy `DENIED`
+  log stays meaningful.
 - **Foreign-glibc support**: `/lib64` loader, glibc/gcc libs copied into
   the classic multiarch dirs, and a pregenerated `/etc/ld.so.cache`
   (`ldconfig -r` inside the layer; /etc is read-only under policy, so the
@@ -125,25 +149,35 @@ openshell sandbox create --name code --from code-agent:latest \
 The image ships three agents, all from the `llm-agents` flake input
 (overlays/default.nix routes them into `pkgs`): **pi** (bun-compiled
 standalone ELF), **kimi-code** (node), **claude-code** (native binary).
-Provider credentials are injected as env vars by the attached providers;
-nothing is baked into the image.
+Credentials are never baked in — the attached providers inject them as
+env vars ($KIMI_API_KEY, $ANTHROPIC_AUTH_TOKEN) at sandbox start, and
+each CLI's config only *references* those env var names.
 
 **Interactive, inside the sandbox terminal:**
 
 ```bash
 openshell sandbox connect code        # or: openshell sandbox exec -n code --tty -- pi
 pi            # preconfigured: kimi-for-coding via $KIMI_API_KEY (subscription, not platform API)
-kimi          # kimi-code CLI; same key. If it defaults to the platform
-              # endpoint, point its base-url config at api.kimi.com/coding.
-claude        # uses $ANTHROPIC_AUTH_TOKEN (Claude Teams subscription token)
+kimi          # pre-wired: kimi-for-coding subscription via baked config.toml (apiKeyEnv
+              # $KIMI_API_KEY) — no /login; the OAuth hosts are policy-unreachable on purpose
+claude        # uses $ANTHROPIC_AUTH_TOKEN (Claude Teams subscription token); the
+              # platform.claude.com startup preflight is admitted by the policy
 ```
+
+The repo's skills (`/opt/skills`) are advertised by name+description in
+each CLI (pi and kimi-code: `/skill:<name>`; claude: `/`-invoked skills)
+and loaded on demand. `claude auth login` also works: the OAuth token
+polling endpoint (`platform.claude.com/v1/oauth/token`) is admitted in
+the policy — but with the claude-code provider attached you don't need
+it.
 
 **From the outside via VSCodium** (§5): connect with Remote-SSH, open
 `/sandbox`, and run the same CLIs in the integrated terminal — the remote
 window IS the sandbox, with live file sync and SCM diffs.
 
 Agent egress is deny-by-default: the `kimi_for_coding` (api.kimi.com) and
-`claude_code` (api.anthropic.com) rules in `openshell/policies/code-agent.yaml`
+`claude_code` (api.anthropic.com + platform.claude.com preflight/login)
+rules in `openshell/policies/code-agent.yaml`
 pin the resolved process images (`libexec/pi/pi`, node, `.claude-wrapped`);
 watch `openshell logs code --tail --source sandbox` for `DENIED` lines when
 adding more agents.
@@ -265,6 +299,10 @@ openshell policy set code --policy /tmp/p.yaml --wait
 openshell policy list code
 ```
 
+Network-rule-only changes (like adding the `gitea` rule for
+`git.clan.lol`) can go into a running sandbox this way — no recreation;
+filesystem/Landlock changes still need a fresh sandbox.
+
 Filesystem/Landlock/process changes require recreating the sandbox.
 Narrow additive grants: `openshell policy update code
 --add-endpoint host:443:read-only:rest:enforce --rule-name ... --wait`.
@@ -318,6 +356,20 @@ Narrow additive grants: `openshell policy update code
 - docker images need a `Cmd`/`Entrypoint` for the VM driver's
   `docker create` export step — images without one fail with "no command
   specified" before provisioning even starts.
+- claude-code's startup preflight hits `platform.claude.com`
+  (`/v1/oauth/hello`) and refuses to start without it ("Unable to connect
+  to Anthropic services") — it's admitted in the `claude_code` policy
+  rule; updater/telemetry hosts (sentry/statsig/GCS) are NOT admitted —
+  disable that traffic in the image env instead. Same for kimi-code's
+  models.dev catalog refresh (`KIMI_CODE_MODEL_CATALOG_REFRESH_ON_START=false`)
+  and its OAuth login hosts — pre-wire `~/.kimi-code/config.toml` with an
+  `apiKeyEnv` provider instead of ever calling `/login`.
+- kimi-code provider config schema (verified from the bundled binary):
+  `providers.<name>.{type,apiKey,apiKeyEnv,baseUrl}`, top-level
+  `defaultProvider`/`defaultModel`, `[models.<alias>]` with required
+  `provider`/`model`/`maxContextSize`. `type = "kimi"` speaks the
+  OpenAI-style wire with Bearer auth — the same surface Moonshot's own
+  managed CLI uses at `https://api.kimi.com/coding/v1`.
 
 ## Shell completions
 

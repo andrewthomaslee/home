@@ -4,6 +4,18 @@
 # subscription token works as a bearer credential against the same
 # endpoint Claude Code uses for OAuth logins.
 #
+# Claude Code needs one host beyond api.anthropic.com: its startup
+# connectivity preflight ("Checking connectivity..." → /v1/oauth/hello)
+# and `claude auth login` OAuth token polling both hit platform.claude.com
+# — without it claude exits with "Unable to connect to Anthropic
+# services". That host is admitted in the sandbox POLICY
+# (openshell/policies/code-agent.yaml, claude_code rule), not here:
+# preflight/login traffic carries no provider credential, and updater /
+# telemetry / error-reporting hosts are disabled via the image env
+# (DISABLE_AUTOUPDATER / DISABLE_TELEMETRY / DISABLE_ERROR_REPORTING)
+# instead of admitted. The image also bakes hasCompletedOnboarding so the
+# first run drops straight into a prompt.
+#
 # There is no built-in profile for this, so this one is modeled directly
 # on the built-in `github` profile (see `openshell profile export github
 # --output yaml`). Import once per gateway, then create a provider bound

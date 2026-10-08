@@ -2,6 +2,17 @@
 # (Anthropic-compatible endpoint used by the pi coding agent,
 # https://api.kimi.com/coding).
 #
+# The code-agent image pre-wires BOTH consumers of this endpoint, so no
+# interactive login is ever needed inside a sandbox:
+#  - pi via the baked ~/.pi/agent/models.json (built-in kimi-coding
+#    provider, key from $KIMI_API_KEY);
+#  - kimi-code via the baked ~/.kimi-code/config.toml (type = "kimi",
+#    baseUrl https://api.kimi.com/coding/v1, apiKeyEnv KIMI_API_KEY —
+#    the same subscription over the wire Moonshot's own CLI speaks).
+# kimi-code's OAuth login flow (auth.kimi.com / auth.kimi.ai) stays
+# unreachable under the sandbox policy on purpose: credentials come from
+# this provider, not an interactive device-code flow.
+#
 # There is no built-in profile for this endpoint, so this one is modeled
 # directly on the built-in `github` profile (see `openshell profile export
 # github --output yaml`). Import once per gateway, then create a provider

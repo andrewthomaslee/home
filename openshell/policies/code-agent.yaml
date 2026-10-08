@@ -1,10 +1,13 @@
 # Sandbox policy for the code-agent image (general coding sandbox,
 # flake-parts/ociImages/code-agent.nix): nix runtime package adds via
-# substitution (cache.nixos.org + FlakeHub caches), public GitHub over
-# HTTPS (git clone/fetch, curl downloads), and the VSCodium server
-# bootstrap fallback (only hit when the pre-baked server commit no
-# longer matches the client's VSCodium). Attach providers for private
-# repos or credentials.
+# substitution (cache.nixos.org, FlakeHub caches, clan-core's niks3
+# cache cache.geninf.io/cache.clan.lol, any *.cachix.org cache), public
+# GitHub over HTTPS (git clone/fetch, curl downloads), read-write
+# git+HTTPS to the
+# fleet's gitea (git.clan.lol — clan flake inputs and agent push work),
+# and the VSCodium server bootstrap fallback (only hit when the
+# pre-baked server commit no longer matches the client's VSCodium).
+# Attach providers for private repos or credentials.
 #
 #   openshell sandbox create --name code --from code-agent:latest \
 #     --policy openshell/policies/code-agent.yaml --cpu 4 --memory 8Gi \
@@ -19,6 +22,8 @@ filesystem_policy:
     - /lib
     - /lib64
     - /etc
+    # Baked agent material (repo skills/references, see /opt/skills).
+    - /opt
     - /proc
     - /dev
     - /dev/urandom
@@ -42,6 +47,36 @@ network_policies:
     name: nix_store
     endpoints:
       - { host: cache.nixos.org, port: 443, protocol: rest,
+          enforcement: enforce, access: read-only }
+    binaries:
+      - { path: /nix/store/*-nix-*/bin/nix }
+
+  # Cachix binary caches: one hostname per cache (<name>.cachix.org) —
+  # the wildcard covers nix-community.cachix.org (nix-community
+  # packages not on cache.nixos.org), devenv.cachix.org, and any cache
+  # an agent configures at runtime. This only permits the egress: nix
+  # uses a cache when it is named in NIX_CONFIG (extra-substituters +
+  # extra-trusted-public-keys), e.g.
+  #   NIX_CONFIG="$NIX_CONFIG extra-substituters = https://nix-community.cachix.org \
+  #     extra-trusted-public-keys = nix-community.cachix.org-1:…" nix profile install nix-community#…
+  cachix:
+    name: cachix
+    endpoints:
+      - { host: "*.cachix.org", port: 443, protocol: rest,
+          enforcement: enforce, access: read-only }
+    binaries:
+      - { path: /nix/store/*-nix-*/bin/nix }
+
+  # clan-core's niks3 binary cache (served as cache.geninf.io, also
+  # answering as cache.clan.lol; objects may be signed under either
+  # public key). Its substituter + both keys are baked into the image
+  # NIX_CONFIG, next to the FlakeHub keys.
+  clan_cache:
+    name: clan_cache
+    endpoints:
+      - { host: cache.geninf.io, port: 443, protocol: rest,
+          enforcement: enforce, access: read-only }
+      - { host: cache.clan.lol, port: 443, protocol: rest,
           enforcement: enforce, access: read-only }
     binaries:
       - { path: /nix/store/*-nix-*/bin/nix }
@@ -98,6 +133,41 @@ network_policies:
       - { path: /nix/store/*-git-minimal-*/bin/git }
       - { path: /nix/store/*-curl-*/bin/curl }
 
+  # git.clan.lol (Gitea): clan flake inputs and repos — this fleet's
+  # own gitea, so unlike github.com it gets read-write git transport
+  # (git-receive-pack) for agent push work. Smart-HTTP git is GET
+  # info/refs + POST git-upload-pack / git-receive-pack; nix fetches
+  # git+https inputs through its git binary. No provider credential is
+  # bound to this host.
+  gitea:
+    name: gitea
+    endpoints:
+      - host: git.clan.lol
+        port: 443
+        protocol: rest
+        enforcement: enforce
+        rules:
+          - allow:
+              method: GET
+              path: "**"
+          - allow:
+              method: HEAD
+              path: "**"
+          - allow:
+              method: OPTIONS
+              path: "**"
+          - allow:
+              method: POST
+              path: "/**/git-upload-pack"
+          - allow:
+              method: POST
+              path: "/**/git-receive-pack"
+    binaries:
+      - { path: /nix/store/*-nix-*/bin/nix }
+      - { path: /nix/store/*-git-*/bin/git }
+      - { path: /nix/store/*-git-minimal-*/bin/git }
+      - { path: /nix/store/*-curl-*/bin/curl }
+
   # Kimi for Coding subscription endpoint (api.kimi.com/coding,
   # Anthropic-compatible): pi's built-in kimi-coding provider (key via
   # the attached kimi-for-coding provider, $KIMI_API_KEY injected) and
@@ -114,12 +184,34 @@ network_policies:
 
   # Claude Code against api.anthropic.com with a Claude Teams
   # subscription bearer token (injected as $ANTHROPIC_AUTH_TOKEN by the
-  # attached claude-code provider).
+  # attached claude-code provider). Claude's startup preflight
+  # ("Checking connectivity..." → /v1/oauth/hello) and `claude auth
+  # login` OAuth token polling both go to platform.claude.com — without
+  # it claude exits with "Unable to connect to Anthropic services"
+  # before showing a prompt. Updater/telemetry traffic is disabled in
+  # the image env instead of admitted here.
   claude_code:
     name: claude_code
     endpoints:
       - { host: api.anthropic.com, port: 443, protocol: rest,
           enforcement: enforce, access: read-write }
+      - host: platform.claude.com
+        port: 443
+        protocol: rest
+        enforcement: enforce
+        rules:
+          - allow:
+              method: GET
+              path: "**"
+          - allow:
+              method: HEAD
+              path: "**"
+          - allow:
+              method: OPTIONS
+              path: "**"
+          - allow:
+              method: POST
+              path: "/v1/oauth/**"
     binaries:
       - { path: /nix/store/*-claude-code-*/bin/.claude-wrapped }
       - { path: /nix/store/*-claude-code-*/bin/claude }

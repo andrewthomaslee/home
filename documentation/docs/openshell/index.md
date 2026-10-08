@@ -108,10 +108,25 @@ What the image bakes in (all nixpkgs/`llm-agents`-pinned, no secrets):
 - **nix** with flakes and a pre-initialized store db; runtime package adds
   via `nix profile install nixpkgs#<pkg>` (substitution-only — see
   "no /dev/kvm" below).
-- **Three AI coding agents** from the `llm-agents` flake input:
-  `pi` (preconfigured for the kimi-for-coding subscription via a baked
-  `models.json` that reads `$KIMI_API_KEY`), `kimi-code`, and `claude-code`
-  (uses `$ANTHROPIC_AUTH_TOKEN`).
+- **Three AI coding agents** from the `llm-agents` flake input, each
+  pre-wired so no interactive login is ever needed: `pi` (baked
+  `models.json` reads `$KIMI_API_KEY`), `kimi-code` (baked
+  `~/.kimi-code/config.toml`: `type = "kimi"` against
+  `https://api.kimi.com/coding/v1`, `apiKeyEnv = "KIMI_API_KEY"` — the
+  subscription over the wire Moonshot's own CLI speaks), and `claude-code`
+  (baked onboarding skip; `$ANTHROPIC_AUTH_TOKEN` from the attached
+  provider).
+- **Repo skills baked at `/opt/skills`** (the home repo's `skills/` tree),
+  wired into all three CLIs — pi via `~/.pi/agent/settings.json`
+  (`skills: ["/opt/skills"]`), kimi-code via `~/.kimi-code/skills`,
+  claude via `~/.claude/skills`, plus the `~/.agents/skills` standard
+  location — at both `$HOME` roots (`/sandbox` under the supervisor,
+  `/home/agent` in plain docker). The repo's `references/` tree ships at
+  `/opt/references` for on-demand reads.
+- **Nix language tooling**: `nixd`, `alejandra`, `statix`, `deadnix`.
+- **Non-API agent traffic disabled in env** (kimi models.dev catalog
+  refresh + telemetry; claude updater/telemetry/error-reporting) so the
+  deny-by-default egress log shows only real API denials.
 - **VSCodium Remote-SSH server pre-baked** (vscodium-reh, node patchelf'd to
   the image glibc) at `/sandbox/.vscodium-server/bin/<commit>` — connects
   instantly, offline. Bump `vscodiumVersion`/`vscodiumCommit` in the module
@@ -136,10 +151,19 @@ openshell logs code --tail --source sandbox       # DENIED lines show what polic
 ```
 
 - **Policy** (`openshell/policies/code-agent.yaml`): filesystem contract
-  (read-only `/nix/store` world, read-write `/sandbox` `/nix` `/tmp` `/home`,
-  `/dev/ptmx`+`/dev/pts` for nix/builders) plus `network_policies` admitting
-  exactly: nix substitution (cache.nixos.org, FlakeHub), public GitHub
-  (git/curl), the kimi + claude agent endpoints, and the VSCodium bootstrap
+  (read-only `/nix/store` world + baked `/opt` material, read-write
+  `/sandbox` `/nix` `/tmp` `/home`, `/dev/ptmx`+`/dev/pts` for nix/builders)
+  plus `network_policies` admitting
+  exactly: nix substitution (cache.nixos.org, FlakeHub caches,
+  clan-core's niks3 cache cache.geninf.io/cache.clan.lol — baked into
+  the image NIX_CONFIG with its keys, any
+  `*.cachix.org` cache — the cache still must be named in `NIX_CONFIG`
+  with its public key for nix to use it), public GitHub
+  (git/curl), read-write git to the fleet's gitea (git.clan.lol — clan
+  flake inputs, agent pushes), the kimi + claude agent endpoints (claude
+  includes
+  platform.claude.com for the startup preflight and `claude auth login`
+  token polling), and the VSCodium bootstrap
   fallback. FS/Landlock changes need a recreated sandbox; network rules
   hot-reload (`openshell policy set <name> --policy file.yaml --wait`).
 - **Providers** attach credentials to a sandbox; profiles
@@ -155,9 +179,10 @@ openshell logs code --tail --source sandbox       # DENIED lines show what polic
 
 ```bash
 pi       # kimi-for-coding subscription, key via attached kimi-for-coding provider
-kimi     # kimi-code CLI (same key; set its base-url to api.kimi.com/coding
-         # if it defaults to the platform endpoint)
+kimi     # pre-wired for the same subscription (baked config.toml, apiKeyEnv
+         # $KIMI_API_KEY) — no /login; the OAuth hosts are policy-unreachable
 claude   # Claude Teams subscription token via attached claude-code provider
+         # (platform.claude.com preflight + auth-login polling admitted in policy)
 ```
 
 **From the outside via VSCodium** (review/editing without entering the
@@ -243,6 +268,21 @@ Image/driver interplay:
   not PATH wrappers: pi is `libexec/pi/pi` (a bun-compiled ELF), kimi-code
   is `nodejs`, claude-code is `.claude-wrapped` — profiles/policies pin
   those, and nixpkgs-wrapped CLIs must be pinned by their wrapped path.
+- **claude-code's startup preflight is not telemetry**: it hits
+  `platform.claude.com/v1/oauth/hello` and hard-fails ("Unable to connect
+  to Anthropic services") before the first prompt — admit the host in the
+  policy (GET/HEAD/OPTIONS + POST `/v1/oauth/**` covers `claude auth login`
+  token polling too), and silence updater/sentry/statsig traffic with the
+  `DISABLE_*` env vars in the image instead of admitting those hosts.
+- **kimi-code is pre-wired, never `/login`ed**: its config schema
+  (`providers.<name>.{type,apiKey,apiKeyEnv,baseUrl}`,
+  `defaultProvider`/`defaultModel`, `[models.<alias>]` with required
+  `maxContextSize`) supports env-referenced keys, and `type = "kimi"`
+  speaks the OpenAI-style Bearer wire that Moonshot's own managed CLI uses
+  at `https://api.kimi.com/coding/v1` — so a baked `config.toml` replaces
+  the OAuth device flow (whose `auth.kimi.com` hosts stay policy-closed),
+  and `KIMI_CODE_MODEL_CATALOG_REFRESH_ON_START=false` stops the models.dev
+  fetch failure from littering startup.
 - **`openshell ... | grep -q` panics the CLI on EPIPE (exit 101)** —
   redirect to a file, then grep.
 
