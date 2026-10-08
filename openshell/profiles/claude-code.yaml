@@ -1,0 +1,47 @@
+# Custom OpenShell provider profile: Claude Code against the standard
+# Anthropic endpoint (api.anthropic.com) with a Claude Teams
+# subscription token — NOT the API-platform pay-per-token product. The
+# subscription token works as a bearer credential against the same
+# endpoint Claude Code uses for OAuth logins.
+#
+# There is no built-in profile for this, so this one is modeled directly
+# on the built-in `github` profile (see `openshell profile export github
+# --output yaml`). Import once per gateway, then create a provider bound
+# to the endpoint:
+#
+#   export ANTHROPIC_AUTH_TOKEN=<claude.ai OAuth/subscription token>
+#   openshell profile import --file openshell/profiles/claude-code.yaml
+#   openshell provider create --name claude-code --type claude-code \
+#     --credential ANTHROPIC_AUTH_TOKEN   # bare KEY reads the env
+id: claude-code
+resource_version: 1
+display_name: Claude Code (Teams subscription)
+description: Anthropic Claude Code endpoint (api.anthropic.com, subscription bearer token)
+category: inference
+inference_capable: true
+credentials:
+  - name: auth_token
+    description: Claude subscription (OAuth-style) token
+    env_vars:
+      - ANTHROPIC_AUTH_TOKEN
+    required: true
+    auth_style: bearer
+    header_name: authorization
+    query_param: ""
+endpoints:
+  - host: api.anthropic.com
+    port: 443
+    protocol: rest
+    # Claude Code streams POST /v1/messages; read-write covers
+    # POST/PUT/PATCH and still blocks DELETE.
+    access: read-write
+    enforcement: enforce
+binaries:
+  # Resolved process images (the supervisor matches /proc/<pid>/exe, not
+  # the PATH wrapper): claude-code is a single bundled binary that
+  # wrapProgram renames .claude-wrapped; pin both spellings.
+  - /nix/store/*-claude-code-*/bin/.claude-wrapped
+  - /nix/store/*-claude-code-*/bin/claude
+discovery:
+  credentials:
+    - auth_token

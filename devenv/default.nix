@@ -9,11 +9,7 @@
 #   - flake mode: overlays/default.nix provides `unstable` and `clan-cli`.
 #   - CLI mode: the root devenv.nix overlay provides the same attributes
 #     from the devenv.yaml inputs (pinned to the same revs as flake.lock).
-{
-  pkgs,
-  lib,
-  ...
-}:
+{pkgs, ...}:
 with pkgs; let
   packages = [
     # core
@@ -46,24 +42,6 @@ with pkgs; let
 in {
   # ------ Packages ------ #
   inherit packages;
-
-  # ------ Containers ------ #
-  # Generic image: never bake the host worktree into a container. In CLI
-  # mode `devenv container build` raw-copies the whole project into a
-  # `devenv-container-home` store path, ignoring .gitignore — so .env,
-  # .secrets and .baton-pass would otherwise ship in the image. Humans get
-  # the tree via the editor's bind-mount; agents clone at runtime.
-  #
-  # `lib.mkForce` REPLACES the default (list options concatenate, a plain
-  # assignment would append). Verify the resolved option type on the host:
-  #   devenv eval containers.shell.copyToRoot
-  # If it is a single path rather than a list, use `lib.mkForce null`.
-  containers.shell = {
-    name = "home-shell";
-    registry = "oci://ghcr.io/andrewthomaslee/home";
-    maxLayers = 128;
-    copyToRoot = lib.mkForce [];
-  };
 
   # ------ Environment ------ #
   # Repo root + clan dir (required by the clan CLI), and the gitignored

@@ -12,7 +12,7 @@
 #   openshell provider create --name kimi-for-coding --type kimi-for-coding \
 #     --credential KIMI_API_KEY    # bare KEY reads the value from the env
 id: kimi-for-coding
-resource_version: 1
+resource_version: 2
 display_name: Kimi for Coding
 description: Moonshot AI Kimi coding endpoint (api.kimi.com, Anthropic-compatible)
 category: inference
@@ -35,9 +35,12 @@ endpoints:
     access: read-write
     enforcement: enforce
 binaries:
-  # pi-agent image (flake-parts/ociImages/pi-agent.nix). pi's bin is a
-  # wrapper whose process image is the wrapped node binary, so pin both.
-  - /nix/store/*-pi-coding-agent-*/bin/pi
+  # Resolved process images (the supervisor matches /proc/<pid>/exe, not
+  # the PATH wrapper):
+  #  - pi (llm-agents package `pi`) is a bun-compiled standalone ELF at
+  #    libexec/pi/pi (bin/pi is just a wrapper)
+  #  - kimi-code (bin/kimi) runs on node
+  - /nix/store/*-pi-*/libexec/pi/pi
   - /nix/store/*-nodejs*/bin/node
 discovery:
   credentials:

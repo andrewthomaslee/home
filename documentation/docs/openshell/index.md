@@ -1,113 +1,261 @@
 # OpenShell
 
 NVIDIA [OpenShell](https://docs.nvidia.com/openshell/) — the sandboxed runtime
-for AI agents — on this fleet: what is deployed today, and the researched
-(but not implemented) plan for a multi-host clan service version.
+for AI agents — on this fleet: architecture, how to consume the gateway
+NixOS module and the sandbox OCI image from this flake, day-to-day usage
+(including AI coding agents and remote development), and the lessons that
+shaped the design.
 
-## Current state: `nixosModules.openshell-gateway`
+**One-paragraph model:** a gateway daemon on a NixOS machine owns sandboxes,
+credential providers, and per-sandbox security policies. A CLI talks to it
+over mTLS. A VM driver runs every sandbox as its own libkrun microVM from
+an OCI image built by this flake. All sandbox egress is deny-by-default
+(transparent 443 interception + supervisor-injected TLS CA env vars).
+`devenv` on this repo is for humans only; the sandbox image is a
+separate, purpose-built artifact.
 
-A single-machine, local-only gateway is implemented as an exported NixOS
-module (`flake-parts/nixosModules/openshell-gateway.nix`, exported as
-`flake.nixosModules.openshell-gateway`):
+## Architecture
 
-- **Gateway**: `openshell-gateway` as a systemd service (dedicated
-  `openshell` user), TLS + mTLS on `127.0.0.1:17670`, VM (libkrun) compute
-  driver by default (`computeDriver = "docker"` also supported).
-- **Secrets**: clan vars generators (`provisionSecrets = true`, default):
-  `openshell-local-ca` (shared CA, `ca.key` never deployed),
-  `openshell-local-gateway-tls`, `openshell-local-client-tls`,
-  `openshell-local-jwt` (Ed25519). Run `clan vars generate <machine>` after
-  enabling. `provisionSecrets = false` plus the `*File` options accepts
-  externally managed material (this is how the vm test works). File
-  ownership is part of the design: `gateway.key`/`signing.pem` are owned by
-  the `openshell` user, the machine-wide `client.key` is deployed
-  world-readable to `/etc/openshell/.../tls.key` — see the ownership
-  lessons below.
-- **CLI**: `pkgs.openshell` installed for all users; the system registry
-  `/etc/openshell` seeds a `local` gateway registration with the machine's
-  mTLS bundle and sets it active. Home-manager users get the per-user
-  mirror automatically (see the per-user mTLS caveat below).
-- **The mTLS bundle is per-user CLI state — bridged automatically for
-  home-manager users.** Only `active_gateway` and `metadata.json` fall
-  back to the system registry; `gateways/<name>/mtls/` is read from
-  `~/.config/openshell`. The NixOS module therefore injects a
-  home-manager `sharedModules` snippet (guarded by `options ?
-  home-manager.sharedModules`, all values `mkDefault`) that sets
-  `systemGateway`, `gateway.name` and `gateway.endpoint` for **any
-  home-manager user that enables the CLI** — a user needs nothing but
-  `homeSpec.programs.openshell.enable = true`; explicit per-user settings
-  still win. Without home-manager, a user runs
-  `ln -s /etc/openshell ~/.config/openshell` instead.
+```
+┌─────────────────────────────── NixOS machine ───────────────────────────────┐
+│                                                                             │
+│  openshell-gateway.service (user: openshell, loopback + mTLS :17670)        │
+│    └── openshell-driver-vm (spawned, gRPC over compute-driver.sock)         │
+│          └── per sandbox: libkrun microVM (OCI rootfs + rw overlay)         │
+│                └── supervisor: sshd, policy proxy, seccomp stack            │
+│                      └── YOUR WORKLOAD (bash -l, pi, claude, ...)           │
+│                                                                             │
+│  /etc/openshell/  system CLI registry (gateway "local" + mTLS bundle)       │
+│  docker store     image lookup #1 for the VM driver (openshell ∈ docker grp)│
+└─────────────────────────────────────────────────────────────────────────────┘
+        ▲ mTLS                                    │ OCI image (code-agent)
+   openshell CLI (per-user ~/.config/openshell)   │ nix run .#load-code-agent-image
+```
 
-Enabling (on `ghost` today):
+Flake outputs that make this work:
+
+| Output | What it is |
+|---|---|
+| `nixosModules.openshell-gateway` | Gateway systemd service + VM driver + secrets + CLI seeding (section 1) |
+| `packages.code-agent-image` + `apps.load-code-agent-image` | The sandbox OCI image, built with nix2container (section 2) |
+| `packages.openshell`, `openshell-gateway`, `openshell-driver-vm` | CLI (built from the pinned input), gateway/driver release binaries |
+| `openshell/policies/code-agent.yaml` | The sandbox security contract (filesystem + network) |
+| `openshell/profiles/*.yaml` | Provider profiles (kimi-for-coding, claude-code, github-agent) |
+
+## 1. Consuming the gateway NixOS module
+
+The module is exported as `flake.nixosModules.openshell-gateway`. Enable it
+per machine (this fleet wires it through clan tags):
 
 ```nix
+# machines/<name>/configuration.nix (or the equivalent hostSpec tag)
 hostSpec.services.openshell.gateway.enable = true;
 ```
 
-Packages (`pkgs.openshell`, `pkgs.openshell-gateway`,
-`pkgs.openshell-driver-vm`) come from the repo overlay
-(`flake-parts/packages/openshell*.nix`: the CLI is built from the pinned
-`github:NVIDIA/OpenShell` input; gateway/driver-vm are prebuilt release
-binaries, patchelf'd — the release `openshell-driver-vm` embeds its whole VM
-runtime, so no separate runtime tarball is needed).
+Options (all have sane defaults):
 
-### Hard-won gateway requirements (read before touching the config)
+| Option | Default | Notes |
+|---|---|---|
+| `name` | `"local"` | Gateway name; also the seeded system CLI registration |
+| `port` / `healthPort` | `17670` / `17671` | Listener and loopback health endpoint |
+| `bindAddress` | `127.0.0.1` | `0.0.0.0` + firewall scoping is the multi-host future |
+| `computeDriver` | `"vm"` | `"docker"` also supported; VM is never auto-detected |
+| `logLevel` | `"info"` | |
+| `provisionSecrets` | `true` | Clan vars generators (below); `false` + the `*File` options accepts external PKI |
 
-- **Launch authentication is mandatory.** The VM driver rejects sandbox
-  creation without a gateway-minted `SandboxLaunchAuthentication`, which
-  requires `gateway_jwt` Ed25519 keys — even for a loopback-only plaintext
-  gateway. There is no dev flag to disable it.
-- **TLS pulls in three identities.** With TLS enabled the gateway wants:
-  1. server cert/key (`[openshell.gateway.tls]`),
-  2. `client_ca_path` (validates CLI client certs; set ⇒ mTLS required),
-  3. a complete `guest_tls_ca/cert/key` bundle — the *supervisor's* client
-  identity for dialing the gateway (a plain TLS cert is not enough; startup
-  fails). We reuse the machine client cert for `guest_tls_*`.
-- **`programs.nix-ld` is required for the VM driver.** The release driver
-  embeds its host supervisor as a dynamically linked gnu binary, extracts it
-  into `<state_dir>/host-runtime`, and execs it — on NixOS that needs the
-  nix-ld loader shim.
-- **The driver is spawned, not socket-connected.** The gateway launches
-  `openshell-driver-vm` from `[openshell.drivers.vm].driver_dir` and talks
-  gRPC over `<state_dir>/run/compute-driver.sock`; the same-UID/PID checks
-  are handled internally.
-- **`grpc_endpoint` must match the gateway cert SANs** — the host
-  supervisor validates the TLS handshake. We use
-  `https://127.0.0.1:<port>` and put `IP:127.0.0.1` in the cert.
-- `database_url` is env-only (`OPENSHELL_DB_URL`); it must not appear in
-  `gateway.toml`. The file is schema `version = 2` with the scalar
-  `compute_driver = "vm"` (VM is never auto-detected).
-- **The embedded `libkrun.so` needs system libraries at dlopen time.** The
-  release driver extracts its embedded runtime into
-  `$XDG_DATA_HOME/openshell/vm-runtime/<version>/` and dlopens `libkrun.so`,
-  whose transitive deps (`libcap-ng`, `libseccomp`, `libnuma`, openssl)
-  are not linked by the driver binary — autoPatchelf cannot see them. The
-  `openshell-driver-vm` package therefore wraps the binary with
-  `LD_LIBRARY_PATH` (packages: nixpkgs attr is `libcap_ng`, the `.so` is
-  `libcap-ng.so.0`).
-- CLI exec syntax is `openshell sandbox exec -n <name> -- <cmd>` (the
-  sandbox name is a flag; a bare positional becomes part of the command).
-- The rolling `vm-runtime` GitHub release tarball (libkrun/libkrunfw/umoci)
-  is **not** needed with the release driver binary (everything is embedded);
-  it is only for dev builds and the QEMU backend. Do not pin its hash — it
-  is rebuilt on demand and the hash rots.
+With `provisionSecrets = true`, enable then generate:
 
-### Testing
+```bash
+clan vars generate <machine>   # mints:
+                               #   openshell-local-ca        (shared CA; ca.key never deployed)
+                               #   openshell-local-gateway-tls, openshell-local-client-tls
+                               #   openshell-local-jwt       (Ed25519 launch-auth signing)
+```
+
+What gets deployed: the gateway + managed driver systemd services, an
+`openshell` user (member of the `docker` group — the VM driver resolves
+sandbox images from the host container store first), the machine-wide mTLS
+client identity at `/etc/openshell`, and a system CLI registration named
+`local`. Home-manager users get the registration mirrored into
+`~/.config/openshell` automatically via
+`homeSpec.programs.openshell.enable = true` (the CLI reads the mTLS bundle
+only from per-user config; without home-manager, symlink
+`/etc/openshell` into `~/.config/openshell`).
+
+Sanity-check after deploying:
+
+```bash
+openshell status     # Connected + Authenticated (inspect both lines)
+openshell whoami
+```
+
+## 2. Building and loading the sandbox OCI image
+
+`flake-parts/ociImages/code-agent.nix` is the **single place** sandbox
+images come from. It builds `packages.code-agent-image` with nix2container
+and ships `apps.load-code-agent-image` to copy it into the host docker
+store (where the VM driver looks first; an OCI registry pull is the
+fallback):
+
+```bash
+nix run .#load-code-agent-image
+```
+
+What the image bakes in (all nixpkgs/`llm-agents`-pinned, no secrets):
+
+- **Toolset on the sshd default PATH**: bash, coreutils, git, gh, curl, jq,
+  ripgrep, openssh, tmux, nix — running as user `agent` (UID 1000).
+- **nix** with flakes and a pre-initialized store db; runtime package adds
+  via `nix profile install nixpkgs#<pkg>` (substitution-only — see
+  "no /dev/kvm" below).
+- **Three AI coding agents** from the `llm-agents` flake input:
+  `pi` (preconfigured for the kimi-for-coding subscription via a baked
+  `models.json` that reads `$KIMI_API_KEY`), `kimi-code`, and `claude-code`
+  (uses `$ANTHROPIC_AUTH_TOKEN`).
+- **VSCodium Remote-SSH server pre-baked** (vscodium-reh, node patchelf'd to
+  the image glibc) at `/sandbox/.vscodium-server/bin/<commit>` — connects
+  instantly, offline. Bump `vscodiumVersion`/`vscodiumCommit` in the module
+  when nixpkgs' vscodium moves.
+- **Foreign-binary support**: `/lib64` loader, glibc/gcc libs in the
+  classic multiarch dirs, and a pregenerated `/etc/ld.so.cache`
+  (built with `ldconfig -r` inside the image layer).
+
+After loading, create a sandbox (§3) and attach providers (§4).
+
+## 3. Sandboxes, policies, providers
+
+```bash
+openshell sandbox create --name code --from code-agent:latest \
+  --policy openshell/policies/code-agent.yaml \
+  --provider kimi-for-coding --provider claude-code --provider github-agent \
+  --cpu 4 --memory 8Gi --detach -- bash -l
+
+openshell sandbox connect code                    # attach; Ctrl-P Ctrl-Q detaches
+openshell sandbox exec -n code -- nix --version   # sibling process, sandbox keeps running
+openshell logs code --tail --source sandbox       # DENIED lines show what policy blocked
+```
+
+- **Policy** (`openshell/policies/code-agent.yaml`): filesystem contract
+  (read-only `/nix/store` world, read-write `/sandbox` `/nix` `/tmp` `/home`,
+  `/dev/ptmx`+`/dev/pts` for nix/builders) plus `network_policies` admitting
+  exactly: nix substitution (cache.nixos.org, FlakeHub), public GitHub
+  (git/curl), the kimi + claude agent endpoints, and the VSCodium bootstrap
+  fallback. FS/Landlock changes need a recreated sandbox; network rules
+  hot-reload (`openshell policy set <name> --policy file.yaml --wait`).
+- **Providers** attach credentials to a sandbox; profiles
+  (`openshell/profiles/`) declare which endpoints/binaries may use them.
+  The gateway injects the credential only into matching requests — the
+  in-sandbox env value is an opaque handle, never the raw secret.
+- **No `/dev/kvm` in sandboxes**: everything CPU-bound inside is TCG —
+  substitution-only nix adds, `-sm` vm tests, patience.
+
+## 4. AI coding agents — interactive and remote
+
+**Inside the sandbox terminal** (`openshell sandbox connect code`):
+
+```bash
+pi       # kimi-for-coding subscription, key via attached kimi-for-coding provider
+kimi     # kimi-code CLI (same key; set its base-url to api.kimi.com/coding
+         # if it defaults to the platform endpoint)
+claude   # Claude Teams subscription token via attached claude-code provider
+```
+
+**From the outside via VSCodium** (review/editing without entering the
+sandbox): the CLI emits a working Remote-SSH config:
+
+```bash
+openshell sandbox ssh-config code >> ~/.ssh/config
+```
+
+VSCodium (jeanp413 **Open Remote - SSH** from open-vsx — the MS Marketplace
+extension is license-restricted) → connect to `openshell-code.default` →
+open `/sandbox`. The remote window IS the sandbox filesystem: the agent's
+edits appear live, SCM shows diffs, and the integrated terminal runs all
+three CLIs with provider credentials attached. First connect needs no
+download (server is pre-baked); the install script falls back to fetching
+it only when the baked commit no longer matches the client's VSCodium.
+
+Creating the providers (profiles are versioned in-repo; provider creation
+holds the secret and stays manual):
+
+```bash
+# kimi-for-coding subscription key
+export KIMI_API_KEY=$(jq -r '."kimi-coding".key' ~/.pi/agent/auth.json)
+openshell profile import --file openshell/profiles/kimi-for-coding.yaml
+openshell provider create --name kimi-for-coding --type kimi-for-coding \
+  --credential KIMI_API_KEY
+
+# Claude Teams subscription token (bearer, not a platform API key)
+export ANTHROPIC_AUTH_TOKEN=<token>
+openshell profile import --file openshell/profiles/claude-code.yaml
+openshell provider create --name claude-code --type claude-code \
+  --credential ANTHROPIC_AUTH_TOKEN
+```
+
+Rotating a credential: `openshell provider update <name> --credential KEY`
+then restart the sandbox — injected values reach only new processes.
+
+## 5. Lessons learned (read before changing any of this)
+
+Gateway/driver (`nixosModules/openshell-gateway`):
+
+- **Launch authentication is mandatory** — the VM driver rejects sandbox
+  creation without gateway-minted launch auth, which requires the Ed25519
+  `gateway_jwt` keys. No dev flag.
+- **TLS wants three identities**: server cert/key, `client_ca_path`
+  (validates CLI certs ⇒ mTLS), and a complete `guest_tls_ca/cert/key`
+  bundle (the supervisor's client identity). A plain TLS cert is not
+  enough — startup fails.
+- **`programs.nix-ld` is required for the VM driver**: the release driver
+  extracts its host supervisor (dynamically linked) and execs it.
+- **The driver is spawned, not socket-connected**; `grpc_endpoint` must
+  match the gateway cert SANs (`https://127.0.0.1:<port>` + `IP:127.0.0.1`).
+- **The embedded `libkrun.so` needs `LD_LIBRARY_PATH`** for `libcap-ng`,
+  `libseccomp`, `libnuma`, openssl at dlopen time (see
+  `packages/openshell-driver-vm` wrapper).
+- **The release driver embeds its whole VM runtime** — the rolling
+  `vm-runtime` tarball is dev-only; do not pin its hash.
+- **Clan vars secrets need explicit ownership** for the `openshell` user
+  (membership in `keys` + per-file owner/group/mode), and
+  `environment.etc` cannot carry secret material (symlink; mode ignored).
+
+Image/driver interplay:
+
+- **Build sandbox images with nix2container, not dockerTools.** The VM
+  driver's image-prep reproducibly corrupts the ext4 it produces from a
+  large dockerTools stream ("Block bitmap checksum does not match");
+  tiny dockerTools images pass, nix2container images of any size pass.
+  Also: images need a `Cmd`/`Entrypoint` (the driver's `docker create`
+  export step fails otherwise), and nix2container `perms` need an explicit
+  `mode` (the store default 0555 leaves the workdir read-only).
+- **The in-VM sshd runs extension commands with a store-only PATH** — the
+  Remote-SSH toolchain lives in `/usr/local/bin` (+ `/etc/profile` for
+  login shells), not behind an image entrypoint (the supervisor sets
+  `HOME` to the workdir and doesn't run workload commands through one).
+- **Foreign glibc binaries need a baked `/etc/ld.so.cache`**: nixpkgs
+  glibc's compiled-in search path covers no FHS dirs, and policy makes
+  `/etc` read-only. Build it with `ldconfig -r <layer> -C /etc/ld.so.cache`
+  using **real file copies** (symlinks dangle inside the chroot).
+- **nix in sandboxes needs `sandbox = false` + `filter-syscalls = false`**:
+  the supervisor stacks ~5 seccomp filters; nix's builder-child filter
+  cannot install underneath ("unable to load seccomp BPF program").
+- **Supervisor-matched binaries are resolved exes** (`/proc/<pid>/exe`),
+  not PATH wrappers: pi is `libexec/pi/pi` (a bun-compiled ELF), kimi-code
+  is `nodejs`, claude-code is `.claude-wrapped` — profiles/policies pin
+  those, and nixpkgs-wrapped CLIs must be pinned by their wrapped path.
+- **`openshell ... | grep -q` panics the CLI on EPIPE (exit 101)** —
+  redirect to a file, then grep.
+
+## 6. Testing
 
 `vm-tests/openshell-gateway.nix` (run via `nix run .#vm-test --
-openshell-gateway-sm`, or `-- openshell-gateway-lg --driver`): builds a
-throwaway CA/certs/JWT-keys store path at build time, feeds them through
-the `provisionSecrets = false` overrides, boots the gateway + managed VM
-driver in a nested-KVM QEMU machine, and asserts `openshell status`
-reports `Connected` + `Authenticated` over mTLS. The `lg` tier
-creates a real sandbox — pulls the image, boots a libkrun microVM inside
-the test VM, and execs `uname -r` in it (needs external network, so run
-it with `--driver`; sandboxed nix builds have no network). Both tiers are
-fail-fast: a `wait_unit_or_fail` helper aborts with the unit journal as
-soon as the service enters a failed/inactive state instead of hanging
-until the driver's `global_timeout`, and every `wait_for_*` carries an
-explicit timeout. Verified: lg passes end-to-end in ~20s.
+openshell-gateway-sm`, or `-- openshell-gateway-lg --driver` for the tier
+that boots a real sandbox in nested KVM): builds a throwaway CA/certs/JWT
+store at build time, feeds them through the `provisionSecrets = false`
+overrides, boots gateway + managed VM driver in QEMU, and asserts
+`openshell status` reports Connected + Authenticated. The `lg` tier pulls
+the image, boots a libkrun microVM inside the test VM, and execs
+`uname -r` in it (needs external network — run with `--driver`).
 
 ## Future plan: `@andrewthomaslee/openshell` clan service
 
@@ -177,9 +325,9 @@ inventories**:
   (syncthing-test pattern), plus static `eth0` addresses on the nodes.
 - Machine pkgs come from the machine's own nixpkgs config (`overridePkgs`
   is only forced for the vars-eval config), so an `importer` instance
-  spreading `nixpkgs.overlays` injects the service's packages — keeping the
-  service itself free of any building/fetching (packages must come from the
-  consuming flake's overlay).
+  spreading `nixpkgs.overlays` injects the service's packages — keeping
+  the service itself free of any building/fetching (packages must come from
+  the consuming flake's overlay).
 - **CI caveat:** `clan.nixosTests` land in `checks`, and this repo's CI is
   GitHub `ubuntu-latest` — **no KVM**. VM tests must stay in
   `legacyPackages.vmTests` (via `flake-parts/tests.nix`) and be run with

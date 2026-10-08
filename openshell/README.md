@@ -26,12 +26,15 @@ from this repo. Concepts and the gateway itself:
 - **Profile** — gateway catalog entry describing a service: credential env
   vars, endpoints, allowed binaries. Profiles live in
   `openshell/profiles/`.
-- **Explicit proxy** — on the VM driver there is no transparent TCP; every
-  egress goes through the in-sandbox HTTP(S) proxy (env `HTTP(S)_PROXY` +
-  a supervisor CA bundle are set by the supervisor) and is admitted or
-  denied per policy. pi honors the proxy via its global undici
-  `EnvHttpProxyAgent`; git/nix use `SSL_CERT_FILE`/`NIX_SSL_CERT_FILE` and
-  the proxy env.
+- **Policy-enforced egress** — sandbox egress is deny-by-default. The VM
+  driver's supervisor intercepts TCP 443 transparently (no proxy env
+  vars) and admits or denies per `network_policies` (which binary may
+  reach which host:port, with L7 method/path rules). For admitted hosts
+  it TLS-intercepts with its own CA, injected as the standard CA env vars
+  (`SSL_CERT_FILE`, `NODE_EXTRA_CA_CERTS`, `CURL_CA_BUNDLE`,
+  `GIT_SSL_CAINFO`, `REQUESTS_CA_BUNDLE`, `DENO_CERT`) so clients verify
+  without config. Watch `openshell logs <sandbox> --tail --source
+  sandbox` for `DENIED` lines when something is blocked.
 
 ## 1. Smoke-test the VM driver
 
@@ -48,75 +51,142 @@ openshell sandbox delete smoketest
 ```
 
 **No `/dev/kvm` inside sandboxes** — nixos vm tests run under QEMU TCG
-(software emulation). `-sm` tests are feasible; bigger tiers need much
-more `--memory` and patience. Build vm-test *derivations* freely; run the
-tests on the host (`.#vm-test` uses host KVM).
+(software emulation): `-sm` tiers only, with generous `--memory`, minutes
+not seconds. Build vm-test *derivations* freely; run the tests on the
+host (`.#vm-test` uses host KVM).
 
 CI-equivalent (nested KVM, from the repo root):
 `nix run .#vm-test -- openshell-gateway-lg --driver`.
 
-## 2. The agent image (devenv container → sandbox VM)
+## 2. The code-agent image — the one sandbox image
 
-The sandbox image IS the devenv `agent` shell
-(`devenv/default.nix` + `devenv/agent.nix`) built by devenv's container
-module: the stock entrypoint sources the whole shell envScript, so every
-devenv package (pi, nix, git, gh, bun, linters, …) is available
-in-sandbox. User 1000, `HOME=/env`, nix DB initialized.
+`flake-parts/ociImages/code-agent.nix` builds `code-agent-image` with
+nix2container. It is the single OpenShell sandbox image on this fleet —
+devenv is human-only and nothing else ships an OCI. What it bakes in:
 
-Build + load (pure flake eval from the git tree — preferred over
-`devenv container copy`, which evals with the CLI/PWD state; the
-worktree is never baked in either way, `copyToRoot` is forced to just
-the skeleton in `devenv/agent.nix`):
+- **Toolset on the sshd default PATH** (`/bin` + `/usr/local/bin` +
+  `/etc/profile`): bash, coreutils, git, gh, curl, jq, ripgrep, openssh,
+  tmux, nix — as user `agent` (UID 1000) with a real `/etc/passwd`.
+- **nix runtime package adds**: `NIX_CONFIG` carries flakes plus
+  `sandbox = false` and `filter-syscalls = false` — the microVM is the
+  isolation boundary and the supervisor's seccomp stack blocks nix's
+  builder-child filter. FlakeHub substituters mirror the host caches.
+  Add packages at runtime with `nix profile install nixpkgs#<pkg>`
+  (**substitution-only**: no `/dev/kvm` in sandboxes, so TCG builds
+  crawl). The image's nix db is initialized at build time
+  (`initializeNixDatabase`).
+- **Foreign-glibc support**: `/lib64` loader, glibc/gcc libs copied into
+  the classic multiarch dirs, and a pregenerated `/etc/ld.so.cache`
+  (`ldconfig -r` inside the layer; /etc is read-only under policy, so the
+  cache must pre-exist). Downloaded dynamically-linked binaries just run.
+- **VSCodium server pre-baked**: `vscodium-reh` (pinned to the fleet's
+  codium version/commit in the module) lives at
+  `/sandbox/.vscodium-server/bin/<commit>` with its bundled node
+  patchelf'd to the image glibc — jeanp413 open-remote-ssh connects
+  instantly, offline. When nixpkgs' vscodium moves, bump
+  `vscodiumVersion`/`vscodiumCommit`; until rebuilt, the install script
+  transparently falls back to downloading (the `vscodium_server` policy
+  rule covers it).
+- **Built with nix2container, not dockerTools**: the VM driver's
+  image-prep reproducibly corrupts the ext4 it makes from a large
+  dockerTools stream ("Block bitmap checksum does not match"); tiny
+  dockerTools images pass and nix2container images of any size/layer
+  count pass, so the trigger is size-dependent. Don't switch builders
+  without re-running the provisioning test below.
+
+Build + load (the VM driver resolves the host docker store first;
+registry pull is the fallback):
 
 ```bash
-nix run .#load-agent-image          # → devenv-agent:latest in docker
-docker inspect -f '{{json .Config.Entrypoint}}' devenv-agent:latest
+nix run .#load-code-agent-image
 ```
 
-The VM driver resolves images from the host docker store first (the
-gateway's `openshell` user is in the `docker` group — after changing
-`extraGroups` in flake-parts/nixosModules/openshell-gateway.nix, restart
-`openshell-gateway.service`). Fallback is an OCI registry pull.
-
-Baked into the image (all in `devenv/agent.nix`):
-
-- `/env/.pi/agent/models.json` — pi's built-in `kimi-coding` provider
-  reads its key from `$KIMI_API_KEY` (injected by the attached OpenShell
-  provider; never baked). `PI_PROVIDER=kimi-coding`,
-  `PI_MODEL=kimi-for-coding`.
-- `/env/.config/nix/nix.conf` — flakes; `sandbox = false` and
-  `filter-syscalls = false` (the microVM is the isolation boundary; the
-  supervisor's seccomp stack blocks nix's builder-child filter, and an
-  unprivileged guest can't run the namespace sandbox); FlakeHub
-  substituters + public keys mirroring the host.
-- git credential helper via env (`GIT_CONFIG_*`) using `$GITHUB_TOKEN`
-  from the github provider — no `gh auth setup-git` needed.
-- A custom container entrypoint that pins `HOME=/env` and re-points
-  `NIX_SSL_CERT_FILE` at the supervisor CA bundle after the envScript
-  (nix's setup hook would otherwise override it and nix would distrust
-  the policy proxy's TLS interception).
-
-## 3. Providers
+Create:
 
 ```bash
-# kimi-for-coding: key already in pi's auth.json — feed via env.
+openshell sandbox create --name code --from code-agent:latest \
+  --policy openshell/policies/code-agent.yaml --cpu 4 --memory 8Gi \
+  --detach -- bash -l
+openshell sandbox connect code      # detach with Ctrl-P, then Ctrl-Q
+openshell sandbox exec -n code -- nix --version
+```
+
+Attach providers (kimi-for-coding, claude-code, github-agent) at create:
+
+```bash
+openshell sandbox create --name code --from code-agent:latest \
+  --policy openshell/policies/code-agent.yaml \
+  --provider kimi-for-coding --provider claude-code --provider github-agent \
+  --cpu 4 --memory 8Gi --detach -- bash -l
+```
+
+## 3. AI coding agents in the sandbox
+
+The image ships three agents, all from the `llm-agents` flake input
+(overlays/default.nix routes them into `pkgs`): **pi** (bun-compiled
+standalone ELF), **kimi-code** (node), **claude-code** (native binary).
+Provider credentials are injected as env vars by the attached providers;
+nothing is baked into the image.
+
+**Interactive, inside the sandbox terminal:**
+
+```bash
+openshell sandbox connect code        # or: openshell sandbox exec -n code --tty -- pi
+pi            # preconfigured: kimi-for-coding via $KIMI_API_KEY (subscription, not platform API)
+kimi          # kimi-code CLI; same key. If it defaults to the platform
+              # endpoint, point its base-url config at api.kimi.com/coding.
+claude        # uses $ANTHROPIC_AUTH_TOKEN (Claude Teams subscription token)
+```
+
+**From the outside via VSCodium** (§5): connect with Remote-SSH, open
+`/sandbox`, and run the same CLIs in the integrated terminal — the remote
+window IS the sandbox, with live file sync and SCM diffs.
+
+Agent egress is deny-by-default: the `kimi_for_coding` (api.kimi.com) and
+`claude_code` (api.anthropic.com) rules in `openshell/policies/code-agent.yaml`
+pin the resolved process images (`libexec/pi/pi`, node, `.claude-wrapped`);
+watch `openshell logs code --tail --source sandbox` for `DENIED` lines when
+adding more agents.
+
+## 4. Providers
+
+Providers attach credentials to a sandbox; profiles (versioned in
+`openshell/profiles/`) declare the endpoints and binaries they may reach.
+
+```bash
+openshell profile list                                   # gateway catalog
+openshell profile import --file openshell/profiles/<name>.yaml   # once
+openshell provider create --name <name> --type <profile-id> \
+  --credential KEY        # bare KEY reads the env var (no shell history)
+openshell sandbox provider attach code <name> --wait
+```
+
+Verify with `openshell provider list` / `provider get <name>`. Static
+credentials resolve only for hosts/ports/paths the profile declares;
+`credential_endpoint_mismatch` means the request authority isn't covered.
+
+Existing profiles: `github-agent.yaml` (fine-grained bot PAT for agent
+push work — see the token recipe below), `kimi-for-coding.yaml`
+(Moonshot Kimi for Coding subscription endpoint, api.kimi.com — NOT the
+pay-per-token platform API), and `claude-code.yaml` (Anthropic endpoint
+with a Claude Teams subscription bearer token).
+
+```bash
+# kimi-for-coding (key from your kimi.com subscription; pi reads it via
+# the baked models.json, kimi-code via its own config)
 export KIMI_API_KEY=$(jq -r '."kimi-coding".key' ~/.pi/agent/auth.json)
 openshell profile import --file openshell/profiles/kimi-for-coding.yaml   # once
 openshell provider create --name kimi-for-coding --type kimi-for-coding \
-  --credential KIMI_API_KEY
+  --credential KIMI_API_KEY    # bare KEY reads the value from the env
 
-# github: DEDICATED bot account, fine-grained PAT (see README section
-# "GitHub bot token"). --from-existing would import YOUR gh identity —
-# do not use it for agent sandboxes.
-export GITHUB_TOKEN=github_pat_...
-openshell profile import --file openshell/profiles/github-agent.yaml      # once
-openshell provider create --name github-agent --type github-agent \
-  --credential GITHUB_TOKEN
+# claude-code (Claude Teams subscription token, not a platform API key)
+export ANTHROPIC_AUTH_TOKEN=<token>
+openshell profile import --file openshell/profiles/claude-code.yaml       # once
+openshell provider create --name claude-code --type claude-code \
+  --credential ANTHROPIC_AUTH_TOKEN
 ```
 
-Verify: `openshell provider list`, `openshell provider get kimi-for-coding`.
-
-### GitHub bot token
+### GitHub bot token (for github-agent)
 
 1. Create a dedicated GitHub account for the agent (machine account).
 2. On that account: **Settings → Developer settings → Personal access
@@ -127,75 +197,79 @@ Verify: `openshell provider list`, `openshell provider get kimi-for-coding`.
    requests: Read and write** (agent opens PRs), **Issues: Read and
    write** (optional), **Metadata: Read** (mandatory/auto). Skip
    everything else — no Actions, no Administration.
-5. Expiration per your paranoia; note that rotating means re-running
-   `provider update github-agent --credential GITHUB_TOKEN`.
+5. Expiration per your paranoia; rotating means re-running
+   `openshell provider update github-agent --credential GITHUB_TOKEN`.
 6. If an org enforces SAML SSO, authorize the token (Configure SSO).
 
-If the org moves to a GitHub App later, the same `github-agent` profile
-shape holds; only the credential minting changes.
-
-## 4. The agent sandbox
+### Rotating provider credentials
 
 ```bash
-openshell sandbox create --name agent --from devenv-agent:latest \
-  --provider kimi-for-coding --provider github-agent \
-  --policy openshell/policies/devenv-agent.yaml \
-  --cpu 4 --memory 8Gi --detach -- bash -l
+export GITHUB_TOKEN=github_pat_<new>
+openshell provider update github-agent --credential GITHUB_TOKEN
+openshell sandbox stop code && openshell sandbox start code
 ```
 
-Run things **through the image entrypoint** (it sets PATH + HOME + CA
-bundle). Get its path from the docker inspect one-liner above, then:
+Injected credential values are opaque supervisor handles that only reach
+**new** processes — always restart the sandbox after a rotation.
+
+## 5. Reviewing sandbox work from VSCodium/VS Code
+
+The CLI emits a working Remote-SSH config block:
 
 ```bash
-EP=$(docker inspect -f '{{json .Config.Entrypoint}}' devenv-agent:latest | tr -d '[]"')
-
-# pi (interactive): connect and run through the entrypoint
-openshell sandbox connect agent
-# or one-shot:
-openshell sandbox exec -n agent -- $EP 'pi -p "Reply with exactly: OK"'
-
-# clone + build the repo (GITHUB_TOKEN is injected by the provider)
-openshell sandbox exec -n agent -- $EP 'git clone $REPO_URL /tmp/home && cd /tmp/home && nix build .#checks.x86_64-linux.lint -L'
+openshell sandbox ssh-config code >> ~/.ssh/config
 ```
 
-**⚠️ envsubst pitfall**: the entrypoint runs the command string through
-`envsubst`, so `$VAR`/`${VAR}` are expanded *before* your shell sees
-them. Use `$(...)` (survives) or ship scripts as base64 (`echo <b64> |
-base64 -d > /tmp/x.sh && sh /tmp/x.sh`).
+- **VS Code** (official builds): Remote-SSH extension → connect to host
+  `code`. Or `openshell sandbox connect code --editor vscode`.
+- **VSCodium** (`codium` on this fleet): the MS Marketplace Remote-SSH
+  extension is license-restricted — install **Open Remote - SSH**
+  (jeanp413) from open-vsx instead, then connect to host
+  `openshell-code.default`.
+- The workdir inside is `/sandbox`; open that folder. The remote window
+  IS the sandbox filesystem — edits made inside the sandbox appear live,
+  and the SCM view shows diffs (git is on the server PATH). Files can
+  also be moved with `openshell sandbox download code <remote-path> <local>`.
 
-What works in the sandbox (verified on ghost):
+### Host-side git + GitHub (personal identity)
 
-- pi → kimi-for-coding API through the policy proxy (provider-injected
-  key + baked models.json).
-- `nix eval` / `nix build` with locked flakes: eval, fetch
-  (channels/releases/codeload/api.github.com), substitution
-  (cache.nixos.org + FlakeHub caches), and real builder runs.
-- git clone/push to admitted GitHub endpoints with the token helper.
-- deny-by-default: direct sockets (`1.1.1.1:443`) get EPERM; watch
-  `openshell logs agent --tail --source sandbox` for `DENIED` lines.
-
-### nixos vm tests inside the sandbox
-
-Build the test derivations freely (`nix build .#checks...` includes
-nothing KVM). Running tests inside = QEMU TCG (no `/dev/kvm`), so
-`-sm` only, with `--memory 8Gi` or more, minutes not seconds. Prefer
-running `.#vm-test` on the host.
-
-## 5. Iterate on policy
+Host remotes use SSH. After a repo moves to an org, point the remote at
+the org path (org member with admin/write access pushes with the
+personal key):
 
 ```bash
-openshell logs agent --tail --source sandbox     # NET:OPEN/HTTP ... DENIED lines
-openshell policy get agent --base | sed '1,/^---$/d' > /tmp/p.yaml
+git remote set-url origin git@github.com:<org>/<repo>.git
+git fetch origin
+```
+
+Authorize this machine under your personal account (do **not** reuse the
+bot token on the host):
+
+1. Recommended — `gh auth login` → GitHub.com → protocol **SSH** →
+   `Login with a web browser`. This uploads a key, configures the git
+   credential helper, and gives you `gh` on the host.
+2. Or manual: paste `~/.ssh/id_ed25519.pub` at
+   github.com/settings/keys (Settings → SSH and GPG keys → New SSH key).
+
+Check with `gh auth status` / `ssh -T git@github.com`. Org enforcement
+note: if the org ever enables SAML SSO, each key/token needs SSO
+authorization ("Configure SSO" on the key page).
+
+## 6. Iterate on policy
+
+```bash
+openshell logs code --tail --source sandbox     # NET:OPEN/HTTP ... DENIED lines
+openshell policy get code --base | sed '1,/^---$/d' > /tmp/p.yaml
 # edit /tmp/p.yaml (network_policies only for hot reload)
-openshell policy set agent --policy /tmp/p.yaml --wait
-openshell policy list agent
+openshell policy set code --policy /tmp/p.yaml --wait
+openshell policy list code
 ```
 
 Filesystem/Landlock/process changes require recreating the sandbox.
-Narrow additive grants: `openshell policy update agent
+Narrow additive grants: `openshell policy update code
 --add-endpoint host:443:read-only:rest:enforce --rule-name ... --wait`.
 
-## 6. Where policies and profiles should live
+## 7. Where policies and profiles should live
 
 - **Profiles**: gateway catalog, not per-user. They carry no secrets —
   keep them as files in `openshell/profiles/` (versioned), import with
@@ -221,11 +295,10 @@ Narrow additive grants: `openshell policy update agent
   to a file, then grep.
 - `openshell sandbox exec -n NAME -- cmd` — the name is a flag; a bare
   positional becomes part of the remote command.
-- Never bake credentials into images: providers inject at runtime; pi's
-  `models.json` `"apiKey": "$VAR"` interpolation picks them up.
+- Never bake credentials into images: providers inject at runtime.
 - The supervisor sets `HOME` to the workdir and stacks ~5 seccomp
-  filters on workloads; the image entrypoint and `filter-syscalls =
-  false` exist because of that (see section 2).
+  filters on workloads; nix in the image runs with `sandbox = false` +
+  `filter-syscalls = false` because of that.
 - Grant `/dev` (ro) + `/dev/ptmx` + `/dev/pts` (rw) in the policy or nix
   dies opening a pseudoterminal master.
 - The built-in `github` profile is read-only; pushing needs
@@ -235,11 +308,16 @@ Narrow additive grants: `openshell policy update agent
   credential in at egress. Consequences: tools that validate token format
   locally (`gh auth status`) report the env token as "invalid" even
   though real API calls through the proxy work; and a rotated secret only
-  reaches new processes (restart long-running agents).
+  reaches new processes (restart long-running processes).
 - nixpkgs-wrapped CLIs (e.g. `gh` → `bin/.gh-wrapped`) must be pinned by
   their kernel-resolved exe path in profile/policy `binaries` — the
   supervisor matches `/proc/<pid>/exe`, not the symlink (the DENIED log
   line says this too).
+- nix2container image `perms` need an explicit `mode`: the nix store
+  default is 0555, so a workdir without one comes up read-only.
+- docker images need a `Cmd`/`Entrypoint` for the VM driver's
+  `docker create` export step — images without one fail with "no command
+  specified" before provisioning even starts.
 
 ## Shell completions
 

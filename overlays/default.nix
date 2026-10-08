@@ -9,6 +9,7 @@
   };
 
   clan-cli = inputs.clan-core.packages.${final.stdenv.hostPlatform.system}.clan-cli;
+  devenv = inputs.devenv.package.${final.stdenv.hostPlatform.system}.devenv;
 
   zen-browser = inputs.zen-browser.packages.${final.stdenv.hostPlatform.system}.default;
   moscripts = inputs.moscripts.packages.${final.stdenv.hostPlatform.system}.default;
@@ -18,20 +19,21 @@
   longhornctl = self.packages.${final.stdenv.hostPlatform.system}.longhornctl;
 
   openshell = self.packages.${final.stdenv.hostPlatform.system}.openshell;
-  openshell-gateway =
-    self.packages.${final.stdenv.hostPlatform.system}.openshell-gateway;
-  openshell-driver-vm =
-    self.packages.${final.stdenv.hostPlatform.system}.openshell-driver-vm;
+  openshell-gateway = self.packages.${final.stdenv.hostPlatform.system}.openshell-gateway;
+  openshell-driver-vm = self.packages.${final.stdenv.hostPlatform.system}.openshell-driver-vm;
   headroom = self.packages.${final.stdenv.hostPlatform.system}.headroom;
   headroom-slim = self.packages.${final.stdenv.hostPlatform.system}.headroom-slim;
   artifacthub-mcp = self.packages.${final.stdenv.hostPlatform.system}.artifacthub-mcp;
   kubernetes-mcp-server = self.packages.${final.stdenv.hostPlatform.system}.kubernetes-mcp-server;
 
-  # Kimi Code CLI from numtide/llm-agents.nix (from-source pnpm build; binary
-  # is `kimi`). Referenced by flake-parts/homeModules/kimi-code.nix. Taken
-  # from the input's own package set, not its overlay, so the numtide binary
-  # cache still hits (see the llm-agents input comment in flake.nix).
+  # AI coding agents from numtide/llm-agents.nix (from-source/bundled
+  # builds; binaries: pi, kimi, claude). All sandbox + shell agents come
+  # from this flake input so versions track one pin. Taken from the
+  # input's own package set, not its overlay, so the numtide binary cache
+  # still hits (see the llm-agents input comment in flake.nix).
   kimi-code = inputs.llm-agents.packages.${final.stdenv.hostPlatform.system}.kimi-code;
+  pi-coding-agent = inputs.llm-agents.packages.${final.stdenv.hostPlatform.system}.pi;
+  claude-code = inputs.llm-agents.packages.${final.stdenv.hostPlatform.system}.claude-code;
 
   apply-and-reboot = self.packages.${final.stdenv.hostPlatform.system}.apply-and-reboot;
   apply-to-reboot = self.packages.${final.stdenv.hostPlatform.system}.apply-to-reboot;
