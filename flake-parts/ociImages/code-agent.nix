@@ -29,6 +29,9 @@ _: {
   # other downloaded ELF.
   perSystem = {
     pkgs,
+    # Raw (non perSystem) inputs: the AGENTS flake's system-less `lib`
+    # (mkSkills) is only reachable through this — inputs' drops it.
+    inputs,
     inputs',
     self',
     customLib,
@@ -81,7 +84,7 @@ _: {
     # the agents on NixOS hosts (homeSpec.agents.skills in
     # flake-parts/homeModules/agents.nix). Wired into pi/kimi/claude in
     # agentDirs above.
-    skillsTree = inputs'.agents.lib.mkSkills {
+    skillsTree = inputs.agents.lib.mkSkills {
       inherit pkgs;
       customSkills = relativeToRoot "skills";
       # No external sources baked today; home-manager's
