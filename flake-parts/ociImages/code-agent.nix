@@ -1,4 +1,4 @@
-_: {
+{inputs, ...}: {
   # ------ Per-System ------ #
   # General-purpose coding sandbox image for OpenShell (VM driver): a
   # lean, hand-picked toolset + nix (runtime package adds via
@@ -29,9 +29,6 @@ _: {
   # other downloaded ELF.
   perSystem = {
     pkgs,
-    # Raw (non perSystem) inputs: the AGENTS flake's system-less `lib`
-    # (mkSkills) is only reachable through this — inputs' drops it.
-    inputs,
     inputs',
     self',
     customLib,
