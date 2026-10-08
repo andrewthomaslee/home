@@ -9,7 +9,7 @@
   };
 
   clan-cli = inputs.clan-core.packages.${final.stdenv.hostPlatform.system}.clan-cli;
-  devenv = inputs.devenv.package.${final.stdenv.hostPlatform.system}.devenv;
+  devenv = inputs.devenv.packages.${final.stdenv.hostPlatform.system}.devenv;
 
   zen-browser = inputs.zen-browser.packages.${final.stdenv.hostPlatform.system}.default;
   moscripts = inputs.moscripts.packages.${final.stdenv.hostPlatform.system}.default;

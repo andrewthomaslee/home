@@ -92,7 +92,7 @@
     # mcp` MCP server). Pinned to the release tag; builds are served by
     # the devenv.cachix.org substituter already trusted in
     # nixosModules/nix.nix.
-    devenv.url = "github:cachix/devenv?ref=v2.3.1";
+    devenv.url = "github:cachix/devenv?ref=v2.4.0";
     # Required for devenv container builds:
     nix2container = {
       url = "github:nlewo/nix2container";
