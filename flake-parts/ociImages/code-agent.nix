@@ -290,19 +290,23 @@
       ${nixConfig}
       EOF
 
-      # Pin the flake registry so `nix run nixpkgs#…` resolves offline:
-      # the default registry is an indirection through
-      # channels.nixos.org/flake-registry.json, which the sandbox policy
-      # does not admit (and nix reports "you don't have Internet
-      # access"). Point the `nixpkgs` alias at the image's own nixpkgs
-      # checkout (pkgs.path carries flake.nix), and binaries still come
-      # from the admitted cache.nixos.org substituter.
+      # Pin the flake registry so `nix run nixpkgs#…` resolves without
+      # channels.nixos.org (not admitted; nix reports "you don't have
+      # Internet access" otherwise). A baked-in nixpkgs checkout was
+      # dropped on purpose: it is the image's single heaviest payload
+      # (hundreds of MB unpacked for a tree an agent touches rarely),
+      # and nix2container's copyToRoot rewrite semantics dump the tree
+      # at the image root instead of its store path. Pinning the alias
+      # to the nixos-unstable branch on github.com (admitted) costs one
+      # ~50MB tarball fetch on first resolution, cached in
+      # ~/.cache/nix afterwards; binaries still come from the admitted
+      # cache.nixos.org substituter.
       cat > $out/etc/nix/registry.json <<'EOF'
       {
         "flakes": [
           {
             "from": {"id": "nixpkgs", "type": "indirect"},
-            "to": {"path": "${nixpkgsFlake}", "type": "path"}
+            "to": {"owner": "NixOS", "repo": "nixpkgs", "ref": "nixos-unstable", "type": "github"}
           }
         ],
         "version": 2
@@ -652,9 +656,10 @@
           ldd.
         - K8s clients: kubectl, helm.
         - Shell vetting: shellcheck, shfmt.
-        - Nix tooling: nix (flakes; registry pinned to the image's own
-          nixpkgs checkout), nixd, alejandra, statix, deadnix (vet
-          agent-edited .nix files in-sandbox).
+        - Nix tooling: nix (flakes; `nixpkgs` registry pinned to
+          github:NixOS/nixpkgs nixos-unstable — first `nix run` fetches
+          the tarball once, then it's cached), nixd, alejandra, statix,
+          deadnix (vet agent-edited .nix files in-sandbox).
         - Agents: pi, kimi, claude.
         - Only for a package NOT on this list: `nix run nixpkgs#<pkg>`
           (one-shot) or `nix profile install nixpkgs#<pkg>` (persisted);
@@ -699,13 +704,6 @@
 
     tmpDir = pkgs.runCommand "code-agent-tmp" {} "mkdir -p $out/tmp";
 
-    # The nixpkgs checkout the registry.json pin points at, as a real
-    # derivation: pkgs.path is a bare flake-input source (no derivation
-    # context), which nix2container cannot stage into copyToRoot.
-    nixpkgsFlake = pkgs.runCommand "code-agent-nixpkgs-flake" {} ''
-      cp -r --reflink=auto ${pkgs.path} $out
-    '';
-
     # Multiline nix config: flakes on; the microVM is the isolation
     # boundary and the OpenShell supervisor's seccomp stack blocks nix's
     # builder-child filter ("unable to load seccomp BPF program:
@@ -730,10 +728,7 @@
       name = "code-agent";
       tag = "latest";
 
-      # nixpkgsFlake is the nixpkgs checkout the registry.json pin above
-      # points at — copied into the image explicitly: it is not part of
-      # any other closure copied here.
-      copyToRoot = [baseTools rootfs agentDirs agentMaterial tmpDir nixpkgsFlake];
+      copyToRoot = [baseTools rootfs agentDirs agentMaterial tmpDir];
 
       # Register the image store paths in the nix db at build time so
       # `nix` works in-sandbox without a db init.

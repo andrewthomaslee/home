@@ -53,10 +53,12 @@ architecture and the lessons that shaped the design, see the
   FlakeHub caches + the clan niks3 cache (`cache.geninf.io`, keys baked).
   The config lives at `/etc/nix/nix.conf` (not just `$NIX_CONFIG`), so it
   holds in every shell — including VSCodium-server-spawned ones. The
-  flake registry is pinned in-image: `nixpkgs` resolves to the image's
-  own nixpkgs checkout (no `channels.nixos.org` lookup, which the policy
-  blocks), so `nix run nixpkgs#hello` works offline, fetching binaries
-  from the admitted `cache.nixos.org`. The sandbox policy additionally
+  flake registry is pinned in-image: `nixpkgs` resolves to
+  `github:NixOS/nixpkgs/nixos-unstable` (no `channels.nixos.org`
+  lookup, which the policy blocks; first resolution fetches the tarball
+  once, then it's cached in `~/.cache/nix`), so `nix run nixpkgs#hello`
+  fetches binaries from the admitted `cache.nixos.org`. The sandbox
+  policy additionally
   admits the clan cache hosts and any `*.cachix.org` cache.
 - **VSCodium Remote-SSH server pre-baked** — first connect is instant,
   offline (see the overview for editor setup).

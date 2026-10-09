@@ -19,8 +19,10 @@ grows.
   `/sandbox`, `HOME=/home/agent` in the image Env but the supervisor
   points HOME at `/sandbox` — both roots carry identical per-agent
   config, so either works.
-- Read-only `/etc` and `/nix/store` under the OpenShell policy; `/tmp`
-  is mode 1777. Long-running scratch space: `/sandbox`.
+- `/etc` is root-owned read-only. `/nix/store` stays agent-writable on
+  purpose (runtime `nix profile install` adds need it); an agent can
+  corrupt its own toolset, but the blast radius ends at the disposable
+  VM. `/tmp` is mode 1777. Long-running scratch space: `/sandbox`.
 - The VSCodium Remote-SSH server is pre-baked at
   `/sandbox/.vscodium-server/bin/<commit>` (also `/home/agent/...`); the
   in-VM sshd runs extension commands with a store-only PATH, which is
@@ -58,9 +60,14 @@ recreating the sandbox; filesystem/image changes require recreation.
 
 - Flakes on; `sandbox = false` + `filter-syscalls = false` (the
   supervisor's seccomp stack blocks nix's builder-child BPF filter).
-- Registry: `nixpkgs` is pinned in-image to the image's own nixpkgs
-  checkout (`/etc/nix/registry.json`), so `nix run nixpkgs#<pkg>` works
-  offline — no `channels.nixos.org` lookup (that host is NOT admitted).
+- Registry: `nixpkgs` is pinned in-image to
+  `github:NixOS/nixpkgs/nixos-unstable` (`/etc/nix/registry.json`) —
+  the default indirection via channels.nixos.org is NOT admitted. First
+  resolution fetches the nixpkgs tarball (~50MB) from the admitted
+  github endpoints into `~/.cache/nix`; later runs reuse the cache. A
+  baked-in nixpkgs checkout was dropped deliberately: it was the
+  image's heaviest payload, and nix2container copyToRoot rewrites
+  dumped the tree at the image root rather than its store path.
 - Substituters + trusted keys baked in `/etc/nix/nix.conf` (also
   `$NIX_CONFIG`): FlakeHub caches (keys `cache.flakehub.com-3` through
   `-10`), clan niks3 (`cache.geninf.io-1`, `cache.clan.lol-1` — objects
