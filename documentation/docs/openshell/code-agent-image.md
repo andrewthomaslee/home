@@ -24,7 +24,10 @@ architecture and the lessons that shaped the design, see the
   (option search) and **github** (works only with the `github-agent`
   provider attached — the profile admits read-write api.github.com and
   substitutes the credential at egress; the baked wrapper maps the
-  `$GITHUB_TOKEN` handle onto `GITHUB_PERSONAL_ACCESS_TOKEN`):
+  `$GITHUB_TOKEN` handle onto `GITHUB_PERSONAL_ACCESS_TOKEN`). The trio
+  is baked at each agent's user-level MCP spot: pi
+  `~/.pi/agent/mcp.json`, kimi `~/.kimi-code/mcp.json`, claude
+  `~/.claude/settings.json` `mcpServers`:
   - `pi` — Kimi for Coding subscription, key from the attached provider's
     `$KIMI_API_KEY`.
   - `kimi` — same subscription via a baked `~/.kimi-code/config.toml`

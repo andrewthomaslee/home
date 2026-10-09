@@ -390,6 +390,11 @@
       # via the Agent Skills standard location, belt and braces).
       cp ${pi-settings} $out/sandbox/.pi/agent/settings.json
       cp ${pi-settings} $out/home/agent/.pi/agent/settings.json
+      # pi MCP servers: ~/.pi/agent/mcp.json is the user-level spot
+      # (available in every project) — same trio as claude, with
+      # pi-specific exposure/description fields (pi-mcp-json below).
+      cp ${pi-mcp-json} $out/sandbox/.pi/agent/mcp.json
+      cp ${pi-mcp-json} $out/home/agent/.pi/agent/mcp.json
 
       # kimi-code: config.toml pre-wires the Kimi for Coding
       # subscription (no /login — the OAuth hosts are deliberately
@@ -398,6 +403,9 @@
       mkdir -p $out/sandbox/.kimi-code $out/home/agent/.kimi-code
       cp ${kimi-config} $out/sandbox/.kimi-code/config.toml
       cp ${kimi-config} $out/home/agent/.kimi-code/config.toml
+      # kimi MCP servers: ~/.kimi-code/mcp.json, same shared trio.
+      cp ${sandbox-mcp-json} $out/sandbox/.kimi-code/mcp.json
+      cp ${sandbox-mcp-json} $out/home/agent/.kimi-code/mcp.json
       ln -s /opt/skills $out/sandbox/.kimi-code/skills
       ln -s /opt/skills $out/home/agent/.kimi-code/skills
 
@@ -419,15 +427,16 @@
       ln -s /opt/skills $out/home/agent/.agents/skills
 
       # Environment briefing baked into every agent's user-level system
-      # prompt / memory (see sandboxContext above): pi APPEND_SYSTEM.md
-      # and kimi SYSTEM.md add to the agents' system prompts, claude
-      # CLAUDE.md is user-level memory loaded every session.
-      cp ${sandboxContext} $out/sandbox/.pi/agent/APPEND_SYSTEM.md
-      cp ${sandboxContext} $out/home/agent/.pi/agent/APPEND_SYSTEM.md
-      cp ${sandboxContext} $out/sandbox/.kimi-code/SYSTEM.md
-      cp ${sandboxContext} $out/home/agent/.kimi-code/SYSTEM.md
-      cp ${sandboxContext} $out/sandbox/.claude/CLAUDE.md
-      cp ${sandboxContext} $out/home/agent/.claude/CLAUDE.md
+      # prompt / memory (see the sandboxContext variants below): pi
+      # APPEND_SYSTEM.md and kimi SYSTEM.md add to the agents' system
+      # prompts, claude CLAUDE.md is user-level memory loaded every
+      # session.
+      cp ${sandboxContext-pi} $out/sandbox/.pi/agent/APPEND_SYSTEM.md
+      cp ${sandboxContext-pi} $out/home/agent/.pi/agent/APPEND_SYSTEM.md
+      cp ${sandboxContext-kimi} $out/sandbox/.kimi-code/SYSTEM.md
+      cp ${sandboxContext-kimi} $out/home/agent/.kimi-code/SYSTEM.md
+      cp ${sandboxContext-claude} $out/sandbox/.claude/CLAUDE.md
+      cp ${sandboxContext-claude} $out/home/agent/.claude/CLAUDE.md
     '';
 
     # Repo agent material baked read-only at /opt: the merged skills
@@ -472,6 +481,17 @@
       [identity]
       name = "code-agent"
       slug = "code-agent"
+
+      # MCP permission rules: the local/offline servers are safe to
+      # auto-allow; github MCP can write, so it stays on per-call
+      # approval (the default permission mode is manual).
+      [[permission.rules]]
+      decision = "allow"
+      pattern = "mcp__nixos__*"
+
+      [[permission.rules]]
+      decision = "allow"
+      pattern = "mcp__headroom__*"
     '';
 
     # github-mcp-server wrapper: the attached github-agent provider
@@ -500,14 +520,17 @@
       exec ${lib.getExe pkgs.headroom-slim} "$@"
     '';
 
-    # MCP servers baked into the sandbox agents' user configs: headroom
-    # (context compression) and mcp-nixos (NixOS/Home Manager option
-    # search) work offline-ish against already-admitted endpoints.
-    # github MCP works too — but ONLY when the sandbox is created with
-    # the github-agent provider attached (its profile admits the
-    # read-write api.github.com endpoints and substitutes the credential
-    # at egress; without the provider the server's calls are denied and
-    # it errors on startup).
+    # MCP servers baked into ALL sandbox agents' user configs (pi
+    # ~/.pi/agent/mcp.json, kimi ~/.kimi-code/mcp.json, claude
+    # ~/.claude/settings.json mcpServers — all three speak the same
+    # claude-compatible {command, args} JSON shape): headroom (context
+    # compression) and mcp-nixos (NixOS/Home Manager option search)
+    # work offline-ish against already-admitted endpoints. github MCP
+    # works too — but ONLY when the sandbox is created with the
+    # github-agent provider attached (its profile admits the read-write
+    # api.github.com endpoints and substitutes the credential at egress;
+    # without the provider the server's calls are denied and it errors
+    # on startup).
     sandboxMcpServers = {
       headroom = {
         command = "${sandboxHeadroom}/bin/headroom";
@@ -522,6 +545,45 @@
         args = [];
       };
     };
+
+    # Shared user-level mcp.json for kimi-code: same mcpServers table
+    # as claude's settings.json (the shape is identical across all
+    # three clients), baked at both HOME roots in agentDirs below.
+    sandbox-mcp-json = pkgs.writeText "mcp.json" (builtins.toJSON {
+      mcpServers = sandboxMcpServers;
+    });
+
+    # One-line MCP server descriptions (pi lists them in the system
+    # prompt's mcp_servers section and ranks tool_search matches by
+    # them).
+    sandboxMcpDescriptions = {
+      headroom = "Context compression for the conversation: compress/retrieve/stats.";
+      nixos = "NixOS, Home Manager and nix-darwin option and package search.";
+      github = "GitHub repos, issues, PRs; requires the github-agent provider attached at sandbox creation.";
+    };
+
+    # pi's own mcp.json: same servers plus pi-specific exposure and
+    # description fields. Pi defaults MCP servers to codemode exposure
+    # (tools hidden from the top-level tool list until a codemode
+    # script or tool_search reaches them); headroom/nixos are small and
+    # always useful -> direct, github is heavy and provider-gated ->
+    # deferred (tool_search loads it on demand, so a missing
+    # github-agent provider never delays the first prompt).
+    pi-mcp-json = pkgs.writeText "pi-mcp.json" (builtins.toJSON {
+      mcpServers =
+        lib.mapAttrs (
+          name: server:
+            server
+            // {
+              exposure =
+                if name == "github"
+                then "deferred"
+                else "direct";
+              description = sandboxMcpDescriptions.${name};
+            }
+        )
+        sandboxMcpServers;
+    });
 
     # claude MCP servers ride ~/.claude/settings.json mcpServers (NOT
     # ~/.claude.json — that is claude's mutable state file). Onboarding
@@ -544,39 +606,94 @@
       }
     '';
 
-    # Environment briefing baked into every agent's system prompt: what
-    # this sandbox is, what works here and what does not. Written at each
-    # agent's user-level prompt spot — pi ~/.pi/agent/APPEND_SYSTEM.md
-    # (adds to Pi's system prompt, pi configuration docs), kimi-code
-    # ~/.kimi-code/SYSTEM.md ($KIMI_CODE_HOME/SYSTEM.md, kimi
-    # configuration docs; ${product_name} fills from identity.name in
-    # the baked kimi config below), claude-code ~/.claude/CLAUDE.md
-    # (user-level memory loaded every session) — at BOTH $HOME roots
-    # (the supervisor points HOME at /sandbox, plain docker runs at
-    # /home/agent).
-    sandboxContext = pkgs.writeText "sandbox-context.md" ''
-      # Sandbox environment
+    # Flake revision baked into the briefing's Image line, pinpointing
+    # the image generation a sandbox runs (shortRev is null on dirty
+    # trees / non-flake evals).
+    imageRev =
+      if self'.shortRev != null
+      then self'.shortRev
+      else "dirty";
 
-      You are ''${product_name}, running inside an OpenShell code-agent sandbox: an isolated microVM with deny-by-default network egress, running as uid 1000 (agent), workdir /sandbox, HOME=/home/agent.
+    # Environment briefing baked into every agent's system prompt:
+    # what this sandbox is, what works here and what does not. One
+    # parameterized template, three renderings — the per-agent deltas
+    # are the identity line and the Agent notes section:
+    # - agentName: only kimi interpolates ''${product_name} (from
+    #   [identity].name in the baked kimi config below), so pi and
+    #   claude get their real product names baked while kimi keeps the
+    #   live slot.
+    # - notes: short per-agent MCP/diagnostics pointers.
+    # Spots: pi ~/.pi/agent/APPEND_SYSTEM.md (adds to Pi's system
+    # prompt, pi configuration docs), kimi-code ~/.kimi-code/SYSTEM.md
+    # ($KIMI_CODE_HOME/SYSTEM.md, kimi configuration docs), claude-code
+    # ~/.claude/CLAUDE.md (user-level memory loaded every session) —
+    # at BOTH $HOME roots (the supervisor points HOME at /sandbox,
+    # plain docker runs at /home/agent).
+    sandboxContext = agentName: notes:
+      pkgs.writeText "sandbox-context.md" ''
+        # Sandbox environment
 
-      ## Toolset
-      - nix with flakes (registry pinned to the image's own nixpkgs checkout, so `nix run nixpkgs#<pkg>` works offline).
-      - git + gh (github.com read-only transport; push rides a credential helper feeding the provider-injected $GITHUB_TOKEN).
-      - curl, wget, jq, yq, python3, ripgrep, fd, sd, unzip, zstd, file, readelf, objdump, ldd, diff, patch, kubectl, helm, shellcheck, shfmt, dig, rsync, tmux, less.
-      - Nix tooling: nixd, alejandra, statix, deadnix (vet agent-edited .nix files in-sandbox).
-      - Runtime package adds: `nix profile install nixpkgs#<pkg>`; binaries substitute from the baked caches.
+        You are ${agentName}, running inside an OpenShell code-agent sandbox: an isolated microVM with deny-by-default network egress, running as uid 1000 (agent), workdir /sandbox, HOME=/home/agent. Image: code-agent @ ${imageRev}.
 
-      ## Skills
-      /opt/skills holds the repo's merged skill tree (repo skills/ + external sources), wired into pi, kimi and claude. Load with /skill:<name>; read a SKILL.md before relying on a skill.
+        ## Toolset
+        Everything below is pre-baked on PATH (`/bin`, `/usr/bin`,
+        `/usr/local/bin`) — use it directly. Do NOT `nix run` or
+        `nix profile install` a package that is already installed (TCG
+        builds crawl — substitution for a pre-baked tool is pure waste).
+        - Shell + coreutils: bash, coreutils, sed, grep, gawk, find, tar,
+          gzip, xz, procps, util-linux, diff, patch.
+        - VCS: git, gh (push rides a credential helper feeding the
+          provider-injected $GITHUB_TOKEN).
+        - Data + network: curl, wget, jq, yq, python3, dig, rsync, openssh.
+        - Search + text: ripgrep, fd, sd, less, tmux.
+        - Archives + foreign binaries: unzip, zstd, file, readelf, objdump,
+          ldd.
+        - K8s clients: kubectl, helm.
+        - Shell vetting: shellcheck, shfmt.
+        - Nix tooling: nix (flakes; registry pinned to the image's own
+          nixpkgs checkout), nixd, alejandra, statix, deadnix (vet
+          agent-edited .nix files in-sandbox).
+        - Agents: pi, kimi, claude.
+        - Only for a package NOT on this list: `nix run nixpkgs#<pkg>`
+          (one-shot) or `nix profile install nixpkgs#<pkg>` (persisted);
+          binaries substitute from the baked caches.
 
-      ## Network
-      Egress is deny-by-default. Admitted: github.com (read), raw/gist.github.com, codeload.github.com, api.github.com, *.githubusercontent.com asset hosts, *.nixos.org, *.cachix.org, FlakeHub caches (cache.flakehub.com, edge.cache.flakehub.com, api.flakehub.io), clan caches (cache.geninf.io, cache.clan.lol), git.clan.lol (read-write git), api.kimi.com, api.anthropic.com, platform.claude.com. Everything else is DENIED — do not retry dead hosts in a loop; report the blocked host instead.
+        ## MCP servers
+        Pre-configured in every agent's user-level MCP config (pi
+        `~/.pi/agent/mcp.json`, kimi `~/.kimi-code/mcp.json`, claude
+        `~/.claude/settings.json`): **headroom** (context compression),
+        **nixos** (NixOS / Home Manager option search) and **github**
+        (repos / issues / PRs — only functional when the sandbox was
+        created with the github-agent provider attached). There is
+        deliberately NO kubernetes MCP server baked; use kubectl/helm
+        directly.
 
-      ## Identity and secrets
-      - Git commits are authored as the andrewthomaslee-agent bot.
-      - No secrets are baked into the image. API keys arrive via attached providers: $KIMI_API_KEY (kimi), $ANTHROPIC_AUTH_TOKEN (claude), $GITHUB_TOKEN (git credential helper).
-      - This is a clean sandbox, NOT a checkout of the home repo — clone github.com/external-systems/home if repo work is needed.
-    '';
+        ## Skills
+        /opt/skills holds the repo's merged skill tree (repo skills/ + external sources), wired into pi, kimi and claude. Load with /skill:<name>; read a SKILL.md before relying on a skill. The **sandbox-environment** skill carries this sandbox's deep reference (full egress list, cache keys, recipes).
+
+        ## Network
+        Egress is deny-by-default. Admitted: github.com (read + api), the nix cache estates (*.nixos.org, *.cachix.org, FlakeHub + clan caches), git.clan.lol (read-write git), api.kimi.com, api.anthropic.com, platform.claude.com. Everything else is DENIED — do not retry dead hosts in a loop; report the blocked host. Full host/rule list: **sandbox-environment** skill.
+
+        ## Identity and secrets
+        - Git commits are authored as the andrewthomaslee-agent bot.
+        - No secrets are baked into the image. API keys arrive via attached providers: $KIMI_API_KEY (kimi), $ANTHROPIC_AUTH_TOKEN (claude), $GITHUB_TOKEN (git credential helper).
+        - This is a clean sandbox, NOT a checkout of the home repo — clone github.com/external-systems/home if repo work is needed.
+
+        ## Troubleshooting
+        - github MCP errors at startup → the sandbox was created without the github-agent provider attached; headroom/nixos are unaffected.
+        - nix starts building a package from source → it is already baked (use PATH) or a substituter key is missing; never let a TCG build crawl — abort and check.
+        - A host is DENIED → report it instead of retrying; the policy hot-reloads (`openshell policy set` from the host), no sandbox recreation needed.
+
+        ## Agent notes
+
+        ${notes}
+      '';
+
+    sandboxContext-pi = sandboxContext "pi" "- MCP exposure: headroom/nixos are `direct` (always declared), github is `deferred` (loads via tool_search on demand, so a missing github-agent provider never blocks the first prompt). Diagnose servers with `pi mcp list`; add project-only servers with `pi mcp add -l <name> -- <cmd>`.";
+
+    sandboxContext-kimi = sandboxContext "''${product_name}" "- Inspect MCP connections with `/mcp`. Pre-approved by baked permission rules: mcp__nixos__* and mcp__headroom__*; mcp__github__* asks per call — approve for the session only when doing GitHub work.";
+
+    sandboxContext-claude = sandboxContext "Claude Code" "- Inspect MCP connections with `/mcp`. Servers ride the baked ~/.claude/settings.json mcpServers table; ~/.claude.json is claude's mutable state file and stays writable.";
 
     tmpDir = pkgs.runCommand "code-agent-tmp" {} "mkdir -p $out/tmp";
 
