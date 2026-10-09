@@ -37,21 +37,47 @@
     # external flake-input skill sources into one derivation (a
     # linkFarm of per-skill symlinks), reused as the skills dir of
     # every enabled agent below. Custom skills override external ones
-    # on name collision; among externals, earlier entries win. External
-    # sources (fleet-wide: append to externalSkills here, per machine:
-    # homeSpec.agents.skills.extraSources) look like:
-    #   {src = inputs.skills-anthropic;}   # all skills under skills/
-    #   {src = inputs.skills-davidondrej; skillsDir = "skills/agent-orchestration"; selectSkills = ["git-worktree" "handoff"];}
-    # (davidondrej/skills nests skills/<category>/<name>, so each wanted
-    # category gets its own entry with a deeper skillsDir; unknown
-    # selectSkills names are silently dropped — verify the installed set
-    # with ls ~/.config/opencode/skills). The sandbox OCI image bakes
-    # the same tree at /opt/skills (flake-parts/ociImages/code-agent.nix)
-    # — keep its externalSkills list in sync when adding sources here.
+    # on name collision; among externals, earlier entries win.
+    #
+    # externalSkillSources is the fleet-wide list (every machine);
+    # homeSpec.agents.skills.extraSources appends per-machine entries.
+    # Each entry: {src = <flake input>;} takes all skill dirs under the
+    # repo's skills/; skillsDir re-points at a non-standard location
+    # (selectSkills cherry-picks by dir name; unknown names are silently
+    # dropped — verify the installed set with ls ~/.config/opencode/skills).
+    #
+    # Keep this list in sync with the sandbox OCI image's externalSkills
+    # (flake-parts/ociImages/code-agent.nix, baked at /opt/skills).
+    externalSkillSources = [
+      # Anthropic official skills, cherry-picked.
+      {
+        src = inputs.skills-anthropic;
+        selectSkills = ["doc-coauthoring" "docx" "internal-comms" "mcp-builder" "skill-creator" "xlsx"];
+      }
+      # Cloudflare official skills — all.
+      {src = inputs.skills-cloudflare;}
+      # Payload CMS official skills — all.
+      {src = inputs.skills-payloadcms;}
+      # Supabase official skills — all.
+      {src = inputs.skills-supabase;}
+      # FluxCD gitops skills — all.
+      {src = inputs.skills-fluxcd;}
+      # Terraform/OpenTofu skill — all (single skill).
+      {src = inputs.skills-terraform;}
+      # OpenShell (the existing openshell flake input's source tree):
+      # two skill dirs — the in-repo skills/ and the contributor-facing
+      # .agents/skills/.
+      {src = inputs.openshell;}
+      {
+        src = inputs.openshell;
+        skillsDir = ".agents/skills";
+      }
+    ];
+
     skillsDir = inputs.agents.lib.mkSkills {
       inherit pkgs;
       customSkills = relativeToRoot "skills";
-      externalSkills = cfg.skills.extraSources;
+      externalSkills = externalSkillSources ++ cfg.skills.extraSources;
     };
 
     # ---- opencode bindings (only meaningful when opencode is on) ---- #

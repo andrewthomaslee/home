@@ -137,6 +137,42 @@
       url = "git+https://code.m3ta.dev/m3tam3re/AGENTS";
       inputs.nixpkgs.follows = "nixpkgs-unstable";
     };
+
+    # ------ External agent skill sources ------ #
+    # Source-only repos (no flake.nix consumed — flake = false), composed
+    # into the shared agents skills tree by inputs.agents.lib.mkSkills in
+    # flake-parts/homeModules/agents.nix (homeSpec.agents.skills) and
+    # flake-parts/ociImages/code-agent.nix (/opt/skills in the sandbox
+    # image). Keep both consumers' externalSkills lists in sync.
+    # Cherry-picking happens at the consumer side via selectSkills.
+    #
+    # OpenShell skills need no input here: the openshell input above is
+    # the full source tree, reused as a skill source (skills/ +
+    # .agents/skills/ both ship SKILL.md dirs).
+    skills-anthropic = {
+      url = "github:anthropics/skills";
+      flake = false;
+    };
+    skills-cloudflare = {
+      url = "github:cloudflare/skills";
+      flake = false;
+    };
+    skills-payloadcms = {
+      url = "github:payloadcms/skills";
+      flake = false;
+    };
+    skills-supabase = {
+      url = "github:supabase/agent-skills";
+      flake = false;
+    };
+    skills-fluxcd = {
+      url = "github:fluxcd/agent-skills";
+      flake = false;
+    };
+    skills-terraform = {
+      url = "github:antonbabenko/terraform-skill";
+      flake = false;
+    };
   };
 
   outputs = inputs:

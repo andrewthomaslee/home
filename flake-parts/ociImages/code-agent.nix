@@ -84,10 +84,27 @@
     skillsTree = inputs.agents.lib.mkSkills {
       inherit pkgs;
       customSkills = relativeToRoot "skills";
-      # No external sources baked today; home-manager's
-      # homeSpec.agents.skills.extraSources is the per-machine escape
-      # hatch — add any source used there here too.
-      externalSkills = [];
+      # Mirror of the fleet-wide list in
+      # flake-parts/homeModules/agents.nix (externalSkillSources) —
+      # the same tree the NixOS hosts install for their agents.
+      # homeSpec.agents.skills.extraSources remains the per-machine
+      # escape hatch on the home-manager side (not baked here).
+      externalSkills = [
+        {
+          src = inputs.skills-anthropic;
+          selectSkills = ["doc-coauthoring" "docx" "internal-comms" "mcp-builder" "skill-creator" "xlsx"];
+        }
+        {src = inputs.skills-cloudflare;}
+        {src = inputs.skills-payloadcms;}
+        {src = inputs.skills-supabase;}
+        {src = inputs.skills-fluxcd;}
+        {src = inputs.skills-terraform;}
+        {src = inputs.openshell;}
+        {
+          src = inputs.openshell;
+          skillsDir = ".agents/skills";
+        }
+      ];
     };
 
     # /bin + /usr/bin toolset (the sshd default PATH covers /bin) plus

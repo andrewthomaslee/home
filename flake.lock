@@ -1414,6 +1414,12 @@
         "nixpkgs-unstable": "nixpkgs-unstable",
         "openshell": "openshell",
         "plasma-manager": "plasma-manager",
+        "skills-anthropic": "skills-anthropic",
+        "skills-cloudflare": "skills-cloudflare",
+        "skills-fluxcd": "skills-fluxcd",
+        "skills-payloadcms": "skills-payloadcms",
+        "skills-supabase": "skills-supabase",
+        "skills-terraform": "skills-terraform",
         "whisper-dictation": "whisper-dictation",
         "zen-browser": "zen-browser"
       }
@@ -1457,6 +1463,102 @@
       "original": {
         "owner": "oxalica",
         "repo": "rust-overlay",
+        "type": "github"
+      }
+    },
+    "skills-anthropic": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1791208002,
+        "narHash": "sha256-APw+xMKqRvkLnuQxttiyyIeylrIMSxZovQnw3xEl1C4=",
+        "owner": "anthropics",
+        "repo": "skills",
+        "rev": "683bc88e56f3e09ba94f7055977f3d3aa499f202",
+        "type": "github"
+      },
+      "original": {
+        "owner": "anthropics",
+        "repo": "skills",
+        "type": "github"
+      }
+    },
+    "skills-cloudflare": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1791506243,
+        "narHash": "sha256-UCw/28QVYktCFR1YQsMKWk3U8G8WRpQNIBEUnbX23DU=",
+        "owner": "cloudflare",
+        "repo": "skills",
+        "rev": "a18ffe2a99448ebff262fc87915b0fd14bab9b70",
+        "type": "github"
+      },
+      "original": {
+        "owner": "cloudflare",
+        "repo": "skills",
+        "type": "github"
+      }
+    },
+    "skills-fluxcd": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1790926023,
+        "narHash": "sha256-Qwzr/v4uPVEdfR24+FPwcqQxVFjC1AIaOdHQjfPoxBE=",
+        "owner": "fluxcd",
+        "repo": "agent-skills",
+        "rev": "0d1fa6c46e553d2f264dfcc8c8630c628195f6e4",
+        "type": "github"
+      },
+      "original": {
+        "owner": "fluxcd",
+        "repo": "agent-skills",
+        "type": "github"
+      }
+    },
+    "skills-payloadcms": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1783443347,
+        "narHash": "sha256-kX3WMREQpWSr3CeJVUMkyKGWJaryEeUNPHFuwakjDZc=",
+        "owner": "payloadcms",
+        "repo": "skills",
+        "rev": "832d5bc4258ae784f08cb7f03a3a674d6b2fa5f1",
+        "type": "github"
+      },
+      "original": {
+        "owner": "payloadcms",
+        "repo": "skills",
+        "type": "github"
+      }
+    },
+    "skills-supabase": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1790944488,
+        "narHash": "sha256-MKa/ZwI2yfwiqI76uNg7QsX9F6MF2nctOEme6UtwtQM=",
+        "owner": "supabase",
+        "repo": "agent-skills",
+        "rev": "c9be0e931b7930f7d02126d04774d904c381e7d7",
+        "type": "github"
+      },
+      "original": {
+        "owner": "supabase",
+        "repo": "agent-skills",
+        "type": "github"
+      }
+    },
+    "skills-terraform": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1783058190,
+        "narHash": "sha256-utKu3sueu6SdhjmtRa+Osg761YPwdQa6IPhceZsgsn8=",
+        "owner": "antonbabenko",
+        "repo": "terraform-skill",
+        "rev": "0a3a4a66e99001347d36a41e10260a825be3ab62",
+        "type": "github"
+      },
+      "original": {
+        "owner": "antonbabenko",
+        "repo": "terraform-skill",
         "type": "github"
       }
     },
