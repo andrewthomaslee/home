@@ -713,19 +713,26 @@
             # Shared local MCP servers (homeSpec.agents.mcp.*): opencode's
             # native {type = local;} rendering of the same set the
             # file-configured agents get (pi/kimi mcp.json, claude
-            # settings.json).
+            # settings.json). github is EXCLUDED here when opencode uses
+            # the oauth method — servers.github.type is a typed enum, so
+            # the remote override below would conflict with the shared
+            # local definition (mkMerge does not silently override typed
+            # options).
             (lib.mkIf (sharedMcpCommands != {}) {
               mcp.servers =
                 lib.mapAttrs (_: v: {
                   type = "local";
                   inherit (v) command;
-                })
-                sharedMcpCommands;
+                }) (
+                  if cfg.mcp.github.enable && cfg.mcp.github.auth == "oauth"
+                  then removeAttrs sharedMcpCommands ["github"]
+                  else sharedMcpCommands
+                );
             })
             # GitHub oauth (opencode-only): remote hosted server,
-            # browser flow on first use. Overrides the shared local PAT
-            # wrapper's "github" key from the mkIf above (later mkMerge
-            # wins). pi/kimi/claude always keep the local PAT wrapper.
+            # browser flow on first use. github was already excluded
+            # from the shared local set above when oauth is selected.
+            # pi/kimi/claude always keep the local PAT wrapper.
             (lib.mkIf (cfg.mcp.github.enable && cfg.mcp.github.auth == "oauth") {
               mcp.servers.github = {
                 type = "remote";
