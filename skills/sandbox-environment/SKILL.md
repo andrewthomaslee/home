@@ -75,7 +75,12 @@ recreating the sandbox; filesystem/image changes require recreation.
 - For a Cachix-backed package, name cache + key explicitly:
   `NIX_CONFIG="$NIX_CONFIG extra-substituters = https://<cache>.cachix.org extra-trusted-public-keys = <cache>.cachix.org-1:…" nix profile install …`
 - No `/dev/kvm`: builds fall back to TCG and crawl. Substitution-only
-  is the intended path — never let a from-source build start.
+  is the intended path for unbaked packages — never let a from-source
+  build start.
+- Do NOT run `nix flake check` or the NixOS VM tests (`nix run
+  .#vm-test`) in-sandbox: they build heavy derivations and need KVM.
+  Checks, builds and VM tests are CI's job — the fleet CI is not wired
+  up yet, so flag the gap rather than running them.
 
 ## MCP trio failure modes
 

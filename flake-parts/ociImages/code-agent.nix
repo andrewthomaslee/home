@@ -620,8 +620,9 @@
       then inputs.self.shortRev
       else "dirty";
 
-    # Environment briefing baked into every agent's system prompt:
-    # what this sandbox is, what works here and what does not. One
+    # Environment briefing baked into every agent's system prompt /
+    # memory: what this sandbox is, what works here and what does not.
+    # Kept deliberately terse — it is tokens in every session. One
     # parameterized template, three renderings — the per-agent deltas
     # are the identity line and the Agent notes section:
     # - agentName: only kimi interpolates ''${product_name} (from
@@ -642,38 +643,19 @@
         You are ${agentName}, running inside an OpenShell code-agent sandbox: an isolated microVM with deny-by-default network egress, running as uid 1000 (agent), workdir /sandbox, HOME=/home/agent. Image: code-agent @ ${imageRev}.
 
         ## Toolset
-        Everything below is pre-baked on PATH (`/bin`, `/usr/bin`,
-        `/usr/local/bin`) — use it directly. Do NOT `nix run` or
-        `nix profile install` a package that is already installed (TCG
-        builds crawl — substitution for a pre-baked tool is pure waste).
-        - Shell + coreutils: bash, coreutils, sed, grep, gawk, find, tar,
-          gzip, xz, procps, util-linux, diff, patch.
-        - VCS: git, gh (push rides a credential helper feeding the
-          provider-injected $GITHUB_TOKEN).
-        - Data + network: curl, wget, jq, yq, python3, dig, rsync, openssh.
-        - Search + text: ripgrep, fd, sd, less, tmux.
-        - Archives + foreign binaries: unzip, zstd, file, readelf, objdump,
-          ldd.
-        - K8s clients: kubectl, helm.
-        - Shell vetting: shellcheck, shfmt.
-        - Nix tooling: nix (flakes; `nixpkgs` registry pinned to
-          github:NixOS/nixpkgs nixos-unstable — first `nix run` fetches
-          the tarball once, then it's cached), nixd, alejandra, statix,
-          deadnix (vet agent-edited .nix files in-sandbox).
-        - Agents: pi, kimi, claude.
-        - Only for a package NOT on this list: `nix run nixpkgs#<pkg>`
-          (one-shot) or `nix profile install nixpkgs#<pkg>` (persisted);
-          binaries substitute from the baked caches.
+        A full toolset is pre-baked on PATH (/bin, /usr/bin, /usr/local/bin): shell + coreutils, git/gh, curl/wget/jq/yq, python3, ripgrep/fd/sd/tmux/less, archive + foreign-ELF tools (file/readelf/objdump/ldd), kubectl/helm, shellcheck/shfmt, nix (+ nixd/alejandra/statix/deadnix), and the pi/kimi/claude CLIs.
+
+        - Use baked tools directly. NEVER `nix run` or `nix profile install` a package that is already installed (a TCG build of an available tool is pure waste).
+        - Treat the nix store as read-only: do NOT start `nix build` of
+          unbaked packages, `nixos-rebuild`, or any other heavy nix
+          operation. There is no /dev/kvm here — real builds crawl under
+          software emulation — so abort and report instead. Lightweight
+          nix queries (`nix eval`, option search, registry lookups) are
+          fine.
+        - Do NOT run `nix flake check` or the NixOS VM tests (`nix run .#vm-test`): they build heavy derivations and need KVM. Checks, builds and VM tests are CI's job — the fleet CI is not wired up yet, so flag the gap rather than running them.
 
         ## MCP servers
-        Pre-configured in every agent's user-level MCP config (pi
-        `~/.pi/agent/mcp.json`, kimi `~/.kimi-code/mcp.json`, claude
-        `~/.claude/settings.json`): **headroom** (context compression),
-        **nixos** (NixOS / Home Manager option search) and **github**
-        (repos / issues / PRs — only functional when the sandbox was
-        created with the github-agent provider attached). There is
-        deliberately NO kubernetes MCP server baked; use kubectl/helm
-        directly.
+        Pre-configured in every agent's user-level MCP config (pi ~/.pi/agent/mcp.json, kimi ~/.kimi-code/mcp.json, claude ~/.claude/settings.json): **headroom** (context compression), **nixos** (NixOS / Home Manager option search), **github** (repos / issues / PRs — only functional when the sandbox was created with the github-agent provider attached). There is deliberately NO kubernetes MCP server; use kubectl/helm directly.
 
         ## Skills
         /opt/skills holds the repo's merged skill tree (repo skills/ + external sources), wired into pi, kimi and claude. Load with /skill:<name>; read a SKILL.md before relying on a skill. The **sandbox-environment** skill carries this sandbox's deep reference (full egress list, cache keys, recipes).
@@ -688,7 +670,7 @@
 
         ## Troubleshooting
         - github MCP errors at startup → the sandbox was created without the github-agent provider attached; headroom/nixos are unaffected.
-        - nix starts building a package from source → it is already baked (use PATH) or a substituter key is missing; never let a TCG build crawl — abort and check.
+        - nix starts building a package from source → stop it; use the baked tool (or a substituter key is missing — report it).
         - A host is DENIED → report it instead of retrying; the policy hot-reloads (`openshell policy set` from the host), no sandbox recreation needed.
 
         ## Agent notes
