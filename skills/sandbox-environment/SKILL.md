@@ -48,6 +48,7 @@ Egress is deny-by-default. Admitted hosts (from
 | `cache.flakehub.com`, `edge.cache.flakehub.com`, `api.flakehub.io` | read | FlakeHub caches |
 | `cache.geninf.io`, `cache.clan.lol` | read | clan niks3 caches |
 | `git.clan.lol` | read-write git transport | clan repos |
+| `pypi.org`, `files.pythonhosted.org` | read (wheels only) | python3/uv package fetches (no uploads admitted) |
 | `api.kimi.com` | — | kimi-for-coding API |
 | `api.anthropic.com`, `platform.claude.com` | — | claude API + startup preflight |
 
@@ -77,6 +78,20 @@ recreating the sandbox; filesystem/image changes require recreation.
 - No `/dev/kvm`: builds fall back to TCG and crawl. Substitution-only
   is the intended path for unbaked packages — never let a from-source
   build start.
+- Every nix command warning "you don't have Internet access; disabling
+  some network-dependent features" is NOT a network problem: nix
+  2.34's `haveInternet()` (src/nix/main.cc) is not a connectivity
+  probe, it returns true only when `getifaddrs()` shows a
+  non-loopback/non-link-local interface address (or a proxy env), and
+  the microVM's sinkhole-intercepted networking has neither. nix then
+  switches substitution OFF before attempting any fetch, so perfectly
+  cache-served paths fall back to (doomed) from-source builds. Actual
+  egress to the admitted caches works — `nix store prefetch-file
+  https://cache.nixos.org/nix-cache-info` succeeds. Workaround: pass
+  the substitute setting as an explicit override — `nix --option
+  substitute true build …` (the CLI only zeroes it when NOT
+  overridden; `--option`/`NIX_CONFIG` count). Works in-sandbox:
+  `nix build --option substitute true .#checks.x86_64-linux.lint -L`.
 - Do NOT run `nix flake check` or the NixOS VM tests (`nix run
   .#vm-test`) in-sandbox: they build heavy derivations and need KVM.
   Checks, builds and VM tests are CI's job — the fleet CI is not wired

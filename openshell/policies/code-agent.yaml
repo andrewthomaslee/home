@@ -1,3 +1,12 @@
+# GENERATED TEMPLATE — never consume this file directly and never
+# hand-write store paths. The @bin_*@ placeholders are rendered by the
+# flake (packages.code-agent-policy, flake-parts/openshellConfig.nix)
+# with the EXACT store paths of the image's own package set
+# (flake-parts/ociImages/code-agent.nix), so the image and the gateway
+# config can never disagree about which binary may call which host.
+# Lifecycle: `code-sandbox sync` drift-checks and pushes; `code-sandbox
+# doctor` reports read-only. Both run as part of `code-sandbox create`.
+#
 # Sandbox policy for the code-agent image (general coding sandbox,
 # flake-parts/ociImages/code-agent.nix): nix runtime package adds via
 # substitution (cache.nixos.org, other *.nixos.org infra such as
@@ -10,9 +19,11 @@
 # pre-baked server commit no longer matches the client's VSCodium).
 # Attach providers for private repos or credentials.
 #
-#   openshell sandbox create --name code --from code-agent:latest \
-#     --policy openshell/policies/code-agent.yaml --cpu 4 --memory 8Gi \
-#     -- bash -l
+#   code-sandbox create              (renders this file from the flake)
+# or, manually:
+#   openshell sandbox create --name code --from code-agent:<hash> \
+#     --policy "$(nix build .#code-agent-policy --no-link --print-out-paths)" \
+#     --cpu 4 --memory 8Gi -- bash -l
 version: 1
 
 filesystem_policy:
@@ -50,7 +61,7 @@ network_policies:
       - { host: cache.nixos.org, port: 443, protocol: rest,
           enforcement: enforce, access: read-only }
     binaries:
-      - { path: /nix/store/*-nix-*/bin/nix }
+      - { path: @bin_nix@ }
 
   # Other *.nixos.org infrastructure, read-only: source and channel
   # tarballs (releases.nixos.org serves nixpkgs nixexprs.tar.xz — the
@@ -68,10 +79,8 @@ network_policies:
       - { host: "*.nixos.org", port: 443, protocol: rest,
           enforcement: enforce, access: read-only }
     binaries:
-      - { path: /nix/store/*-nix-*/bin/nix }
-      - { path: /nix/store/*-git-*/bin/git }
-      - { path: /nix/store/*-git-minimal-*/bin/git }
-      - { path: /nix/store/*-curl-*/bin/curl }
+      - { path: @bin_nix@ }
+      - { path: @bin_git@ }
 
   # Optional extra binary caches — deliberately OFF. Uncomment one when
   # an agent actually builds that stack; find out via the DENIED lines
@@ -83,7 +92,7 @@ network_policies:
   #     - { host: cache.iog.io, port: 443, protocol: rest,
   #         enforcement: enforce, access: read-only }
   #   binaries:
-  #     - { path: /nix/store/*-nix-*/bin/nix }
+  #     - { path: @bin_nix@ }
   #
   # zw3rk_cache:
   #   name: zw3rk_cache
@@ -91,7 +100,7 @@ network_policies:
   #     - { host: cache.zw3rk.com, port: 443, protocol: rest,
   #         enforcement: enforce, access: read-only }
   #   binaries:
-  #     - { path: /nix/store/*-nix-*/bin/nix }
+  #     - { path: @bin_nix@ }
 
   # Cachix binary caches: one hostname per cache (<name>.cachix.org) —
   # the wildcard covers nix-community.cachix.org (nix-community
@@ -107,7 +116,7 @@ network_policies:
       - { host: "*.cachix.org", port: 443, protocol: rest,
           enforcement: enforce, access: read-only }
     binaries:
-      - { path: /nix/store/*-nix-*/bin/nix }
+      - { path: @bin_nix@ }
 
   # clan-core's niks3 binary cache (served as cache.geninf.io, also
   # answering as cache.clan.lol; objects may be signed under either
@@ -121,7 +130,7 @@ network_policies:
       - { host: cache.clan.lol, port: 443, protocol: rest,
           enforcement: enforce, access: read-only }
     binaries:
-      - { path: /nix/store/*-nix-*/bin/nix }
+      - { path: @bin_nix@ }
 
   # FlakeHub caches baked into the image NIX_CONFIG (public keys,
   # non-secret) + api host for flakehub: inputs.
@@ -135,7 +144,7 @@ network_policies:
       - { host: api.flakehub.io, port: 443, protocol: rest,
           enforcement: enforce, access: read-only }
     binaries:
-      - { path: /nix/store/*-nix-*/bin/nix }
+      - { path: @bin_nix@ }
 
   # Public GitHub: smart-HTTP clone/fetch (git + curl + nix fetchers).
   # Pushing to private repos rides an attached github provider instead.
@@ -184,10 +193,9 @@ network_policies:
         enforcement: enforce
         access: read-only
     binaries:
-      - { path: /nix/store/*-nix-*/bin/nix }
-      - { path: /nix/store/*-git-*/bin/git }
-      - { path: /nix/store/*-git-minimal-*/bin/git }
-      - { path: /nix/store/*-curl-*/bin/curl }
+      - { path: @bin_nix@ }
+      - { path: @bin_git@ }
+      - { path: @bin_curl@ }
 
   # git.clan.lol (Gitea): clan flake inputs and repos — this fleet's
   # own gitea, so unlike github.com it gets read-write git transport
@@ -219,10 +227,9 @@ network_policies:
               method: POST
               path: "/**/git-receive-pack"
     binaries:
-      - { path: /nix/store/*-nix-*/bin/nix }
-      - { path: /nix/store/*-git-*/bin/git }
-      - { path: /nix/store/*-git-minimal-*/bin/git }
-      - { path: /nix/store/*-curl-*/bin/curl }
+      - { path: @bin_nix@ }
+      - { path: @bin_git@ }
+      - { path: @bin_curl@ }
 
   # Kimi for Coding subscription endpoint (api.kimi.com/coding,
   # Anthropic-compatible): pi's built-in kimi-coding provider (key via
@@ -235,12 +242,16 @@ network_policies:
       - { host: api.kimi.com, port: 443, protocol: rest,
           enforcement: enforce, access: read-write }
     binaries:
-      - { path: /nix/store/*-pi-*/libexec/pi/pi }
+      - { path: @bin_pi@ }
+      # kimi-code's node comes from the llm-agents input's OWN nixpkgs
+      # closure, not this flake's pkgs.nodejs — an exact path here
+      # could silently deny kimi egress after an input bump, so this
+      # pin stays a wildcard on purpose.
       - { path: /nix/store/*-nodejs*/bin/node }
 
   # Claude Code against api.anthropic.com with a Claude Teams
-  # subscription bearer token (injected as $ANTHROPIC_AUTH_TOKEN by the
-  # attached claude-code provider). Claude's startup preflight
+  # subscription bearer token (injected as $ANTHROPIC_AUTH_TOKEN by
+  # the attached claude-code provider). Claude's startup preflight
   # ("Checking connectivity..." → /v1/oauth/hello) and `claude auth
   # login` OAuth token polling both go to platform.claude.com — without
   # it claude exits with "Unable to connect to Anthropic services"
@@ -269,8 +280,47 @@ network_policies:
               method: POST
               path: "/v1/oauth/**"
     binaries:
-      - { path: /nix/store/*-claude-code-*/bin/.claude-wrapped }
-      - { path: /nix/store/*-claude-code-*/bin/claude }
+      # The supervisor matches /proc/pid/exe: for wrapped packages that
+      # is the wrapped ELF (`.claude-wrapped`, likewise gh below), so
+      # both the wrapper and the real exe are pinned.
+      - { path: @bin_claude_wrapped@ }
+      - { path: @bin_claude@ }
+      # headroom (context compression, baked as the agents' MCP server)
+      # posts to api.anthropic.com with the claude provider's token;
+      # its wrapper execs the slim binary, so pin the kernel-resolved
+      # exe here too — without this, headroom_compress is denied.
+      - { path: @bin_headroom@ }
+
+  # Python package fetching: PyPI index + wheel CDN, read-only, for the
+  # image's python3 and uv. pip runs in-process (`python3 -m pip`, also
+  # inside a venv), so its connections carry the INTERPRETER's exe —
+  # nixpkgs' bin/python3 is a symlink to the versioned binary, and the
+  # resolved exe is pinned alongside it (same pattern as gh/.gh-wrapped
+  # above). Wheel-only installs are the intended path: the image ships
+  # no C toolchain, so sdists that compile cannot build in-sandbox —
+  # route those through nix substitution. Uploads (twine et al.) are
+  # deliberately NOT admitted.
+  python_packages:
+    name: python_packages
+    endpoints:
+      - { host: pypi.org, port: 443, protocol: rest,
+          enforcement: enforce, access: read-only }
+      - { host: files.pythonhosted.org, port: 443, protocol: rest,
+          enforcement: enforce, access: read-only }
+      # `uv python install` pulls CPython builds from GitHub release
+      # assets (the release URL 302-redirects to these CDNs); admission
+      # is per (binary, host), so uv needs its own pairs even though
+      # curl/git/nix reach github.com in other entries.
+      - { host: github.com, port: 443, protocol: rest,
+          enforcement: enforce, access: read-only }
+      - { host: objects.githubusercontent.com, port: 443, protocol: rest,
+          enforcement: enforce, access: read-only }
+      - { host: release-assets.githubusercontent.com, port: 443,
+          protocol: rest, enforcement: enforce, access: read-only }
+    binaries:
+      - { path: @bin_python3@ }
+      - { path: @bin_python3_real@ }
+      - { path: @bin_uv@ }
 
   # VSCodium Remote-SSH bootstrap fallback (jeanp413 open-remote-ssh):
   # only reached when the pre-baked server commit does not match the
@@ -287,4 +337,4 @@ network_policies:
       - { host: release-assets.githubusercontent.com, port: 443,
           protocol: rest, enforcement: enforce, access: read-only }
     binaries:
-      - { path: /nix/store/*-curl-*/bin/curl }
+      - { path: @bin_curl@ }

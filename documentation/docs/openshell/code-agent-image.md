@@ -13,7 +13,11 @@ architecture and the lessons that shaped the design, see the
   `statix`, `deadnix`), shell vetting (`shellcheck`, `shfmt`), archive
   tools (`unzip`, `zstd`, `wget`), ELF inspection (`file`, `readelf`,
   `objdump`, `ldd`), patching (`diff`, `patch`), k8s clients
-  (`kubectl`, `helm`), and `dig`/`rsync`.
+  (`kubectl`, `helm`), and `dig`/`rsync`. For Python work: `uv`
+  (wheel-first installer) plus `python3` — PyPI is admitted read-only
+  for both, WHEELS ONLY (`uv pip install --only-binary=:all: …`), since
+  no C toolchain ships in the image (pip itself bootstraps inside
+  `python3 -m venv`).
 - **Three pre-wired AI agents** (no interactive login ever), each with
   the sandbox environment briefing baked into its user-level system
   prompt / memory (pi `~/.pi/agent/APPEND_SYSTEM.md`, kimi

@@ -1,8 +1,15 @@
-{lib}: {
+{lib}: let
+  mkCodeSandbox = import ./mkCodeSandbox.nix;
+in {
   # Repo-bound helpers — pre-bound to THIS repo's root. Consumed as
   # customLib.relativeToRoot (see flake-parts/default.nix, which imports
   # this file via lib.extend).
   relativeToRoot = lib.path.append ../.;
+
+  # Parameterized code-sandbox lifecycle-script generator (pure shell
+  # text; see lib/mkCodeSandbox.nix). Exported for other flakes as
+  # inputs.home.lib.mkCodeSandbox.
+  inherit mkCodeSandbox;
 
   # Factory for consumers OUTSIDE this repo (exported as flake.lib, see
   # flake-parts/default.nix): bind the helpers to any root, then use the
@@ -14,5 +21,6 @@
   #   (inputs.home.lib.mkLib ./.) // {inherit lib;}
   mkLib = root: {
     relativeToRoot = lib.path.append root;
+    inherit mkCodeSandbox;
   };
 }

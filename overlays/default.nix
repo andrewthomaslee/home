@@ -23,6 +23,9 @@
   openshell-driver-vm = self.packages.${final.stdenv.hostPlatform.system}.openshell-driver-vm;
   headroom = self.packages.${final.stdenv.hostPlatform.system}.headroom;
   headroom-slim = self.packages.${final.stdenv.hostPlatform.system}.headroom-slim;
+  # Installable code-sandbox wrapper (runs from any directory; see
+  # flake-parts/openshellConfig.nix). Hosts: environment.systemPackages.
+  code-sandbox = self.packages.${final.stdenv.hostPlatform.system}.code-sandbox;
   artifacthub-mcp = self.packages.${final.stdenv.hostPlatform.system}.artifacthub-mcp;
   kubernetes-mcp-server = self.packages.${final.stdenv.hostPlatform.system}.kubernetes-mcp-server;
 

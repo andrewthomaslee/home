@@ -19,6 +19,7 @@ nav:
       - Overview: whisper-dictation/index.md
   - OpenShell:
       - Overview: openshell/index.md
+      - Code-Sandbox (Lifecycle CLI): openshell/code-sandbox.md
       - Code-Agent Image (User Guide): openshell/code-agent-image.md
   - Minecraft:
       - Overview: minecraft/index.md

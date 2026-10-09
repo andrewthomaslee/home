@@ -189,6 +189,10 @@
         shfmt
         dnsutils
         rsync
+        # uv: wheel-first Python package installer (baked so PyPI
+        # egress — admitted read-only in the sandbox policy — has a
+        # pinned binary; pip itself ships inside `python3 -m venv`).
+        uv
         # AI coding agents (all from the llm-agents flake input, see
         # overlays/default.nix): pi runs on bun, kimi-code and
         # claude-code are bundled node/bun apps — closures carry their
@@ -270,6 +274,7 @@
       ln -s ${pkgs.shfmt}/bin/shfmt                 $out/usr/local/bin/shfmt
       ln -s ${pkgs.dnsutils}/bin/dig                $out/usr/local/bin/dig
       ln -s ${pkgs.rsync}/bin/rsync                 $out/usr/local/bin/rsync
+      ln -s ${pkgs.uv}/bin/uv                       $out/usr/local/bin/uv
       # headroom via the env-mapping wrapper (MCP configs and
       # interactive use both resolve to this PATH entry).
       ln -s ${sandboxHeadroom}/bin/headroom         $out/usr/local/bin/headroom
@@ -652,6 +657,32 @@
           software emulation — so abort and report instead. Lightweight
           nix queries (`nix eval`, option search, registry lookups) are
           fine.
+        - nix ALWAYS warns "you don't have Internet access" in this
+          sandbox — that is a `getifaddrs()` heuristic (the microVM has
+          no routable interface), NOT a network failure. Substitution to
+          the admitted caches works: ALWAYS pass `--option substitute
+          true` to `nix build` / `nix flake check` here (e.g. `nix build
+          --option substitute true .#checks.x86_64-linux.lint -L`).
+          Without the override, cache hits degenerate into doomed
+          from-source builds (recipe: **sandbox-environment** skill).
+        - Flakes evaluate from the GIT TREE: `git add` new/changed files
+          BEFORE `nix build` / `nix flake check` — untracked files do
+          not exist to Nix.
+        - In a nix repo, before declaring work done: `git add` everything
+          new, then run the repo's lint loop (`alejandra --check`,
+          `statix check`, `deadnix --fail`, or the flake's `checks.lint`
+          via `nix build --option substitute true .#checks.<system>.lint
+          -L`), then the lightest real build/eval that covers the
+          change. Full `nix flake check` and NixOS VM tests need KVM —
+          CI's job here; flag the gap rather than running them.
+        - Python: `python3` ships WITHOUT global pip — bootstrap it with
+          `python3 -m venv`, or prefer the baked `uv` (wheel-first).
+          PyPI (`pypi.org` + `files.pythonhosted.org`) is admitted
+          READ-ONLY for python3/uv. Install WHEELS ONLY (`uv pip
+          install --only-binary=:all: …`): no C toolchain ships here,
+          so sdists that compile cannot build in-sandbox — get those
+          via nix substitution (`nix run --option substitute true
+          nixpkgs#…`).
         - Do NOT run `nix flake check` or the NixOS VM tests (`nix run .#vm-test`): they build heavy derivations and need KVM. Checks, builds and VM tests are CI's job — the fleet CI is not wired up yet, so flag the gap rather than running them.
 
         ## MCP servers

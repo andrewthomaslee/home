@@ -1,0 +1,423 @@
+# Parameterized generator for the code-sandbox lifecycle script (shell
+# text, no shebang — callers wrap it in writeShellScriptBin or a devenv
+# `scripts.<name>.exec`, each of which supplies its own header).
+#
+# One script, three instantiations (all from this single source):
+#   - devenv/default.nix: scripts.code-sandbox (flakeRef "." = the
+#     enclosing checkout; devenv may not reference flake values, so the
+#     generator is imported by plain relative path);
+#   - packages.code-sandbox (flake-parts/openshellConfig.nix): baked with
+#     THIS repo's source store path, so hosts can install it on PATH
+#     (pkgs.code-sandbox via overlays/default.nix) and run it from ANY
+#     directory — no checkout required;
+#   - flakeModules/code-sandbox.nix: the exported flake-parts module for
+#     other flakes (devenv projects pulling this flake included) — they
+#     set perSystem.codeSandbox.* options and get packages/apps.
+{
+  # Flake whose #<attrs> provide image/policy/profile/loader. "." means
+  # "the flake enclosing the cwd" (resolved via the git root so
+  # subdirectories work).
+  flakeRef ? ".",
+  # Attr names inside that flake.
+  imageAttr ? "code-agent-image",
+  loaderApp ? "load-code-agent-image",
+  policyAttr ? "code-agent-policy",
+  profileAttr ? "github-agent-profile",
+  # Gateway-side provider profile id (sync/doctor drift-check this one).
+  profileId ? "github-agent",
+  # Providers attached at create; checked by sync/doctor.
+  providers ? ["github-agent" "kimi-for-coding"],
+  # OCI image name for the content-hash tag.
+  imageName ? "code-agent",
+  # Sandbox name prefix.
+  defaultName ? "code",
+  # Default for the --include-workdir toggle: mount the invoking
+  # directory into the sandbox workdir (/sandbox). The rendered policy
+  # ships `include_workdir: false` (clean, ephemeral sandboxes); the
+  # toggle flips that line at create time.
+  includeWorkdir ? false,
+  cpu ? "4",
+  memory ? "8Gi",
+}: let
+  providersStr = builtins.concatStringsSep " " providers;
+in ''
+  set -euo pipefail
+
+  usage() {
+    cat >&2 <<'USAGE'
+  usage: code-sandbox [create] [name] [options]   build + load image, sync configs, create sandbox
+         code-sandbox delete <name>               delete a sandbox
+         code-sandbox connect <name>              attach to a sandbox (Ctrl-P Ctrl-Q detaches)
+         code-sandbox exec <name> -- <cmd...>     run a command in a sandbox
+         code-sandbox ssh-config                  append ssh configs for ALL active sandboxes
+         code-sandbox sync                        render policy + profile from the flake, push on drift
+         code-sandbox doctor                      read-only drift/health report (exit 1 on findings)
+
+  options:
+    -y, --yes          don't prompt when the sandbox already exists (delete + recreate)
+        --cpu N        CPUs for the sandbox (default: ${cpu})
+        --memory SIZE  memory for the sandbox (default: ${memory})
+        --flake REF    build image/policy/profile from flake REF — default is the
+                       flake baked in at install time, so this runs from ANY
+                       directory; "." = the flake enclosing the cwd (for working
+                       on that flake itself)
+        --provider N   attach provider N INSTEAD of the defaults (repeatable;
+                       defaults: ${providersStr})
+        --no-sync      create only: skip the profile sync (default: sync before create)
+      --include-workdir
+                     mount the directory you run this from into the sandbox
+                     workdir (/sandbox) — default is a clean, ephemeral
+                     sandbox (include_workdir: false)
+      --no-include-workdir
+                     explicit default: do NOT mount the invoking directory
+    -h, --help         this help
+        --no-ssh-config           don't append the Remote-SSH config (default: append)
+        --ssh-config-file FILE    where to append it (default: ~/.ssh/config.local)
+
+  The sandbox is named <name>-<imghash> (default name: ${defaultName}), and
+  the image is loaded as ${imageName}:<imghash> — both content-addressed,
+  so an existing sandbox name means an older image and prompts for
+  replacement. Recreate to pick up image changes; only network policy
+  tweaks hot-reload.
+
+  Policy + profile lifecycle: the sandbox policy and the '${profileId}'
+  provider profile are TEMPLATES in the flake — rendered with the image's
+  exact store paths (a @bin_*@ placeholder per admitted binary) so image
+  and gateway config can never disagree about which binary may call which
+  host. `code-sandbox sync` (also run by `create`) diffs the rendered
+  profile against the gateway (`openshell profile export ${profileId}`)
+  and pushes it with `openshell profile update` on drift; `code-sandbox
+  doctor` reports the same read-only, plus provider presence/refresh
+  status and per-sandbox policy/provider health. Never `openshell
+  profile import` by hand after editing — one-shot imports are exactly
+  how gateway copies go stale.
+
+  Requires on the host: the `openshell` CLI configured against a gateway,
+  and the configured providers created there (sync/doctor print the exact
+  fix hint when one is missing).
+
+  Unless disabled, the generated Remote-SSH config is appended to the
+  ssh config file as a managed, per-sandbox comment-delimited block —
+  re-running replaces the block for that sandbox instead of duplicating
+  it.
+  USAGE
+    exit "''${1:-0}"
+  }
+
+  # Append (or replace) the generated Remote-SSH config for one sandbox
+  # as a managed, comment-delimited block — idempotent across re-runs.
+  append_ssh_config() {
+    mkdir -p "$(dirname "$ssh_config_file")"
+    tmp="$ssh_config_file.code-sandbox.tmp"
+    if [ -f "$ssh_config_file" ]; then
+      sed "/^# code-sandbox: $1\$/,/^# end code-sandbox: $1\$/d" \
+        "$ssh_config_file" >"$tmp"
+    else
+      : >"$tmp"
+    fi
+    {
+      echo "# code-sandbox: $1"
+      openshell sandbox ssh-config "$1"
+      echo "# end code-sandbox: $1"
+    } >>"$tmp"
+    chmod 600 "$tmp"
+    mv "$tmp" "$ssh_config_file"
+    echo "code-sandbox: ssh config for '$1' appended to $ssh_config_file"
+  }
+
+  # "." means "the flake enclosing the cwd" — resolve via the git root
+  # (fall back to cwd) so running from a subdirectory works.
+  resolve_flake_ref() {
+    if [ "$flake_ref" = "." ]; then
+      git rev-parse --show-toplevel 2>/dev/null || pwd
+    else
+      printf '%s' "$flake_ref"
+    fi
+  }
+
+  # Render the sandbox policy + provider profile from the flake: the
+  # templates' @bin_*@ placeholders become the exact store paths of the
+  # image's package set, so the files handed to openshell always match
+  # the image about to be built. Sets policy_path/profile_path.
+  render_configs() {
+    ref="$(resolve_flake_ref)"
+    echo "code-sandbox: rendering sandbox policy + '${profileId}' profile from $ref ..."
+    policy_path="$(nix build "''${ref}#${policyAttr}" --no-link --print-out-paths)"
+    profile_path="$(nix build "''${ref}#${profileAttr}" --no-link --print-out-paths)"
+  }
+
+  # Canonicalize a profile YAML for drift comparison: sort keys and
+  # keep only the fields the owning repo controls (the gateway manages
+  # resource_version/source/scope itself).
+  canon_profile() {
+    yq -S -y '{id, display_name, description, category, credentials, endpoints, binaries, inference_capable, discovery}' "$1"
+  }
+
+  # Push the rendered provider profile when the gateway copy has
+  # drifted (or is missing). Attached sandboxes re-compose their policy
+  # from the new profile automatically.
+  sync_profile() {
+    gw="$(mktemp)"; gw_canon="$(mktemp)"; rendered_canon="$(mktemp)"
+    if openshell profile export "${profileId}" --output yaml >"$gw" 2>/dev/null; then
+      canon_profile "$profile_path" >"$rendered_canon"
+      canon_profile "$gw" >"$gw_canon"
+      if diff -u "$gw_canon" "$rendered_canon" >/dev/null; then
+        echo "code-sandbox: profile '${profileId}' up to date"
+      else
+        echo "code-sandbox: profile '${profileId}' drifted from the flake — pushing rendered copy"
+        openshell profile update "${profileId}" --file "$profile_path"
+      fi
+    else
+      echo "code-sandbox: profile '${profileId}' missing on the gateway — importing"
+      openshell profile import --file "$profile_path"
+    fi
+    rm -f "$gw" "$gw_canon" "$rendered_canon"
+  }
+
+  # Report one provider's presence (plus refresh status when present).
+  # Returns nonzero when missing: `create` treats that as fatal,
+  # `sync`/`doctor` as a finding.
+  check_provider() {
+    if openshell provider get "$1" >/dev/null 2>&1; then
+      echo "code-sandbox: provider '$1' present"
+      openshell provider refresh status "$1" 2>/dev/null || true
+    else
+      echo "code-sandbox: provider '$1' MISSING on the gateway — its sandbox egress fails closed" >&2
+      echo "  fix: export <TOKEN_ENV> && openshell provider create --name $1 --type $1 --credential <TOKEN_ENV>" >&2
+      return 1
+    fi
+  }
+
+  # The provider list for this invocation: --provider replaces the
+  # baked defaults entirely.
+  provider_list() {
+    if [ -n "$extra_providers" ]; then
+      printf '%s' "$extra_providers"
+    else
+      printf '%s' "$default_providers"
+    fi
+  }
+
+  cmd="create"
+  if [ $# -gt 0 ] && [ "$1" != "''${1#-}" ]; then
+    :
+  elif [ $# -gt 0 ]; then
+    case "$1" in
+      create | delete | connect | exec | ssh-config | sync | doctor) cmd="$1"; shift ;;
+      -h | --help) usage 0 ;;
+      *) usage 1 ;;
+    esac
+  fi
+
+  flake_ref="${flakeRef}" default_providers="${providersStr}" extra_providers=""
+  name="" yes=0 cpu="${cpu}" memory="${memory}" sync=1 include_workdir="${
+    if includeWorkdir
+    then "1"
+    else "0"
+  }" \
+    ssh_config=1 ssh_config_file="$HOME/.ssh/config.local"
+  while [ $# -gt 0 ]; do
+    case "$1" in
+      -y | --yes) yes=1; shift ;;
+      --cpu) cpu="''${2:?--cpu needs a value}"; shift 2 ;;
+      --memory) memory="''${2:?--memory needs a value}"; shift 2 ;;
+      --flake) flake_ref="''${2:?--flake needs a value}"; shift 2 ;;
+      --provider) extra_providers="''${extra_providers:-} ''${2:?--provider needs a value}"; shift 2 ;;
+      --sync) sync=1; shift ;;
+      --no-sync) sync=0; shift ;;
+      --include-workdir) include_workdir=1; shift ;;
+      --no-include-workdir) include_workdir=0; shift ;;
+      --ssh-config) ssh_config=1; shift ;;
+      --no-ssh-config) ssh_config=0; shift ;;
+      --ssh-config-file) ssh_config_file="''${2:?--ssh-config-file needs a value}"; shift 2 ;;
+      -h | --help) usage 0 ;;
+      --) shift; break ;;
+      -*)
+        if [ "$cmd" = exec ]; then break; fi
+        echo "code-sandbox: unknown option: $1" >&2; usage 1 ;;
+      *)
+        if [ -z "$name" ]; then name="$1"; shift
+        elif [ "$cmd" = exec ]; then break
+        else echo "code-sandbox: unexpected argument: $1" >&2; usage 1
+        fi ;;
+    esac
+  done
+
+  case "$cmd" in
+    delete)
+      [ -n "$name" ] || { echo "code-sandbox: delete needs a sandbox name" >&2; usage 1; }
+      exec openshell sandbox delete "$name"
+      ;;
+    connect)
+      [ -n "$name" ] || { echo "code-sandbox: connect needs a sandbox name" >&2; usage 1; }
+      exec openshell sandbox connect "$name"
+      ;;
+    exec)
+      [ -n "$name" ] || { echo "code-sandbox: exec needs a sandbox name" >&2; usage 1; }
+      exec openshell sandbox exec -n "$name" -- "$@"
+      ;;
+    ssh-config)
+      [ -z "$name" ] || { echo "code-sandbox: ssh-config takes no sandbox name (it syncs all of them)" >&2; usage 1; }
+      sandbox_list="$(mktemp)"
+      # Redirect, never pipe the CLI (EPIPE panic, exit 101).
+      openshell sandbox list >"$sandbox_list" 2>/dev/null || true
+      # First column is the name; drop header/separator lines.
+      sandbox_names="$(awk 'NF && $1 !~ /^[Nn][Aa][Mm][Ee]|^-+$/ {print $1}' "$sandbox_list")"
+      rm -f "$sandbox_list"
+      [ -n "$sandbox_names" ] || { echo "code-sandbox: no active sandboxes found" >&2; exit 1; }
+      for sb in $sandbox_names; do
+        append_ssh_config "$sb"
+      done
+      exit 0
+      ;;
+    sync)
+      [ -z "$name" ] || { echo "code-sandbox: sync takes no sandbox name" >&2; usage 1; }
+      render_configs
+      sync_profile
+      for p in $(provider_list); do
+        check_provider "$p" || true
+      done
+      exit 0
+      ;;
+    doctor)
+      [ -z "$name" ] || { echo "code-sandbox: doctor takes no sandbox name" >&2; usage 1; }
+      findings=0
+      render_configs
+
+      echo "== profile '${profileId}' =="
+      gw="$(mktemp)"; gw_canon="$(mktemp)"; rendered_canon="$(mktemp)"
+      canon_profile "$profile_path" >"$rendered_canon"
+      if openshell profile export "${profileId}" --output yaml >"$gw" 2>/dev/null; then
+        canon_profile "$gw" >"$gw_canon"
+        if diff -u "$gw_canon" "$rendered_canon" >/dev/null; then
+          echo "  up to date"
+        else
+          echo "  DRIFTED from the flake — run: code-sandbox sync"
+          findings=1
+        fi
+      else
+        echo "  MISSING on the gateway — run: code-sandbox sync"
+        findings=1
+      fi
+      rm -f "$gw" "$gw_canon" "$rendered_canon"
+
+      echo "== providers =="
+      for p in $(provider_list); do
+        if openshell provider get "$p" >/dev/null 2>&1; then
+          echo "  $p: present"
+          openshell provider refresh status "$p" 2>/dev/null | sed 's/^/    /' || true
+        else
+          echo "  $p: MISSING — create it (see the fix hint under 'code-sandbox sync')"
+          findings=1
+        fi
+      done
+
+      echo "== sandboxes =="
+      sandbox_list="$(mktemp)"
+      openshell sandbox list >"$sandbox_list" 2>/dev/null || true
+      # First column is the name; drop header/separator lines.
+      sandbox_names="$(awk 'NF && $1 !~ /^[Nn][Aa][Mm][Ee]|^-+$/ {print $1}' "$sandbox_list")"
+      if [ -z "$sandbox_names" ]; then
+        echo "  (none running)"
+      else
+        ref="$(resolve_flake_ref)"
+        img="$(nix build "''${ref}#${imageAttr}" --no-link --print-out-paths)"
+        shorthash="$(basename "$img" | cut -c1-8)"
+        for sb in $sandbox_names; do
+          case "$sb" in
+            *"-$shorthash") echo "  $sb: image current (-$shorthash)" ;;
+            *)
+              echo "  $sb: STALE IMAGE (current is -$shorthash) — recreate to pick up image/policy changes"
+              findings=1
+              ;;
+          esac
+          openshell sandbox provider list "$sb" 2>/dev/null | sed 's/^/    providers: /' || echo "    providers: (query failed)"
+          openshell policy list "$sb" 2>/dev/null | tail -n 3 | sed 's/^/    policy: /' || true
+        done
+      fi
+      rm -f "$sandbox_list"
+      if [ "$findings" = 0 ]; then
+        echo "code-sandbox: doctor: all good"
+      else
+        echo "code-sandbox: doctor: findings above (sync: code-sandbox sync)"
+        exit 1
+      fi
+      exit 0
+      ;;
+  esac
+
+  # ---- create ----
+  render_configs
+  if [ "$sync" = 1 ]; then
+    sync_profile
+  else
+    echo "code-sandbox: --no-sync: gateway profile NOT checked (it may drift from the image)"
+  fi
+  for p in $(provider_list); do
+    check_provider "$p" || { echo "code-sandbox: aborting: create would fail closed without provider '$p'" >&2; exit 1; }
+  done
+
+  ref="$(resolve_flake_ref)"
+  echo "code-sandbox: building ${imageAttr} from $ref ..."
+  img="$(nix build "''${ref}#${imageAttr}" --no-link --print-out-paths)"
+  shorthash="$(basename "$img" | cut -c1-8)"
+  tag="${imageName}:$shorthash"
+  name="''${name:-${defaultName}}-$shorthash"
+
+  echo "code-sandbox: loading image as $tag ..."
+  nix run "''${ref}#${loaderApp}"
+  docker tag ${imageName}:latest "$tag"
+
+  exists=0
+  if openshell sandbox inspect "$name" >/dev/null 2>&1; then
+    exists=1
+  else
+    # No `openshell ... | grep -q`: the CLI panics (exit 101) on EPIPE —
+    # redirect to a file first (documented lesson in the openshell guide).
+    sandbox_list="$(mktemp)"
+    openshell sandbox list >"$sandbox_list" 2>/dev/null || true
+    if awk '{print $1}' "$sandbox_list" | grep -qx "$name"; then
+      exists=1
+    fi
+    rm -f "$sandbox_list"
+  fi
+  if [ "$exists" = 1 ]; then
+    if [ "$yes" != 1 ]; then
+      printf "code-sandbox: sandbox '%s' already exists (older image). Delete and recreate? [y/N] " "$name"
+      read -r ans
+      case "$ans" in
+        y | Y | yes | YES) ;;
+        *) echo "code-sandbox: aborted."; exit 1 ;;
+      esac
+    fi
+    openshell sandbox delete "$name"
+  fi
+
+  provider_args=()
+  for p in $(provider_list); do
+    provider_args+=(--provider "$p")
+  done
+
+  create_policy="$policy_path"
+  if [ "$include_workdir" = 1 ]; then
+    # The rendered policy ships include_workdir: false (clean, ephemeral
+    # sandboxes); the toggle flips that single line for this create.
+    create_policy="$(mktemp)"
+    sed 's/^\( *\)include_workdir: false$/\1include_workdir: true/' "$policy_path" >"$create_policy"
+  fi
+
+  echo "code-sandbox: creating sandbox '$name' (cpu=$cpu memory=$memory) ..."
+  openshell sandbox create --name "$name" --from "$tag" \
+    --policy "$create_policy" \
+    "''${provider_args[@]}" \
+    --cpu "$cpu" --memory "$memory" \
+    --detach -- bash -l
+
+  echo "code-sandbox: done. Attach with:  code-sandbox connect $name"
+
+  # Append the generated Remote-SSH config (the equivalent of
+  # `openshell sandbox ssh-config $name >> ~/.ssh/config.local`).
+  if [ "$ssh_config" = 1 ]; then
+    append_ssh_config "$name"
+  fi
+''

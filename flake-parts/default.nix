@@ -46,6 +46,14 @@ in {
     # Exportable lib for other flakes: inputs.home.lib.mkLib <root>
     lib = import ../lib {inherit lib;};
 
+    # Exportable flake-parts modules for other flakes (plain flakes and
+    # devenv projects pulling this repo as an input). The module is
+    # exported with home's mkCodeSandbox already bound, so consumers
+    # never reference inputs.home inside their config.
+    flakeModules.code-sandbox = import ../flakeModules/code-sandbox.nix {
+      inherit (customLib) mkCodeSandbox;
+    };
+
     # ------ NixOS Modules ------ #
     nixosModules.default = {...}: {
       # args passed to all modules
