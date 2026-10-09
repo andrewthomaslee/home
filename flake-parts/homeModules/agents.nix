@@ -64,6 +64,30 @@
       {src = inputs.skills-fluxcd;}
       # Terraform/OpenTofu skill — all (single skill).
       {src = inputs.skills-terraform;}
+      # Google official skills — all categories. google/skills nests
+      # skills/<category>/<name>, so one entry per category with
+      # skillsDir pointed at the category dir (leaf names unique across
+      # categories).
+      {
+        src = inputs.skills-google;
+        skillsDir = "skills/ads";
+      }
+      {
+        src = inputs.skills-google;
+        skillsDir = "skills/analytics";
+      }
+      {
+        src = inputs.skills-google;
+        skillsDir = "skills/cloud";
+      }
+      {
+        src = inputs.skills-google;
+        skillsDir = "skills/developers";
+      }
+      {
+        src = inputs.skills-google;
+        skillsDir = "skills/identity";
+      }
       # OpenShell (the existing openshell flake input's source tree):
       # two skill dirs — the in-repo skills/ and the contributor-facing
       # .agents/skills/.

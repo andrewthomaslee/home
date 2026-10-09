@@ -173,6 +173,10 @@
       url = "github:antonbabenko/terraform-skill";
       flake = false;
     };
+    skills-google = {
+      url = "github:google/skills";
+      flake = false;
+    };
   };
 
   outputs = inputs:

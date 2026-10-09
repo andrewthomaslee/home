@@ -99,6 +99,28 @@
         {src = inputs.skills-supabase;}
         {src = inputs.skills-fluxcd;}
         {src = inputs.skills-terraform;}
+        # Google official skills — all categories (nested
+        # skills/<category>/<name> layout, one entry per category).
+        {
+          src = inputs.skills-google;
+          skillsDir = "skills/ads";
+        }
+        {
+          src = inputs.skills-google;
+          skillsDir = "skills/analytics";
+        }
+        {
+          src = inputs.skills-google;
+          skillsDir = "skills/cloud";
+        }
+        {
+          src = inputs.skills-google;
+          skillsDir = "skills/developers";
+        }
+        {
+          src = inputs.skills-google;
+          skillsDir = "skills/identity";
+        }
         {src = inputs.openshell;}
         {
           src = inputs.openshell;
