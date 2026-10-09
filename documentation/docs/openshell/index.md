@@ -162,12 +162,18 @@ equivalent:
 openshell sandbox create --name code --from code-agent:latest \
   --policy openshell/policies/code-agent.yaml \
   --provider kimi-for-coding --provider claude-code --provider github-agent \
-  --cpu 4 --memory 8Gi --detach -- bash -l
+  --detach -- bash -l
 
 openshell sandbox connect code                    # attach; Ctrl-P Ctrl-Q detaches
 openshell sandbox exec -n code -- nix --version   # sibling process, sandbox keeps running
 openshell logs code --tail --source sandbox       # DENIED lines show what policy blocked
 ```
+
+(Sizing — vCPUs, memory, writable overlay disk — is driver-wide gateway
+config, not per-sandbox: the VM driver accepts but ignores `--cpu` and
+`--memory`, and there is no disk flag. Defaults live in
+`hostSpec.services.openshell.gateway.vm.*` of the openshell-gateway
+NixOS module: 4 vCPU / 8 GiB RAM / 16 GiB sparse overlay.)
 
 (For scripting against the CLI: `openshell ... | grep -q` panics the CLI
 on EPIPE — see §5; `code-sandbox` redirects to a file for this reason.

@@ -38,7 +38,8 @@ from this repo. Concepts and the gateway itself:
 
 ## 1. Smoke-test the VM driver
 
-Verified on ghost (kernel `6.12.76`, 2 vCPU / 2 GiB defaults):
+Verified on ghost (kernel `6.12.76`, 4 vCPU / 8 GiB defaults; sizing
+is driver-wide — see §2):
 
 ```bash
 openshell sandbox create --name smoketest --detach -- sleep infinity
@@ -131,12 +132,21 @@ registry pull is the fallback):
 nix run .#load-code-agent-image
 ```
 
+Sizing is **driver-wide, not per-sandbox**: the VM driver takes vCPUs,
+memory and the writable overlay disk size from the gateway config
+(`hostSpec.services.openshell.gateway.vm.{vcpus,memMiB,overlayDiskMiB}`
+in flake-parts/nixosModules/openshell-gateway.nix — 4 vCPU / 8 GiB / 16
+GiB sparse overlay by default). `openshell sandbox create --cpu/--memory`
+are accepted but ignored by the VM driver, and there is no disk flag;
+a size change applies to newly created sandboxes (existing overlays are
+kept as-is). Watch usage with `df -h /` inside the sandbox — /tmp and
+/dev/shm are tmpfs (RAM-backed) and do not use the overlay.
+
 Create:
 
 ```bash
 openshell sandbox create --name code --from code-agent:latest \
-  --policy openshell/policies/code-agent.yaml --cpu 4 --memory 8Gi \
-  --detach -- bash -l
+  --policy openshell/policies/code-agent.yaml --detach -- bash -l
 openshell sandbox connect code      # detach with Ctrl-P, then Ctrl-Q
 openshell sandbox exec -n code -- nix --version
 ```
@@ -147,7 +157,7 @@ Attach providers (kimi-for-coding, claude-code, github-agent) at create:
 openshell sandbox create --name code --from code-agent:latest \
   --policy openshell/policies/code-agent.yaml \
   --provider kimi-for-coding --provider claude-code --provider github-agent \
-  --cpu 4 --memory 8Gi --detach -- bash -l
+  --detach -- bash -l
 ```
 
 ## 3. AI coding agents in the sandbox

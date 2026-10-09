@@ -238,18 +238,37 @@ _: {
       vm = {
         vcpus = lib.mkOption {
           type = lib.types.ints.positive;
-          default = 2;
-          description = "vCPUs per sandbox microVM.";
+          default = 4;
+          description = ''
+            vCPUs per sandbox microVM. Driver-wide default: the VM driver
+            ignores per-sandbox CPU requests (`openshell sandbox create
+            --cpu` is accepted but has no effect), so this is the only knob.
+            GPU sandboxes use the driver's gpu_vcpus default (4) instead.
+          '';
         };
         memMiB = lib.mkOption {
           type = lib.types.ints.positive;
-          default = 2048;
-          description = "Memory per sandbox microVM, in MiB.";
+          default = 8192;
+          description = ''
+            Memory per sandbox microVM, in MiB. Driver-wide default: the VM
+            driver ignores per-sandbox memory requests (`--memory` is
+            accepted but has no effect), so this is the only knob. GPU
+            sandboxes use the driver's gpu_mem_mib default (8192) instead.
+          '';
         };
         overlayDiskMiB = lib.mkOption {
           type = lib.types.ints.positive;
-          default = 4096;
-          description = "Sparse writable overlay disk per sandbox, in MiB.";
+          default = 16384;
+          description = ''
+            Sparse writable overlay disk per sandbox, in MiB. This is the
+            sandbox's entire writable filesystem (everything outside tmpfs
+            mounts like /tmp and /dev/shm), so it caps /, /sandbox, /home
+            and /nix growth. Sparse: only consumed blocks use host disk.
+            Driver-wide default — there is no per-sandbox disk flag, and
+            sandboxes created before a size change keep their existing
+            overlay (new sizes apply to newly created sandboxes; the driver
+            caches one sparse template per size under state_dir).
+          '';
         };
         krunLogLevel = lib.mkOption {
           type = lib.types.ints.between 0 5;
