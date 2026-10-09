@@ -6,13 +6,11 @@
 
 <p align="center">
   <a href="https://github.com/andrewthomaslee/home/releases"><img src="https://img.shields.io/github/v/release/andrewthomaslee/home?include_prereleases&style=for-the-badge" alt="Latest Release"></a>
-  <a href="https://github.com/andrewthomaslee/home/actions/workflows/release.yml"><img src="https://img.shields.io/github/actions/workflow/status/andrewthomaslee/home/release.yml?style=for-the-badge" alt="CI"></a>
   <a href="https://github.com/andrewthomaslee/home/blob/main/LICENSE"><img src="https://img.shields.io/github/license/andrewthomaslee/home?style=for-the-badge&color=blue" alt="License"></a>
 </p>
 
 <p align="center">
   <a href="https://github.com/andrewthomaslee/home"><img src="https://img.shields.io/badge/github-repo-24292e?logo=github&style=for-the-badge" alt="GitHub Repo"></a>
-  <a href="https://flakehub.com/flake/andrewthomaslee/home"><img src="https://img.shields.io/endpoint?url=https://flakehub.com/f/andrewthomaslee/home/badge&style=for-the-badge" alt="FlakeHub"></a>
 </p>
 
 
@@ -29,7 +27,7 @@
 `K3s` • `Rancher` • `Cloudflare WARP`
 
 ### ❄️ **NixOS**
-`Determinate Systems` • `Clan.lol` • `flake-parts` • `dendritic` • `home-manager` • `Tailscale` • `OpenShell` • `Modded Minecraft Server` • `KDE` • `Wayland`
+`Clan.lol` • `flake-parts` • `dendritic` • `home-manager` • `Tailscale` • `OpenShell` • `Modded Minecraft Server` • `KDE` • `Wayland`
 
 </div>
 
@@ -69,12 +67,6 @@
         mkdocs.yml      # MkDocs configuration
         docs/           # Documentation source
 
-    .github/workflows/    # GitHub Actions workflows
-        ci.yml            # CI: nix flake check (lint gate) on push ( Run on push )
-        machines.yml      # Build Machines + Publish to FlakeHub ( Run on trigger )
-        release.yml       # Tagged release + Build Machines + Build Docs & devShells + Publish to FlakeHub ( Run on trigger )
-        oci.yml           # Publish OCI images & manifests (manual dispatch)
-
     .devcontainer/          # Devcontainer
 
     sops/                   # Encrypted Secrets
@@ -90,7 +82,6 @@ $ nix flake show
 ├───allSystems: unknown
 ├───apps
 │   └───x86_64-linux
-│       ├───apply-and-reboot: app: Apply latest NixOS configuration + delayed reboot to allow Terraform/SSH to exit cleanly
 │       ├───fetch-kubeconfig: app: no description
 │       ├───get-keys: app: no description
 │       ├───load-code-agent-image: app: no description
@@ -158,11 +149,6 @@ $ nix flake show
 │   └───default: Nixpkgs overlay
 ├───packages
 │   └───x86_64-linux
-│       ├───apply-and-reboot: package 'apply-and-reboot'
-│       ├───apply-dry-activate: package 'apply-dry-activate'
-│       ├───apply-now: package 'apply-now'
-│       ├───apply-test: package 'apply-test'
-│       ├───apply-to-boot: package 'apply-to-reboot'
 │       ├───artifacthub-mcp: package 'artifacthub-mcp-1.1.1'
 │       ├───code-agent-image: package 'docker-image-code-agent.tar.gz'
 │       ├───devShell: package 'devenv-shell'

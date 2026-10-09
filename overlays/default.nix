@@ -34,10 +34,4 @@
   kimi-code = inputs.llm-agents.packages.${final.stdenv.hostPlatform.system}.kimi-code;
   pi-coding-agent = inputs.llm-agents.packages.${final.stdenv.hostPlatform.system}.pi;
   claude-code = inputs.llm-agents.packages.${final.stdenv.hostPlatform.system}.claude-code;
-
-  apply-and-reboot = self.packages.${final.stdenv.hostPlatform.system}.apply-and-reboot;
-  apply-to-reboot = self.packages.${final.stdenv.hostPlatform.system}.apply-to-reboot;
-  apply-now = self.packages.${final.stdenv.hostPlatform.system}.apply-now;
-  apply-test = self.packages.${final.stdenv.hostPlatform.system}.apply-test;
-  apply-dry-activate = self.packages.${final.stdenv.hostPlatform.system}.apply-dry-activate;
 }

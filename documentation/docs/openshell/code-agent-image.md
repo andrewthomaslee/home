@@ -8,8 +8,12 @@ architecture and the lessons that shaped the design, see the
 ## What the image gives you
 
 - **Toolset on PATH** (`/bin`, `/usr/local/bin`, login shells): bash,
-  coreutils, git, gh, curl, jq, ripgrep, openssh, tmux, nix — plus the
-  Nix language tooling (`nixd`, `alejandra`, `statix`, `deadnix`).
+  coreutils, git, gh, curl, jq, yq, python3, ripgrep, fd, sd, openssh,
+  tmux, nix — plus the Nix language tooling (`nixd`, `alejandra`,
+  `statix`, `deadnix`), shell vetting (`shellcheck`, `shfmt`), archive
+  tools (`unzip`, `zstd`, `wget`), ELF inspection (`file`, `readelf`,
+  `objdump`, `ldd`), patching (`diff`, `patch`), k8s clients
+  (`kubectl`, `helm`), and `dig`/`rsync`.
 - **Three pre-wired AI agents** (no interactive login ever):
   - `pi` — Kimi for Coding subscription, key from the attached provider's
     `$KIMI_API_KEY`.
@@ -118,7 +122,9 @@ git push                                     # bot identity + token helper baked
 openshell logs code --tail --source sandbox  # DENIED lines = policy misses
 ```
 
-Agent egress is deny-by-default; the policy admits nix caches, GitHub
+Agent egress is deny-by-default; the policy admits nix caches, the rest
+of the nixos.org estate (read-only: releases/channels/tarballs/hydra),
+GitHub
 (read), `git.clan.lol` (read-write git transport), the kimi/claude API
 endpoints, and the VSCodium bootstrap fallback.
 

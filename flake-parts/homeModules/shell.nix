@@ -61,7 +61,6 @@
               then osConfig.networking.hostName
               else "default"
             }";
-            fh-apply = "fh apply nixos \"https://flakehub.com/f/andrewthomaslee/home/*\"";
             # nixos-rebuild tests
             nixos-current-system = "readlink -f /nix/var/nix/profiles/system && readlink -f /run/current-system";
             # misc

@@ -81,12 +81,6 @@
           fastfetch
           jq
           yq
-          fh
-          apply-and-reboot
-          apply-to-boot
-          apply-dry-activate
-          apply-now
-          apply-test
         ];
       };
     };

@@ -1,12 +1,8 @@
 {
-  inputs,
   lib,
   pkgs,
   ...
 }: {
-  imports = [
-    inputs.determinate.nixosModules.default
-  ];
   config = {
     # Universal hardware and firmware support for booting on arbitrary machines and USB
     hardware = {
@@ -61,7 +57,6 @@
       efibootmgr
       git
       gh
-      fh
       htop
       btrfs-progs
       dosfstools

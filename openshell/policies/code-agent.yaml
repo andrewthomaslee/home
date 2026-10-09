@@ -1,6 +1,7 @@
 # Sandbox policy for the code-agent image (general coding sandbox,
 # flake-parts/ociImages/code-agent.nix): nix runtime package adds via
-# substitution (cache.nixos.org, FlakeHub caches, clan-core's niks3
+# substitution (cache.nixos.org, other *.nixos.org infra such as
+# releases/channels/tarballs, FlakeHub caches, clan-core's niks3
 # cache cache.geninf.io/cache.clan.lol, any *.cachix.org cache), public
 # GitHub over HTTPS (git clone/fetch, curl downloads), read-write
 # git+HTTPS to the
@@ -50,6 +51,47 @@ network_policies:
           enforcement: enforce, access: read-only }
     binaries:
       - { path: /nix/store/*-nix-*/bin/nix }
+
+  # Other *.nixos.org infrastructure, read-only: source and channel
+  # tarballs (releases.nixos.org serves nixpkgs nixexprs.tar.xz — the
+  # exact fetch a tarball-pinned nixpkgs input like clan-core's makes),
+  # the channel redirector (channels.nixos.org), fixed-output fetch
+  # mirrors (tarballs.nixos.org), and Hydra build/cache reads
+  # (hydra.nixos.org). cache.nixos.org has its own nix_store entry
+  # above; this wildcard covers the rest of the nixos.org estate,
+  # including the apex domain.
+  nixos_org:
+    name: nixos_org
+    endpoints:
+      - { host: nixos.org, port: 443, protocol: rest,
+          enforcement: enforce, access: read-only }
+      - { host: "*.nixos.org", port: 443, protocol: rest,
+          enforcement: enforce, access: read-only }
+    binaries:
+      - { path: /nix/store/*-nix-*/bin/nix }
+      - { path: /nix/store/*-git-*/bin/git }
+      - { path: /nix/store/*-git-minimal-*/bin/git }
+      - { path: /nix/store/*-curl-*/bin/curl }
+
+  # Optional extra binary caches — deliberately OFF. Uncomment one when
+  # an agent actually builds that stack; find out via the DENIED lines
+  # in `openshell logs <name> --tail --source sandbox`. Until then these
+  # hosts stay unreachable on purpose.
+  # iog_cache:
+  #   name: iog_cache
+  #   endpoints:
+  #     - { host: cache.iog.io, port: 443, protocol: rest,
+  #         enforcement: enforce, access: read-only }
+  #   binaries:
+  #     - { path: /nix/store/*-nix-*/bin/nix }
+  #
+  # zw3rk_cache:
+  #   name: zw3rk_cache
+  #   endpoints:
+  #     - { host: cache.zw3rk.com, port: 443, protocol: rest,
+  #         enforcement: enforce, access: read-only }
+  #   binaries:
+  #     - { path: /nix/store/*-nix-*/bin/nix }
 
   # Cachix binary caches: one hostname per cache (<name>.cachix.org) —
   # the wildcard covers nix-community.cachix.org (nix-community

@@ -151,6 +151,8 @@
         curl
         cacert
         jq
+        yq
+        python3
         ripgrep
         openssh
         tmux
@@ -163,6 +165,30 @@
         alejandra
         statix
         deadnix
+        # General build/debug tooling: archives (unzip/zstd), scripted
+        # downloads (wget — many install scripts hardcode it), foreign
+        # ELF inspection (file/readelf/objdump/ldd — the patchelf/FHS
+        # fallback path), hand-applied patches (diff/patch), k8s clients
+        # (kubectl/helm — cluster API egress rides an attached provider
+        # or port-forward, so no policy host is bound here), agent
+        # ergonomics (fd/sd), shell vetting (shellcheck/shfmt), DNS
+        # digs for policy debugging (dnsutils), and rsync for
+        # backup/world-file work.
+        unzip
+        zstd
+        wget
+        file
+        binutils
+        diffutils
+        patch
+        kubectl
+        kubernetes-helm
+        fd
+        sd
+        shellcheck
+        shfmt
+        dnsutils
+        rsync
         # AI coding agents (all from the llm-agents flake input, see
         # overlays/default.nix): pi runs on bun, kimi-code and
         # claude-code are bundled node/bun apps — closures carry their
@@ -209,6 +235,8 @@
       ln -s ${pkgs.git}/bin/git                     $out/usr/local/bin/git
       ln -s ${pkgs.gh}/bin/gh                       $out/usr/local/bin/gh
       ln -s ${pkgs.jq}/bin/jq                       $out/usr/local/bin/jq
+      ln -s ${pkgs.yq}/bin/yq                       $out/usr/local/bin/yq
+      ln -s ${pkgs.python3}/bin/python3             $out/usr/local/bin/python3
       ln -s ${pkgs.ripgrep}/bin/rg                  $out/usr/local/bin/rg
       ln -s ${pkgs.tmux}/bin/tmux                   $out/usr/local/bin/tmux
       ln -s ${pkgs.less}/bin/less                   $out/usr/local/bin/less
@@ -221,6 +249,23 @@
       ln -s ${pkgs.alejandra}/bin/alejandra         $out/usr/local/bin/alejandra
       ln -s ${pkgs.statix}/bin/statix               $out/usr/local/bin/statix
       ln -s ${pkgs.deadnix}/bin/deadnix             $out/usr/local/bin/deadnix
+      ln -s ${pkgs.unzip}/bin/unzip                 $out/usr/local/bin/unzip
+      ln -s ${pkgs.zstd}/bin/zstd                   $out/usr/local/bin/zstd
+      ln -s ${pkgs.wget}/bin/wget                   $out/usr/local/bin/wget
+      ln -s ${pkgs.file}/bin/file                   $out/usr/local/bin/file
+      ln -s ${pkgs.binutils}/bin/readelf            $out/usr/local/bin/readelf
+      ln -s ${pkgs.binutils}/bin/objdump            $out/usr/local/bin/objdump
+      ln -s ${pkgs.glibc.bin}/bin/ldd               $out/usr/local/bin/ldd
+      ln -s ${pkgs.diffutils}/bin/diff              $out/usr/local/bin/diff
+      ln -s ${pkgs.patch}/bin/patch                 $out/usr/local/bin/patch
+      ln -s ${pkgs.kubectl}/bin/kubectl             $out/usr/local/bin/kubectl
+      ln -s ${pkgs.kubernetes-helm}/bin/helm        $out/usr/local/bin/helm
+      ln -s ${pkgs.fd}/bin/fd                       $out/usr/local/bin/fd
+      ln -s ${pkgs.sd}/bin/sd                       $out/usr/local/bin/sd
+      ln -s ${pkgs.shellcheck}/bin/shellcheck       $out/usr/local/bin/shellcheck
+      ln -s ${pkgs.shfmt}/bin/shfmt                 $out/usr/local/bin/shfmt
+      ln -s ${pkgs.dnsutils}/bin/dig                $out/usr/local/bin/dig
+      ln -s ${pkgs.rsync}/bin/rsync                 $out/usr/local/bin/rsync
 
       # Login shells (interactive SSH + VSCodium terminal) read
       # /etc/profile: put the layer on PATH there too.

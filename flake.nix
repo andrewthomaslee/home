@@ -1,5 +1,5 @@
 {
-  description = "Dendritic Determinate Flake";
+  description = "Dendritic Nix Flake";
 
   nixConfig = {
     extra-substituters = [
@@ -25,11 +25,7 @@
   };
 
   inputs = {
-    # Determinate Nix
-    # https://docs.determinate.systems/guides/advanced-installation/
-    determinate.url = "https://flakehub.com/f/DeterminateSystems/determinate/*";
-
-    # Nixpkgs
+    # Nixpkgs — owned by clan-core (single source of truth for the pin)
     nixpkgs.follows = "clan-core/nixpkgs";
     nixpkgs-unstable.url = "github:NixOS/nixpkgs/nixos-unstable";
 
@@ -63,7 +59,6 @@
     # Utility Flakes
     flake-parts.follows = "clan-core/flake-parts";
     import-tree.url = "github:denful/import-tree";
-    flake-schemas.url = "https://flakehub.com/f/DeterminateSystems/flake-schemas/0";
 
     # ------ Packages ------ #
     # Zen Browser

@@ -388,5 +388,5 @@ Narrow additive grants: `openshell policy update code
 bash/fish/zsh completions generated from the installed CLI at package
 build time (`home.packages` → `openshell-completions`). Requires the
 shell's completion loader — `programs.bash.enableCompletion` is already
-enabled for netsa. Apply with the normal home/nixos deploy (`apply-now
-home` or `sudo nixos-rebuild switch`).
+enabled for netsa. Apply with the normal home/nixos deploy
+(`sudo nixos-rebuild switch --flake /home/netsa/home`).
