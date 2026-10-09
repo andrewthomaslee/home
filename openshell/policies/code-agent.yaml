@@ -169,6 +169,20 @@ network_policies:
         protocol: rest
         enforcement: enforce
         access: read-only
+      # Raw file and gist serving hosts: agents curl upstream docs,
+      # install scripts and single files from
+      # raw.githubusercontent.com/<org>/<repo>/<ref>/<path>; gists ride
+      # gist.githubusercontent.com. Same read-only posture as codeload.
+      - host: raw.githubusercontent.com
+        port: 443
+        protocol: rest
+        enforcement: enforce
+        access: read-only
+      - host: gist.githubusercontent.com
+        port: 443
+        protocol: rest
+        enforcement: enforce
+        access: read-only
     binaries:
       - { path: /nix/store/*-nix-*/bin/nix }
       - { path: /nix/store/*-git-*/bin/git }

@@ -31,6 +31,12 @@
     headroomEnabled = config.homeSpec.programs.headroom.enable or false;
     headroomProxyUrl = "http://${headroomCfg.proxy.host}:${toString headroomCfg.proxy.port}/v1";
     inherit (customLib) relativeToRoot;
+    mcpCfg = cfg.mcp;
+    # Effective headroom MCP switch: the package, proxy URL and systemd
+    # service all come from homeSpec.programs.headroom — this only
+    # gates whether the agents get the MCP server (and claude the
+    # provider reroute).
+    headroomMcpEnabled = mcpCfg.headroom.enable && headroomEnabled;
 
     # ---- Shared skills tree (homeSpec.agents.skills) ---- #
     # inputs.agents.lib.mkSkills merges the repo's skills/ tree with
@@ -104,14 +110,14 @@
       externalSkills = externalSkillSources ++ cfg.skills.extraSources;
     };
 
-    # ---- opencode bindings (only meaningful when opencode is on) ---- #
+    # ---- Shared MCP bindings (homeSpec.agents.mcp.*) ---- #
     # PAT file used by the wrapper: explicit githubPatFile override or the
     # canonical sops-nix deployment path of the shared "github-mcp" clan var
     # (declared by nixosModules/github-mcp for pat-mode users).
     githubMcpPatFile =
-      if oc.mcp.github.patFile == null
+      if cfg.mcp.github.patFile == null
       then "/run/secrets/vars/shared/github-mcp/pat"
-      else oc.mcp.github.patFile;
+      else cfg.mcp.github.patFile;
     # Wrapper for the PAT auth method: exports GITHUB_PERSONAL_ACCESS_TOKEN
     # from the PAT file before exec'ing the server. The github-mcp-server
     # exits immediately when that env var is unset, so a readable file is a
@@ -276,6 +282,44 @@
       ([""]
         ++ lib.filter (line: line != "")
         (lib.splitString "\n" oc.machineContext.extraText));
+    # The same text rendered once, written to every enabled agent's
+    # user-level instructions spot (see the config blocks below).
+    machineContextText = lib.concatStringsSep "\n" machineContextLines + "\n";
+
+    # Local stdio MCP servers shared by all four agents, rendered from
+    # homeSpec.agents.mcp.* — one entry per enabled server, command as
+    # an exe+args list; each consumer formats it for its own config
+    # dialect (opencode {type=local; command=[...];} vs the
+    # claude-compatible {command; args;} JSON).
+    sharedMcpCommands =
+      lib.optionalAttrs cfg.mcp.github.enable {
+        github.command = ["${githubMcpWrapper}/bin/github-mcp-server-opencode"];
+      }
+      // lib.optionalAttrs headroomMcpEnabled {
+        headroom.command = [(lib.getExe headroomCfg.package) "mcp" "serve"];
+      }
+      // lib.optionalAttrs cfg.mcp.nixos.enable {
+        nixos.command = ["${lib.getExe inputs.mcp-nixos.packages.${pkgs.stdenv.hostPlatform.system}.mcp-nixos}"];
+      }
+      // lib.optionalAttrs cfg.mcp.kubernetes.enable {
+        kubernetes.command =
+          ["${lib.getExe pkgs.kubernetes-mcp-server}"]
+          ++ lib.optional cfg.mcp.kubernetes.readOnly "--read-only";
+      }
+      // lib.optionalAttrs cfg.mcp.artifacthub.enable {
+        artifacthub.command = ["${lib.getExe pkgs.artifacthub-mcp}"];
+      };
+    # claude-compatible mcpServers JSON, written to pi
+    # (~/.pi/agent/mcp.json), kimi-code (~/.kimi-code/mcp.json) and
+    # claude-code (~/.claude/settings.json).
+    sharedMcpJson = builtins.toJSON {
+      mcpServers =
+        lib.mapAttrs (_: v: {
+          command = lib.head v.command;
+          args = lib.tail v.command;
+        })
+        sharedMcpCommands;
+    };
   in {
     options.homeSpec.agents = {
       # ---- Shared skills: homeSpec.agents.skills.* ---- #
@@ -399,76 +443,116 @@
             '';
           };
         };
-        # ---- MCP servers: homeSpec.agents.opencode.mcp.<name>.enable ---- #
-        mcp = {
-          # mcp-nixos: NixOS / Home Manager / nix-darwin package & option
-          # search (local stdio, flake package).
-          nix.enable = lib.mkOption {
+      };
+
+      # ---- Shared MCP servers: homeSpec.agents.mcp.<name>.enable ---- #
+      # ONE namespace, FOUR consumers: every server enabled here is
+      # written into each enabled agent's MCP config — opencode
+      # (settings.mcp.servers), pi (~/.pi/agent/mcp.json), kimi-code
+      # (~/.kimi-code/mcp.json) and claude-code (~/.claude/settings.json
+      # mcpServers — ~/.claude.json itself is claude's mutable state
+      # file and must stay writable). pi/kimi/claude speak the
+      # claude-compatible mcpServers JSON shape ({"mcpServers": {name:
+      # {command, args} / {url}}}); opencode gets its native
+      # {type = local|remote} rendering of the same set. The github
+      # "oauth" method stays opencode-only — file-configured agents
+      # can't run a browser flow, so they always get the local PAT
+      # wrapper.
+      mcp = {
+        # mcp-nixos: NixOS / Home Manager / nix-darwin package & option
+        # search (local stdio, flake package).
+        nixos.enable = lib.mkOption {
+          type = lib.types.bool;
+          default = true;
+          description = "Enable the mcp-nixos MCP server in every enabled agent.";
+        };
+        # GitHub: auth method selected by `auth`; the two methods are
+        # mutually exclusive (enum + assertion below). pat-mode derives
+        # the clan vars generator via nixosModules/github-mcp.
+        github = {
+          enable = lib.mkOption {
             type = lib.types.bool;
             default = true;
-            description = "Enable the mcp-nixos MCP server in opencode settings.";
+            description = "Enable the GitHub MCP server in every enabled agent.";
           };
-          # GitHub: auth method selected by `auth`; the two methods are
-          # mutually exclusive (enum + assertion below). pat-mode derives the
-          # clan vars generator via nixosModules/github-mcp.
-          github = {
-            enable = lib.mkOption {
-              type = lib.types.bool;
-              default = true;
-              description = "Enable the GitHub MCP server in opencode settings.";
-            };
-            auth = lib.mkOption {
-              type = lib.types.enum ["oauth" "pat"];
-              default = "oauth";
-              description = ''
-                GitHub MCP auth method (mutually exclusive):
-                - "oauth": remote hosted server (https://api.githubcopilot.com/mcp/);
-                  opencode runs the browser OAuth flow on first use. No secret.
-                - "pat": local stdio server reading the PAT from `patFile`
-                  (usually the clan var at /run/secrets/vars/shared/github-mcp/pat).
-              '';
-            };
-            patFile = lib.mkOption {
-              type = with lib.types;
-                nullOr str;
-              default = null;
-              description = ''
-                Path to a file containing the GitHub Personal Access Token.
-                Only used with mcp.github.auth = "pat"; must be null for "oauth".
-              '';
-            };
+          auth = lib.mkOption {
+            type = lib.types.enum ["oauth" "pat"];
+            default = "oauth";
+            description = ''
+              GitHub MCP auth method for opencode (mutually exclusive):
+              - "oauth": remote hosted server (https://api.githubcopilot.com/mcp/);
+                opencode runs the browser OAuth flow on first use. No secret.
+                pi/kimi/claude always use the local PAT wrapper regardless —
+                they cannot run the browser flow from a file config.
+              - "pat": local stdio server reading the PAT from `patFile`
+                (usually the clan var at /run/secrets/vars/shared/github-mcp/pat).
+            '';
           };
-          # ArtifactHub MCP server (local stdio, hermetic nix build; off by
-          # default, enabled via the netsa tag profile). Helm-chart tools
-          # against artifacthub.io: chart info, default values, templates.
-          artifacthub.enable = lib.mkOption {
+          patFile = lib.mkOption {
+            type = with lib.types;
+              nullOr str;
+            default = null;
+            description = ''
+              Path to a file containing the GitHub Personal Access Token.
+              Only used with mcp.github.auth = "pat" (and always by
+              pi/kimi/claude); must be null for "oauth".
+            '';
+          };
+        };
+        # headroom: context-compression MCP (compress/retrieve/stats)
+        # for every agent. Effective only when
+        # homeSpec.programs.headroom.enable (the package, proxy URL and
+        # systemd service all come from that module).
+        headroom = {
+          enable = lib.mkOption {
+            type = lib.types.bool;
+            default = true;
+            description = "Enable the headroom MCP server in every enabled agent (no-op unless homeSpec.programs.headroom.enable).";
+          };
+          routeProviders = lib.mkOption {
+            type = lib.types.bool;
+            default = true;
+            description = ''
+              Route claude-code provider traffic through the headroom proxy
+              (the documented ANTHROPIC_BASE_URL flow; the proxy's systemd user
+              service holds Restart=always). pi/kimi are NOT rerouted: the
+              proxy speaks the anthropic/openai wires, not the kimi wire —
+              they use headroom through the MCP tools instead.
+            '';
+          };
+        };
+        # ArtifactHub MCP server (local stdio, hermetic nix build; off by
+        # default, enabled via the netsa tag profile). Helm-chart tools
+        # against artifacthub.io: chart info, default values, templates.
+        artifacthub.enable = lib.mkOption {
+          type = lib.types.bool;
+          default = false;
+          description = "Enable the ArtifactHub MCP server (Helm chart info/values/templates from artifacthub.io) in every enabled agent.";
+        };
+        # Kubernetes MCP server (containers/kubernetes-mcp-server, hermetic
+        # Go build; stdio is the default transport). Reads the user's
+        # kubeconfig.
+        kubernetes = {
+          enable = lib.mkOption {
             type = lib.types.bool;
             default = false;
-            description = "Enable the ArtifactHub MCP server (Helm chart info/values/templates from artifacthub.io) in opencode settings.";
+            description = "Enable the Kubernetes MCP server in every enabled agent. Off by default: it exits at startup without a kubeconfig (~/.kube/config); enable per profile/machine once cluster credentials exist.";
           };
-          # Kubernetes MCP server (containers/kubernetes-mcp-server, hermetic
-          # Go build; stdio is the default transport). Reads the user's
-          # kubeconfig.
-          kubernetes = {
-            enable = lib.mkOption {
-              type = lib.types.bool;
-              default = false;
-              description = "Enable the Kubernetes MCP server in opencode settings. Off by default: it exits at startup without a kubeconfig (~/.kube/config); enable per profile/machine once cluster credentials exist.";
-            };
-            readOnly = lib.mkOption {
-              type = lib.types.bool;
-              default = false;
-              description = "Run the Kubernetes MCP server in read-only mode (--read-only: only readOnlyHint tools exposed).";
-            };
+          readOnly = lib.mkOption {
+            type = lib.types.bool;
+            default = false;
+            description = "Run the Kubernetes MCP server in read-only mode (--read-only: only readOnlyHint tools exposed).";
           };
+        };
 
-          # (https://docs.mcp.varlock.dev/mcp, public, no auth). Off by
-          # default, enabled via the netsa tag profile.
-          varlock-docs.enable = lib.mkOption {
-            type = lib.types.bool;
-            default = false;
-            description = "Enable the Varlock docs MCP server (search varlock.dev documentation) in opencode settings.";
-          };
+        # (https://docs.mcp.varlock.dev/mcp, public, no auth). Off by
+        # default, enabled via the netsa tag profile. opencode-only: the
+        # file-configured agents get only local servers (remote url MCP
+        # support varies).
+        varlock-docs.enable = lib.mkOption {
+          type = lib.types.bool;
+          default = false;
+          description = "Enable the Varlock docs MCP server (search varlock.dev documentation) in opencode.";
         };
       };
     };
@@ -477,27 +561,71 @@
       # ---- pi ---- #
       (lib.mkIf cfg.pi.enabled {
         home.packages = [cfg.pi.package];
-        # Agent Skills standard location (~/.agents/skills), scanned by pi.
-        home.file = lib.mkIf cfg.skills.enabled {
-          ".agents/skills".source = skillsDir;
-        };
+        home.file =
+          lib.mkIf cfg.skills.enabled {
+            ".agents/skills".source = skillsDir;
+          }
+          # pi user instructions: ~/.pi/agent/AGENTS.md is applied
+          # across working directories (pi configuration docs) — the
+          # same machine context opencode gets via its global
+          # AGENTS.md. Gated on the opencode machineContext switch +
+          # a resolvable hostname, same as the opencode write.
+          // lib.optionalAttrs (oc.machineContext.enable && hostName != "") {
+            ".pi/agent/AGENTS.md".text = machineContextText;
+          }
+          # pi MCP servers: ~/.pi/agent/mcp.json (available in every
+          # project), same shared set as the other agents.
+          // lib.optionalAttrs (sharedMcpCommands != {}) {
+            ".pi/agent/mcp.json".text = sharedMcpJson;
+          };
       })
 
       # ---- kimi-code ---- #
       (lib.mkIf cfg.kimi.enabled {
         home.packages = [cfg.kimi.package];
-        # $KIMI_CODE_HOME/skills — the directory kimi-code scans.
-        home.file = lib.mkIf cfg.skills.enabled {
-          ".kimi-code/skills".source = skillsDir;
-        };
+        home.file =
+          lib.mkIf cfg.skills.enabled {
+            ".kimi-code/skills".source = skillsDir;
+          }
+          # kimi-code user-level AGENTS.md ($KIMI_CODE_HOME/AGENTS.md),
+          # same machine context as the other agents.
+          // lib.optionalAttrs (oc.machineContext.enable && hostName != "") {
+            ".kimi-code/AGENTS.md".text = machineContextText;
+          }
+          # kimi MCP servers: ~/.kimi-code/mcp.json, same shared set.
+          // lib.optionalAttrs (sharedMcpCommands != {}) {
+            ".kimi-code/mcp.json".text = sharedMcpJson;
+          };
       })
 
       # ---- claude-code ---- #
       (lib.mkIf cfg.claude.enabled {
-        home.packages = [cfg.claude.package];
-        # ~/.claude/skills — claude-code's personal skills dir.
-        home.file = lib.mkIf cfg.skills.enabled {
-          ".claude/skills".source = skillsDir;
+        home = {
+          packages = [cfg.claude.package];
+          file =
+            lib.mkIf cfg.skills.enabled {
+              ".claude/skills".source = skillsDir;
+            }
+            # claude-code user-level memory (~/.claude/CLAUDE.md), loaded
+            # into every session — same machine context as the other
+            # agents.
+            // lib.optionalAttrs (oc.machineContext.enable && hostName != "") {
+              ".claude/CLAUDE.md".text = machineContextText;
+            }
+            # claude MCP servers: ~/.claude/settings.json mcpServers (NOT
+            # ~/.claude.json — that is claude's mutable state file and
+            # must stay writable), same shared set.
+            // lib.optionalAttrs (sharedMcpCommands != {}) {
+              ".claude/settings.json".text = sharedMcpJson;
+            };
+          # Route claude-code provider traffic through the headroom proxy
+          # (documented ANTHROPIC_BASE_URL flow; the proxy systemd user
+          # service holds Restart=always). pi/kimi are NOT rerouted: the
+          # proxy speaks anthropic/openai wires, not the kimi wire — they
+          # use headroom through the MCP tools instead.
+          sessionVariables = lib.mkIf (headroomMcpEnabled && cfg.mcp.headroom.routeProviders) {
+            ANTHROPIC_BASE_URL = headroomProxyUrl;
+          };
         };
       })
 
@@ -513,7 +641,7 @@
           # services/www/src/docs/content/instructions.mdx at the pinned
           # opencode rev), so file instructions ride AGENTS.md.
           "opencode/AGENTS.md" = lib.mkIf (oc.machineContext.enable && hostName != "") {
-            text = lib.concatStringsSep "\n" machineContextLines + "\n";
+            text = machineContextText;
           };
 
           # Skills: repo-local custom skills + external skill sources, merged
@@ -527,8 +655,8 @@
 
         assertions = [
           {
-            assertion = oc.mcp.github.auth == "oauth" -> oc.mcp.github.patFile == null;
-            message = "opencode: mcp.github.patFile is only valid with mcp.github.auth = \"pat\" — the oauth and pat methods are mutually exclusive.";
+            assertion = cfg.mcp.github.auth == "oauth" -> cfg.mcp.github.patFile == null;
+            message = "agents.mcp: github.patFile is only valid with github.auth = \"pat\" — the oauth and pat methods are mutually exclusive.";
           }
         ];
         programs.opencode = {
@@ -582,64 +710,37 @@
                 }
               ];
             }
-            (lib.mkIf oc.mcp.nix.enable {
-              mcp.servers.nixos = {
-                type = "local";
-                command = ["${lib.getExe inputs.mcp-nixos.packages.${pkgs.stdenv.hostPlatform.system}.mcp-nixos}"];
-              };
-            })
-
-            (lib.mkIf oc.mcp.github.enable {
-              mcp.servers.github =
-                if oc.mcp.github.auth == "pat"
-                then {
-                  # Local stdio server with PAT auth: the wrapper reads the
-                  # clan-var-deployed PAT file and exports
-                  # GITHUB_PERSONAL_ACCESS_TOKEN at server start.
+            # Shared local MCP servers (homeSpec.agents.mcp.*): opencode's
+            # native {type = local;} rendering of the same set the
+            # file-configured agents get (pi/kimi mcp.json, claude
+            # settings.json).
+            (lib.mkIf (sharedMcpCommands != {}) {
+              mcp.servers =
+                lib.mapAttrs (_: v: {
                   type = "local";
-                  command = ["${githubMcpWrapper}/bin/github-mcp-server-opencode"];
-                }
-                else {
-                  # Remote hosted server: no local install, no PAT file.
-                  # opencode handles the browser OAuth flow automatically on
-                  # first tool use.
-                  type = "remote";
-                  url = "https://api.githubcopilot.com/mcp/";
-                };
+                  inherit (v) command;
+                })
+                sharedMcpCommands;
             })
-            (lib.mkIf oc.mcp.artifacthub.enable {
-              # ArtifactHub, local stdio server — hermetic nix build from the
-              # pinned v1.1.1 source (packages/artifacthub-mcp.nix); no
-              # docker/npx runtime downloads.
-              mcp.servers.artifacthub = {
-                type = "local";
-                command = ["${lib.getExe pkgs.artifacthub-mcp}"];
+            # GitHub oauth (opencode-only): remote hosted server,
+            # browser flow on first use. Overrides the shared local PAT
+            # wrapper's "github" key from the mkIf above (later mkMerge
+            # wins). pi/kimi/claude always keep the local PAT wrapper.
+            (lib.mkIf (cfg.mcp.github.enable && cfg.mcp.github.auth == "oauth") {
+              mcp.servers.github = {
+                type = "remote";
+                url = "https://api.githubcopilot.com/mcp/";
               };
             })
-            (lib.mkIf oc.mcp.kubernetes.enable {
-              # Kubernetes MCP server (containers/kubernetes-mcp-server):
-              # hermetic Go build, stdio is the default transport (no
-              # --stdio flag). Uses the user's kubeconfig; optional
-              # --read-only restricts to readOnlyHint tools.
-              mcp.servers.kubernetes = {
-                type = "local";
-                command =
-                  ["${lib.getExe pkgs.kubernetes-mcp-server}"]
-                  ++ lib.optional oc.mcp.kubernetes.readOnly "--read-only";
-              };
-            })
-            (lib.mkIf headroomEnabled {
-              mcp.servers.headroom = {
-                type = "local";
-                command = ["${lib.getExe headroomCfg.package}" "mcp" "serve"];
-              };
-              # Headroom proxy: reroute provider traffic through the proxy.
-              # NOTE: the V1 transport plugin (headroom's entry.opencode.js)
-              # is gone — its default export is a V1 plugin function and V2
-              # only loads V2 plugins ({ id, setup }); headroom compresses
-              # via these providers.*.settings.baseURL overrides (native V2
-              # shape; V1 was provider.<p>.options.baseURL) plus its MCP
-              # compress/retrieve tools.
+            # Headroom proxy reroute for opencode's own provider traffic
+            # (the headroom MCP server itself rides the shared set above).
+            # NOTE: the V1 transport plugin (headroom's entry.opencode.js)
+            # is gone — its default export is a V1 plugin function and V2
+            # only loads V2 plugins ({ id, setup }); headroom compresses
+            # via these providers.*.settings.baseURL overrides (native V2
+            # shape; V1 was provider.<p>.options.baseURL) plus its MCP
+            # compress/retrieve tools.
+            (lib.mkIf headroomMcpEnabled {
               providers = {
                 deepseek.settings.baseURL = headroomProxyUrl;
                 anthropic.settings.baseURL = headroomProxyUrl;
@@ -648,7 +749,8 @@
             })
             # Varlock docs: hosted docs-search server
             # (https://docs.mcp.varlock.dev/mcp) — public, no auth.
-            (lib.mkIf oc.mcp.varlock-docs.enable {
+            # opencode-only (remote url MCP is not in the shared set).
+            (lib.mkIf cfg.mcp.varlock-docs.enable {
               mcp.servers.varlock-docs = {
                 type = "remote";
                 url = "https://docs.mcp.varlock.dev/mcp";

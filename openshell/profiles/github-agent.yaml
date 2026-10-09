@@ -69,6 +69,12 @@ binaries:
   - /nix/store/*-git-*/bin/git
   - /nix/store/*-gh-*/bin/gh
   - /nix/store/*-gh-*/bin/.gh-wrapped
+  # github-mcp-server: stdio MCP server baked into the code-agent image
+  # (agents drive it via their mcp.json). Same /proc/pid/exe matching —
+  # the server itself makes the api.github.com calls with the injected
+  # handle as its bearer token, so it must be pinned here for the
+  # credential substitution to fire.
+  - /nix/store/*-github-mcp-server-*/bin/github-mcp-server
 inference_capable: false
 discovery:
   credentials:

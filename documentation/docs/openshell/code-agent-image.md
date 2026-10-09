@@ -14,7 +14,17 @@ architecture and the lessons that shaped the design, see the
   tools (`unzip`, `zstd`, `wget`), ELF inspection (`file`, `readelf`,
   `objdump`, `ldd`), patching (`diff`, `patch`), k8s clients
   (`kubectl`, `helm`), and `dig`/`rsync`.
-- **Three pre-wired AI agents** (no interactive login ever):
+- **Three pre-wired AI agents** (no interactive login ever), each with
+  the sandbox environment briefing baked into its user-level system
+  prompt / memory (pi `~/.pi/agent/APPEND_SYSTEM.md`, kimi
+  `~/.kimi-code/SYSTEM.md`, claude `~/.claude/CLAUDE.md` — toolset,
+  admitted egress, skills location, identity and secrets posture) and a
+  shared MCP trio: **headroom** (context compression; wrapper maps the
+  injected `$ANTHROPIC_AUTH_TOKEN` onto `ANTHROPIC_API_KEY`), **nixos**
+  (option search) and **github** (works only with the `github-agent`
+  provider attached — the profile admits read-write api.github.com and
+  substitutes the credential at egress; the baked wrapper maps the
+  `$GITHUB_TOKEN` handle onto `GITHUB_PERSONAL_ACCESS_TOKEN`):
   - `pi` — Kimi for Coding subscription, key from the attached provider's
     `$KIMI_API_KEY`.
   - `kimi` — same subscription via a baked `~/.kimi-code/config.toml`
@@ -124,8 +134,8 @@ openshell logs code --tail --source sandbox  # DENIED lines = policy misses
 
 Agent egress is deny-by-default; the policy admits nix caches, the rest
 of the nixos.org estate (read-only: releases/channels/tarballs/hydra),
-GitHub
-(read), `git.clan.lol` (read-write git transport), the kimi/claude API
+GitHub (read, incl. `raw`/`gist.githubusercontent.com` and the asset
+CDNs), `git.clan.lol` (read-write git transport), the kimi/claude API
 endpoints, and the VSCodium bootstrap fallback.
 
 ## Refreshing the image / sandbox
