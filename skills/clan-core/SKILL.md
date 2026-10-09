@@ -289,12 +289,17 @@ inventory.instances = {
 
 ## clanServices
 
-clanServices are clan's service model (the successor to `clanModules` — see
-the migration guide). A service is a module with `_class = "clan.service"`,
-declaring a manifest, roles, and the NixOS/darwin config each role applies:
+clanServices are clan's service model (the successor to `clanModules` —
+see the migration guide). A service is a module with `_class =
+"clan.service"`, declaring a manifest, roles, and the NixOS/darwin config
+each role applies. **Authoring or editing a service (argument contracts,
+manifest fields, multi-instance namespacing, exports writes, vars inside
+services, testing, upstreaming): load the `clanservices` skill** — this
+section is the operator view: what services are, how they get registered,
+and how to consume them from the inventory.
 
 ```nix
-# clanServices/machine-type/default.nix
+# clanServices/machine-type/default.nix (shape only — the clanservices skill has the full contract)
 {
   _class = "clan.service";
   manifest = {
@@ -335,41 +340,23 @@ declaring a manifest, roles, and the NixOS/darwin config each role applies:
 }
 ```
 
-Argument contracts (from `lib/inventory/distributed-service/` and the
-authoring guide):
+Key facts for using services (authoring depth lives in the `clanservices`
+skill):
 
-- `roles.<role>.interface` — machine-agnostic option declarations for the
-  role's settings (this is what `roles.<role>.settings` in the inventory
-  targets).
-- `roles.<role>.perInstance` args: `instanceName`, `settings` (role-wide
-  merged with per-machine), `machine` (`name`, `roles`, ...), `roles` (all
-  roles with `machines` and their per-machine `settings`), `meta`
-  (`meta.name`, `meta.domain`), plus `mkExports`/`exports` and
-  `extendSettings` when exports or machine-local settings are needed.
-- `perMachine` args: `instances` (all instances of this service with roles
-  and machines), `machine`, `meta`.
-- The result's `nixosModule` (and optionally `darwinModule`) is a plain
-  NixOS/nix-darwin module, so normal rules apply: import your repo's modules
-  (`self.nixosModules.default`), flip the repo's option namespace
-  (`hostSpec.*`), and declare `clan.core.vars.generators` when the service
-  needs secrets.
-- `perInstance.extendSettings {...}` *(experimental)* — create a
-  machine-local settings value inside `nixosModule` (e.g. default a setting
-  from that machine's `config`). The extension is local only: other machines
-  reading `roles.<role>.settings` do **not** see it (exposing it would be a
-  performance footgun).
-- Registration: the service lives at a repo path and is registered in
-  `flake.clan.modules` under a scoped `@org/name` name (home repo
-  convention, mirroring community flakes). Inventory instances then set
-  `module.name = "@andrewthomaslee/machine-type"` and `module.input =
-  "self"`. Passing extra deps (`self`, `pkgs`, ...) into a service module:
-  `lib.modules.importApply ./service.nix {inherit self;}` (simpler) or a
-  wrapper module defining an option with `default = self` (overridable
-  downstream).
-- Requirements for inventory-discovered modules (the `inventory.modules`
-  docs path): a `README.md` with a `description` frontmatter, `features = [
-  "inventory" ]`, and a `roles/` subfolder — that is the legacy
-  clanModule-style discovery; `clan.modules` registration is the norm now.
+- **Roles** — each service defines its roles (`default` for uniform
+  services, named roles like `client`/`server` for asymmetric ones);
+  instances assign machines to roles by tag or name, with role-wide and
+  per-machine settings that merge on top.
+- **`roles.<role>.interface`** — the machine-agnostic option declarations
+  that `roles.<role>.settings` in the inventory targets. `perInstance` runs
+  per (instance × machine of that role) and returns the `nixosModule` /
+  `darwinModule` (25.11+) applied to that machine; inside it, normal
+  NixOS-module rules apply (import repo modules, declare vars generators).
+- **Registration** — the service lives at a repo path and is registered in
+  `flake.clan.modules` under a scoped name: home repo convention
+  `@andrewthomaslee/<name>` (each `clanServices/<name>/flake-module.nix`),
+  upstream core services bare names, community unprefixed. Inventory
+  instances then set `module.name` / `module.input = "self"`.
 
 `clanServices/` sits at the repo root, **not** under `flake-parts/` —
 import-tree loads `flake-parts/*.nix` as flake-parts modules, while clan
@@ -449,55 +436,17 @@ select them during evaluation instead of hardcoding addresses in settings.
 
 ### Publishing
 
-A service declares which export interfaces it may emit, then publishes
-values with `mkExports` (available in the args of `perInstance` and
-`perMachine`):
-
-```nix
-# clanServices/lan/default.nix (condensed, from andrewthomaslee/borg)
-{
-  _class = "clan.service";
-  manifest = {
-    name = "lan";
-    exports.out = ["peer" "netif"];   # export interfaces this service emits
-  };
-
-  roles.default.perInstance = {mkExports, settings, ...}: {
-    exports = mkExports {
-      peer.hosts = [{plain = settings.ipv4;}];
-      netif = {
-        interface = settings.interface;
-        inherit (settings) mtu;
-      };
-    };
-  };
-}
-```
-
-`mkExports` scopes every key under the emitting context
-(`service:instance:role:machine`). Scope rules are enforced at eval:
-
-- a service may only export to its **own service scope** (out-of-scope keys
-  throw with the expected scope),
-- `perInstance` can only export the matching instance/role/machine scope;
-  `perMachine` only machine scope,
-- `manifest.exports.out` naming an unregistered interface throws with the
-  list of available ones.
-
-There is also a **service-level** `exports` attribute (next to `roles`) for
-instance- or service-scoped facts, keyed explicitly with
-`clanLib.buildScopeKey` — e.g. wireguard exports instance-level
-`networking.priority`:
-
-```nix
-exports = lib.mapAttrs' (instanceName: _: {
-  name = clanLib.buildScopeKey {
-    inherit instanceName;
-    serviceName = config.manifest.name;
-  };
-  value = {networking.priority = 1000;};
-}) config.instances;
-```
+A service declares which export interfaces it may emit in
+`manifest.exports.out`, then publishes values with `mkExports` (available
+in the args of `perInstance` and `perMachine`); instance-/service-scoped
+facts go in a top-level `exports` attribute keyed with
+`clanLib.buildScopeKey`. `mkExports` scopes every key under the emitting
+context (`service:instance:role:machine`) and scope ownership is enforced
+at eval (a service writes only its own service scope; `perInstance` only
+its instance scope; `perMachine` only its machine scope; an unregistered
+interface name in `manifest.exports.out` throws with the available ones).
+The full write-side pattern — with the borg repo's `lan` service as the
+worked example — lives in the `clanservices` skill (§10).
 
 ### Built-in export interfaces
 
@@ -535,7 +484,7 @@ the raw keys — always go through `clanLib`:
   missing.
 
 ```nix
-# a consumer service's perInstance (condensed from borg's rke2)
+# a consumer reading the borg repo's lan exports (condensed)
 {
   exports,
   machine,
@@ -1120,7 +1069,11 @@ From `nixosModules/clanCore/`:
 ## Testing clanServices with NixOS VM tests
 
 clanServices are plain NixOS config in the end, so the hermetic VM-test
-harness tests them directly. The test file imports the repo's
+harness tests them directly. **Authoring eval/VM tests for a service you
+are writing (nix-unit, `clan.nixosTests`, `update-vars`, `clanLib.clan`
+throwaway clans): the `clanservices` skill, §17.** This section covers
+testing the home repo's own modules through its VM-test harness. The test
+file imports the repo's
 `nixosModules.default` (not the clan machinery) and flips the `hostSpec.*`
 options the service's `perInstance`/`perMachine` modules would set — see
 the `vm-tests` skill for the full hermeticity rule, size variants, and the

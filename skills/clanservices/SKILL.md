@@ -7,6 +7,10 @@ description: "Author production-quality clan.service modules (clanServices) in t
 
 Deep-research skill for writing clanServices that match the official
 `clan-core` and `clan-community` conventions closely enough to upstream.
+Scope: authoring only — operating clan (inventory usage, CLI, vars
+workflow, deployment, data-mesher) is the `clan-core` skill, and the repo
+VM-test harness is the `vm-tests` skill.
+
 Sources of truth (cloned at `~/clan-core`, `~/clan-community`):
 
 - **Module spec** (authoritative option definitions): `~/clan-core/lib/inventory/distributed-service/service-module.nix` — read it before anything exotic.
