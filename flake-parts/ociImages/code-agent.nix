@@ -691,7 +691,7 @@
 
     sandboxContext-pi = sandboxContext "pi" "- MCP exposure: headroom/nixos are `direct` (always declared), github is `deferred` (loads via tool_search on demand, so a missing github-agent provider never blocks the first prompt). Diagnose servers with `pi mcp list`; add project-only servers with `pi mcp add -l <name> -- <cmd>`.";
 
-    sandboxContext-kimi = sandboxContext "''${product_name}" "- Inspect MCP connections with `/mcp`. Pre-approved by baked permission rules: mcp__nixos__* and mcp__headroom__*; mcp__github__* asks per call — approve for the session only when doing GitHub work.";
+    sandboxContext-kimi = sandboxContext "\${product_name}" "- Inspect MCP connections with `/mcp`. Pre-approved by baked permission rules: mcp__nixos__* and mcp__headroom__*; mcp__github__* asks per call — approve for the session only when doing GitHub work.";
 
     sandboxContext-claude = sandboxContext "Claude Code" "- Inspect MCP connections with `/mcp`. Servers ride the baked ~/.claude/settings.json mcpServers table; ~/.claude.json is claude's mutable state file and stays writable.";
 
