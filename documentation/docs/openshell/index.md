@@ -170,7 +170,9 @@ openshell logs code --tail --source sandbox       # DENIED lines show what polic
 ```
 
 (For scripting against the CLI: `openshell ... | grep -q` panics the CLI
-on EPIPE — see §5; `code-sandbox` redirects to a file for this reason.)
+on EPIPE — see §5; `code-sandbox` redirects to a file for this reason.
+To (re)write the Remote-SSH config for every active sandbox at once —
+e.g. after manual `sandbox create`s — run `code-sandbox ssh-config`.)
 
 - **Policy** (`openshell/policies/code-agent.yaml`): filesystem contract
   (read-only `/nix/store` world + baked `/opt` material, read-write

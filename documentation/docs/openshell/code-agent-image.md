@@ -73,8 +73,15 @@ code-sandbox work --cpu 8 --memory 16Gi
 code-sandbox -y           # non-interactive recreate if it exists
 code-sandbox connect work-<hash>   # attach (Ctrl-P Ctrl-Q detaches)
 code-sandbox exec work-<hash> -- nix --version
+code-sandbox ssh-config            # sync ssh configs for ALL active sandboxes
 code-sandbox delete work-<hash>    # (the ssh config block is left behind; harmless)
 ```
+
+`ssh-config` rewrites the managed block for every sandbox in
+`openshell sandbox list` (same file and replace-not-duplicate semantics
+as the create-time append; `--ssh-config-file` applies here too) — run
+it after creating sandboxes outside of `code-sandbox`, or after
+recreating one by hand.
 
 The equivalent manual steps:
 

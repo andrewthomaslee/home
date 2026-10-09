@@ -27,6 +27,7 @@ with pkgs; let
            code-sandbox delete <name>               delete a sandbox
            code-sandbox connect <name>              attach to a sandbox (Ctrl-P Ctrl-Q detaches)
            code-sandbox exec <name> -- <cmd...>     run a command in a sandbox
+           code-sandbox ssh-config                  append ssh configs for ALL active sandboxes
 
     options:
       -y, --yes          don't prompt when the sandbox already exists (delete + recreate)
@@ -50,12 +51,33 @@ with pkgs; let
       exit "''${1:-0}"
     }
 
+    # Append (or replace) the generated Remote-SSH config for one sandbox
+    # as a managed, comment-delimited block — idempotent across re-runs.
+    append_ssh_config() {
+      mkdir -p "$(dirname "$ssh_config_file")"
+      tmp="$ssh_config_file.code-sandbox.tmp"
+      if [ -f "$ssh_config_file" ]; then
+        sed "/^# code-sandbox: $1\$/,/^# end code-sandbox: $1\$/d" \
+          "$ssh_config_file" >"$tmp"
+      else
+        : >"$tmp"
+      fi
+      {
+        echo "# code-sandbox: $1"
+        openshell sandbox ssh-config "$1"
+        echo "# end code-sandbox: $1"
+      } >>"$tmp"
+      chmod 600 "$tmp"
+      mv "$tmp" "$ssh_config_file"
+      echo "code-sandbox: ssh config for '$1' appended to $ssh_config_file"
+    }
+
     cmd="create"
     if [ $# -gt 0 ] && [ "$1" != "''${1#-}" ]; then
       :
     elif [ $# -gt 0 ]; then
       case "$1" in
-        create | delete | connect | exec) cmd="$1"; shift ;;
+        create | delete | connect | exec | ssh-config) cmd="$1"; shift ;;
         -h | --help) usage 0 ;;
         *) usage 1 ;;
       esac
@@ -95,6 +117,20 @@ with pkgs; let
       exec)
         [ -n "$name" ] || { echo "code-sandbox: exec needs a sandbox name" >&2; usage 1; }
         exec openshell sandbox exec -n "$name" -- "$@"
+        ;;
+      ssh-config)
+        [ -z "$name" ] || { echo "code-sandbox: ssh-config takes no sandbox name (it syncs all of them)" >&2; usage 1; }
+        sandbox_list="$(mktemp)"
+        # Redirect, never pipe the CLI (EPIPE panic, exit 101).
+        openshell sandbox list >"$sandbox_list" 2>/dev/null || true
+        # First column is the name; drop header/separator lines.
+        sandbox_names="$(awk 'NF && $1 !~ /^[Nn][Aa][Mm][Ee]|^-+$/ {print $1}' "$sandbox_list")"
+        rm -f "$sandbox_list"
+        [ -n "$sandbox_names" ] || { echo "code-sandbox: no active sandboxes found" >&2; exit 1; }
+        for sb in $sandbox_names; do
+          append_ssh_config "$sb"
+        done
+        exit 0
         ;;
     esac
 
@@ -148,26 +184,9 @@ with pkgs; let
     echo "code-sandbox: done. Attach with:  code-sandbox connect $name"
 
     # Append the generated Remote-SSH config (the equivalent of
-    # `openshell sandbox ssh-config $name >> ~/.ssh/config.local`) as a
-    # managed, comment-delimited block: any block previously appended
-    # for this sandbox is replaced first, so re-runs stay idempotent.
+    # `openshell sandbox ssh-config $name >> ~/.ssh/config.local`).
     if [ "$ssh_config" = 1 ]; then
-      mkdir -p "$(dirname "$ssh_config_file")"
-      tmp="$ssh_config_file.code-sandbox.tmp"
-      if [ -f "$ssh_config_file" ]; then
-        sed "/^# code-sandbox: $name\$/,/^# end code-sandbox: $name\$/d" \
-          "$ssh_config_file" >"$tmp"
-      else
-        : >"$tmp"
-      fi
-      {
-        echo "# code-sandbox: $name"
-        openshell sandbox ssh-config "$name"
-        echo "# end code-sandbox: $name"
-      } >>"$tmp"
-      chmod 600 "$tmp"
-      mv "$tmp" "$ssh_config_file"
-      echo "code-sandbox: ssh config for '$name' appended to $ssh_config_file"
+      append_ssh_config "$name"
     fi
   '';
 
