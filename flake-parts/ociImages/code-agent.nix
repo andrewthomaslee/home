@@ -607,11 +607,13 @@
     '';
 
     # Flake revision baked into the briefing's Image line, pinpointing
-    # the image generation a sandbox runs (shortRev is null on dirty
-    # trees / non-flake evals).
+    # the image generation a sandbox runs. NOTE: flake-parts' self' is
+    # the perSystem-narrowed view and carries no sourceInfo — the real
+    # self (with shortRev) arrives via inputs.self (shortRev is absent
+    # on non-git evals and null on dirty trees).
     imageRev =
-      if self'.shortRev != null
-      then self'.shortRev
+      if inputs.self ? shortRev && inputs.self.shortRev != null
+      then inputs.self.shortRev
       else "dirty";
 
     # Environment briefing baked into every agent's system prompt:
