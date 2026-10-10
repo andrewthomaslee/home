@@ -33,13 +33,10 @@
 # nodejs comes from the llm-agents input's own nixpkgs closure, not this
 # flake's pkgs.nodejs, so an interpolated path could deny kimi egress
 # after an input bump.
-{
-  inputs',
-  self,
-  ...
-}: {
+{self, ...}: {
   perSystem = {
     pkgs,
+    inputs',
     customLib,
     ...
   }: let
