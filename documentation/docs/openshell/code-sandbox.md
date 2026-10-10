@@ -87,20 +87,23 @@ resolves the build source so that line never lies:
 
 1. `--flake REF` given → REF verbatim (your choice; a dirty local ref
    pins `dirty`).
-2. Otherwise, when the enclosing checkout is a **clean git tree whose
-   HEAD equals the remote HEAD** → build the local tree (identical
-   content, and the rev pins correctly).
-3. Otherwise → build `<remoteFlake>/<remote HEAD>` — the public flake
-   at the exact remote commit. This is the default path for the
-   installable wrapper (`pkgs.code-sandbox`) and the home-manager
-   instance: their baked flake ref is a source store path with no git
-   metadata, which is exactly what used to pin `dirty` on every
-   home-manager-created sandbox.
+2. Otherwise the resolution depends on the instance:
+   - **Installable wrapper (`pkgs.code-sandbox`, the home-manager
+     module's instance) — `alwaysRemote = true`:** ALWAYS build
+     `<remoteFlake>/<remote HEAD>` — the live public repo head, never
+     the stale baked store path, never a dirty checkout. `--flake .`
+     forces a local build.
+   - **In-repo devenv script — local-first:** when the enclosing
+     checkout is a **clean git tree whose HEAD equals the remote HEAD**
+     → build the local tree (identical content, and the rev pins
+     correctly); anything else → build `<remoteFlake>/<remote HEAD>`.
+   - Generic consumers that set no `remoteFlake` get the warning and a
+     local build.
 
 `--flake .` forces a local build when you explicitly want one (expect
-the `dirty` pin when the tree is dirty). `remoteFlake` is a generator
-parameter (`lib/mkCodeSandbox.nix` / `perSystem.codeSandbox.remoteFlake`);
-generic consumers that don't set it get the warning and a local build.
+the `dirty` pin when the tree is dirty). `remoteFlake` and
+`alwaysRemote` are generator parameters (`lib/mkCodeSandbox.nix` /
+`perSystem.codeSandbox.*`).
 
 ## Options
 
@@ -109,7 +112,8 @@ generic consumers that don't set it get the warning and a local build.
     --cpu N              CPUs (default 4)
     --memory SIZE        memory (default 8Gi)
     --flake REF          build image/policy/profile from another flake
-                         (default: the flake baked in at install time)
+                         (installed wrapper default: the live
+                         github:external-systems/home remote HEAD)
     --provider N         attach provider N INSTEAD of the defaults
                          (repeatable; defaults: github-agent kimi-for-coding)
     --no-sync            skip the profile sync before create

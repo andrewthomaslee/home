@@ -82,6 +82,11 @@
       code-sandbox = pkgs.writeShellScriptBin "code-sandbox" (customLib.mkCodeSandbox {
         flakeRef = builtins.toString self;
         remoteFlake = "github:external-systems/home";
+        # The installed wrapper tracks the LIVE repo head: bare
+        # `code-sandbox` builds image/policy/profile from
+        # github:external-systems/home@<remote HEAD> — never the stale
+        # baked store path, never a dirty checkout.
+        alwaysRemote = true;
       });
       code-agent-policy = renderSandboxConfig "code-agent-policy" (customLib.relativeToRoot "openshell/policies/code-agent.yaml") {
         bin_nix = "${pkgs.nix}/bin/nix";
@@ -93,9 +98,10 @@
         bin_headroom = "${pkgs.headroom-slim}/bin/headroom";
         bin_python3 = "${pkgs.python3}/bin/python3";
         # pip runs in-process, so its connections carry the RESOLVED
-        # interpreter exe — pin the resolved paths of both (nixpkgs'
-        # bin/python3 is a symlink to the versioned binary).
-        bin_python3_real = "${pkgs.python3}/bin/${pkgs.python3.interpreter}";
+        # interpreter exe — pin both (nixpkgs' bin/python3 is a symlink
+        # to the versioned binary). python3.interpreter IS the resolved
+        # absolute path already (don't re-prefix it with /bin).
+        bin_python3_real = pkgs.python3.interpreter;
         bin_uv = "${pkgs.uv}/bin/uv";
         bin_mcp_nixos = "${inputs'.mcp-nixos.packages.mcp-nixos}/bin/mcp-nixos";
       };

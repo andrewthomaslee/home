@@ -26,6 +26,13 @@
   # briefing always pins a real commit. null disables the fallback
   # (generic consumers get a warning instead).
   remoteFlake ? null,
+  # When true (and remoteFlake is set), the bare command ALWAYS builds
+  # from <remoteFlake>/<remote HEAD> — the installed wrapper tracks the
+  # live repo head, never a stale store path or a dirty checkout.
+  # "--flake ." still forces a local build. false keeps local-first
+  # resolution (clean checkout at remote HEAD builds locally) — right
+  # for the in-repo devenv script.
+  alwaysRemote ? false,
   # Attr names inside that flake.
   imageAttr ? "code-agent-image",
   loaderApp ? "load-code-agent-image",
@@ -69,9 +76,11 @@ in ''
     -y, --yes          don't prompt when the sandbox already exists (delete + recreate)
         --cpu N        CPUs for the sandbox (default: ${cpu})
         --memory SIZE  memory for the sandbox (default: ${memory})
-        --flake REF    build image/policy/profile from flake REF — default is the
-                       flake baked in at install time, so this runs from ANY
-                       directory; "." = the flake enclosing the cwd (for working
+        --flake REF    build image/policy/profile from flake REF — ${
+    if alwaysRemote
+    then "default is ${remoteFlakeStr}@<remote HEAD> (the live repo head), so this runs from ANY directory"
+    else "default is the flake baked in at install time, so this runs from ANY directory"
+  }; "." = the flake enclosing the cwd (for working
                        on that flake itself)
         --provider N   attach provider N INSTEAD of the defaults (repeatable;
                        defaults: ${providersStr})
@@ -95,9 +104,11 @@ in ''
   Image source (rev pinning): the image bakes "Image: ${imageName} @
   <rev>" (from the flake's git revision) into every agent briefing.
   The build source is resolved so that line never lies: --flake REF
-  builds REF verbatim; otherwise a clean local checkout whose HEAD
-  equals the remote HEAD builds locally; anything else builds
-  <remoteFlake>@<remote HEAD> ("${remoteFlakeStr}" for this instance).
+  builds REF verbatim; otherwise ${
+    if alwaysRemote
+    then "the image/policy/profile always build from ${remoteFlakeStr}@<remote HEAD> — the live repo head, never a stale or dirty source."
+    else "a clean local checkout whose HEAD equals the remote HEAD builds locally; anything else builds ${remoteFlakeStr}@<remote HEAD>."
+  }
   --flake . forces a local build. The policy + provider profile are
   rendered from the SAME resolved source, so the @bin_*@ pins always
   describe the image actually built.
@@ -163,16 +174,76 @@ in ''
   # is useless. Resolve the build source:
   #   --flake REF (explicit)   -> REF verbatim (caller's choice; a dirty
   #                                local ref pins "dirty")
-  #   local checkout clean, HEAD == origin HEAD -> local (same content,
-  #                                rev pins correctly)
-  #   remoteFlake baked in     -> <remoteFlake>/<remote HEAD>
-  #   otherwise                -> local, with a warning
+  #   alwaysRemote             -> <remoteFlake>/<remote HEAD>, ALWAYS:
+  #                                the bare command tracks the live repo
+  #                                head, never a stale store path or a
+  #                                dirty checkout ("--flake ." forces
+  #                                local)
+  #   otherwise (local-first)  -> clean local checkout whose HEAD equals
+  #                                origin HEAD builds locally; a dirty/
+  #                                behind tree builds <remoteFlake>/<HEAD>
+  #                                when remoteFlake is set, else warns and
+  #                                builds local
+  remote_git_url() {
+    # Map a flake ref to a git URL for ls-remote. Handles the refs this
+    # generator is instantiated with (github:owner/repo[/ref]); anything
+    # else is used verbatim (git+https://..., https://..., file paths).
+    ref="${remoteFlakeStr}"
+    case "$ref" in
+      github:*)
+        owner_repo="''${ref#github:}"
+        # Strip an optional /ref (and ?params) — ls-remote wants the
+        # repository URL only.
+        owner_repo="''${owner_repo%%\?*}"
+        repo_part="''${owner_repo#*/}"
+        printf 'https://github.com/%s/%s' "''${owner_repo%%/*}" "''${repo_part%%/*}"
+        ;;
+      *) printf '%s' "''${ref%%\?*}" ;;
+    esac
+  }
+
   resolve_image_ref() {
-    repo="$(resolve_flake_ref)"
     if [ "$flake_explicit" = 1 ]; then
-      printf '%s' "$repo"
+      resolve_flake_ref
       return
     fi
+    if [ -n "${remoteFlakeStr}" ]; then
+      # Redirect, never pipe git (SIGPIPE can kill the writer early).
+      lsremote="$(mktemp)"
+      remote_head=""
+      if git ls-remote "$(remote_git_url)" HEAD >"$lsremote" 2>/dev/null; then
+        remote_head="$(awk 'NR==1{print $1}' "$lsremote")"
+      fi
+      rm -f "$lsremote"
+      if [ -z "$remote_head" ]; then
+        echo "code-sandbox: WARNING: cannot reach $(remote_git_url) (offline?) — falling back to the flake baked in at install time, which may be stale" >&2
+        printf '%s' "${flakeRef}"
+        return
+      fi
+      if [ "${
+    if alwaysRemote
+    then "1"
+    else "0"
+  }" = 1 ]; then
+        echo "code-sandbox: using ${remoteFlakeStr}/$remote_head (live remote HEAD; force a local build with --flake .)" >&2
+        printf '%s/%s' "${remoteFlakeStr}" "$remote_head"
+        return
+      fi
+      # Local-first: a clean checkout whose HEAD equals the remote HEAD
+      # builds locally (same content, rev pins correctly); anything else
+      # builds the remote HEAD so the briefing pins a real commit.
+      repo="$(resolve_flake_ref)"
+      if head="$(git -C "$repo" rev-parse HEAD 2>/dev/null)" \
+        && [ "$head" = "$remote_head" ] \
+        && [ -z "$(git -C "$repo" status --porcelain 2>/dev/null)" ]; then
+        printf '%s' "$repo"
+        return
+      fi
+      echo "code-sandbox: local tree is not exactly the remote HEAD — building the image from ${remoteFlakeStr}/$remote_head so the briefing pins a real commit (force a local build with --flake .)" >&2
+      printf '%s/%s' "${remoteFlakeStr}" "$remote_head"
+      return
+    fi
+    repo="$(resolve_flake_ref)"
     remote_head=""
     if git -C "$repo" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
       remote_url="$(git -C "$repo" remote get-url origin 2>/dev/null || true)"
@@ -188,11 +259,6 @@ in ''
       && [ -n "$remote_head" ] && [ "$head" = "$remote_head" ] \
       && [ -z "$(git -C "$repo" status --porcelain 2>/dev/null)" ]; then
       printf '%s' "$repo"
-      return
-    fi
-    if [ -n "${remoteFlakeStr}" ] && [ -n "$remote_head" ]; then
-      echo "code-sandbox: local tree is not exactly the remote HEAD — building the image from ${remoteFlakeStr}/$remote_head so the briefing pins a real commit (force a local build with --flake .)" >&2
-      printf '%s/%s' "${remoteFlakeStr}" "$remote_head"
       return
     fi
     echo "code-sandbox: WARNING: cannot verify the local tree against a remote HEAD (no git remote / no remoteFlake baked in) — the image briefing may pin 'dirty'" >&2

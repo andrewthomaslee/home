@@ -210,6 +210,35 @@ _: {
               ${lib.getExe cfg.package} completions zsh \
                 > $out/share/zsh/site-functions/_openshell
             '')
+          ]
+          # code-sandbox is a plain shell wrapper (no clap), so its
+          # completion ships as a static file: subcommands + flags, and
+          # live sandbox names for connect/delete/exec.
+          ++ lib.optionals (cfg.completions.enable && cfg.codeSandbox.enable) [
+            (pkgs.writeTextDir "share/bash-completion/completions/code-sandbox" ''
+              _code_sandbox() {
+                local cur cmds names
+                cur="''${COMP_WORDS[COMP_CWORD]}"
+                cmds="create delete connect exec ssh-config sync doctor"
+                if [ "$COMP_CWORD" -eq 1 ]; then
+                  COMPREPLY=($(compgen -W "$cmds" -- "$cur"))
+                  return
+                fi
+                case "''${COMP_WORDS[1]}" in
+                  connect | delete | exec)
+                    if [ "$COMP_CWORD" -eq 2 ]; then
+                      names="$(openshell sandbox list 2>/dev/null \
+                        | awk 'NF && $1 !~ /^[Nn][Aa][Mm][Ee]|^-+$/ {print $1}')"
+                      COMPREPLY=($(compgen -W "$names" -- "$cur"))
+                    fi
+                    ;;
+                  create)
+                    COMPREPLY=($(compgen -W "-y --yes --cpu --memory --flake --provider --sync --no-sync --include-workdir --no-include-workdir --ssh-config --no-ssh-config --ssh-config-file -h --help" -- "$cur"))
+                    ;;
+                esac
+              }
+              complete -F _code_sandbox code-sandbox
+            '')
           ];
 
         sessionVariables = lib.mkMerge [
