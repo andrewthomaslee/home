@@ -13,11 +13,15 @@ architecture and the lessons that shaped the design, see the
   `statix`, `deadnix`), shell vetting (`shellcheck`, `shfmt`), archive
   tools (`unzip`, `zstd`, `wget`), ELF inspection (`file`, `readelf`,
   `objdump`, `ldd`), patching (`diff`, `patch`), k8s clients
-  (`kubectl`, `helm`), and `dig`/`rsync`. For Python work: `uv`
+  (`kubectl`, `helm`), and `dig`/`rsync`. Foreign glibc binaries run via
+  the nix-ld shim (`/lib64/ld-linux-x86-64.so.2` +
+  `NIX_LD`/`NIX_LD_LIBRARY_PATH`). For Python work: `uv`
   (wheel-first installer) plus `python3` — PyPI is admitted read-only
   for both, WHEELS ONLY (`uv pip install --only-binary=:all: …`), since
   no C toolchain ships in the image (pip itself bootstraps inside
-  `python3 -m venv`).
+  `python3 -m venv`). Binary wheels import as-is: the few system libs
+  they link (`libstdc++`/`libgcc_s`/`libz`) resolve from the baked
+  `/usr/lib/wheel-deps` dir on `LD_LIBRARY_PATH`.
 - **Three pre-wired AI agents** (no interactive login ever), each with
   the sandbox environment briefing baked into its user-level system
   prompt / memory (pi `~/.pi/agent/APPEND_SYSTEM.md`, kimi
@@ -25,13 +29,18 @@ architecture and the lessons that shaped the design, see the
   admitted egress, skills location, identity and secrets posture) and a
   shared MCP trio: **headroom** (context compression; wrapper maps the
   injected `$ANTHROPIC_AUTH_TOKEN` onto `ANTHROPIC_API_KEY`), **nixos**
-  (option search) and **github** (works only with the `github-agent`
-  provider attached — the profile admits read-write api.github.com and
-  substitutes the credential at egress; the baked wrapper maps the
-  `$GITHUB_TOKEN` handle onto `GITHUB_PERSONAL_ACCESS_TOKEN`). The trio
-  is baked at each agent's user-level MCP spot: pi
-  `~/.pi/agent/mcp.json`, kimi `~/.kimi-code/mcp.json`, claude
-  `~/.claude/settings.json` `mcpServers`:
+  (option search; `search`-family queries call the `search.nixos.org`
+  backend, admitted for the server's binary) and **github** (works only
+  with the `github-agent` provider attached — the profile admits
+  read-write api.github.com and substitutes the credential at egress;
+  the baked wrapper maps the `$GITHUB_TOKEN` handle onto
+  `GITHUB_PERSONAL_ACCESS_TOKEN`). The trio is baked at each agent's
+  user-level MCP spot: pi `~/.pi/agent/mcp.json`, kimi
+  `~/.kimi-code/mcp.json`, claude `~/.claude/settings.json`
+  `mcpServers` — in pi all three are `direct`, so the github tools are
+  listed in the system prompt at session start (a provider-less github
+  server fails loudly at startup and pi marks it failed; the tools are
+  still visible):
   - `pi` — Kimi for Coding subscription, key from the attached provider's
     `$KIMI_API_KEY`.
   - `kimi` — same subscription via a baked `~/.kimi-code/config.toml`

@@ -24,9 +24,9 @@
   # toolchain lives in /usr/local/bin (+ /etc/profile for login shells)
   # on top of /bin from the base toolset; the vscodium-reh tarball's
   # bundled node is a foreign glibc binary — it gets patchelf'd to the
-  # image glibc (pre-baked server below), and the general FHS fallback
-  # (/lib64 loader, classic lib dirs, baked ld.so.cache) covers any
-  # other downloaded ELF.
+  # image glibc (pre-baked server below), and the nix-ld shim
+  # (/lib64/ld-linux-x86-64.so.2 + NIX_LD env, rootfs below) covers any
+  # other downloaded glibc ELF.
   perSystem = {
     pkgs,
     inputs',
@@ -212,22 +212,18 @@
     # FHS rootfs additions merged at the image /:
     #  - /usr/local/bin: install-script + server-side toolchain, in case
     #    the sshd PATH lacks /bin in some invocation path.
-    #  - /etc/{os-release,profile,passwd,group,shadow,ld.so.conf,
-    #    ld.so.cache}: truthful os-release for the install script, PATH
-    #    for login shells, identity for nix (getpwuid home lookup) and
-    #    the vscodium server's shells, and a pregenerated loader cache —
-    #    nixpkgs glibc's compiled-in search path covers no FHS dirs and
-    #    /etc is read-only under the OpenShell policy, so foreign ELFs
-    #    (anything not patchelf'd like the bundled node above) resolve
-    #    via the cache.
-    #  - /lib64/ld-linux-x86-64.so.2 + glibc/gcc libs COPIED into the
-    #    classic multiarch dirs (real files, not symlinks: the cache is
-    #    generated in a chroot where /nix/store is unreachable, and
-    #    dangling symlinks would produce no entries).
+    #  - /etc/{os-release,profile,passwd,group,shadow}: truthful
+    #    os-release for the install script, PATH + foreign-ELF/wheel
+    #    runtime env for login shells, and identity for nix (getpwuid
+    #    home lookup) and the vscodium server's shells.
+    #  - /lib64/ld-linux-x86-64.so.2: the nix-ld shim (with
+    #    /usr/lib/wheel-deps) — foreign glibc ELFs resolve through the
+    #    shim's NIX_LD/NIX_LD_LIBRARY_PATH env, not through copied libs
+    #    or an ld.so.cache (nixpkgs glibc never reads /etc/ld.so.cache;
+    #    its compiled-in cache path is the read-only store etc/).
     rootfs = pkgs.runCommand "code-agent-rootfs" {} ''
       mkdir -p $out/usr/local/bin $out/etc \
-        $out/lib64 $out/usr/lib64 $out/lib $out/usr/lib \
-        $out/lib/x86_64-linux-gnu $out/usr/lib/x86_64-linux-gnu
+        $out/lib64 $out/usr/lib/wheel-deps
 
       # sshd-default-PATH toolchain.
       ln -s ${pkgs.bashInteractive}/bin/bash        $out/usr/local/bin/bash
@@ -280,9 +276,17 @@
       ln -s ${sandboxHeadroom}/bin/headroom         $out/usr/local/bin/headroom
 
       # Login shells (interactive SSH + VSCodium terminal) read
-      # /etc/profile: put the layer on PATH there too.
+      # /etc/profile: put the layer on PATH there too, plus the
+      # foreign-ELF/wheel runtime env (sshd-spawned shells can run with
+      # a scrubbed env, losing the image Env values). LD_LIBRARY_PATH
+      # and NIX_LD_LIBRARY_PATH append rather than overwrite. (Quoted
+      # heredoc: Nix interpolates the store paths at eval time; the
+      # runtime $ expansions stay literal for the sourcing shell.)
       cat > $out/etc/profile <<'EOF'
       export PATH="/usr/local/bin:$PATH"
+      export LD_LIBRARY_PATH="/usr/lib/wheel-deps''${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+      export NIX_LD="${pkgs.glibc}/lib/ld-linux-x86-64.so.2"
+      export NIX_LD_LIBRARY_PATH="${nixLdLibs}''${NIX_LD_LIBRARY_PATH:+:$NIX_LD_LIBRARY_PATH}"
       EOF
 
       # nix config on disk (see nixConfig above): unlike $NIX_CONFIG in
@@ -348,31 +352,28 @@
       echo 'root:!x:::::::' > $out/etc/shadow
       echo 'agent:!x:::::::' >> $out/etc/shadow
 
-      # Dynamic loader + libs for foreign glibc binaries. The ~60MB of
-      # copies is deliberate: see the rootfs comment block above.
-      cp -L ${pkgs.glibc}/lib/ld-linux-x86-64.so.2 $out/lib64/ld-linux-x86-64.so.2
-      for lib in ${pkgs.glibc}/lib/*.so* ${pkgs.stdenv.cc.cc.lib}/lib/*.so*; do
-        base=$(basename "$lib")
-        cp -L "$lib" "$out/lib/$base"
-        cp -L "$lib" "$out/usr/lib/$base"
-        cp -L "$lib" "$out/usr/lib64/$base"
-        cp -L "$lib" "$out/lib/x86_64-linux-gnu/$base"
-        cp -L "$lib" "$out/usr/lib/x86_64-linux-gnu/$base"
-      done
-
-      cat > $out/etc/ld.so.conf <<'EOF'
-      /lib
-      /usr/lib
-      /lib64
-      /usr/lib64
-      /lib/x86_64-linux-gnu
-      /usr/lib/x86_64-linux-gnu
-      EOF
-      # -r chroots into $out so cache entries are image-absolute; -C is
-      # required because nixpkgs glibc's default cache path points at
-      # its own (read-only) store etc/.
-      ${pkgs.glibc.bin}/sbin/ldconfig -r $out -f /etc/ld.so.conf \
-        -C /etc/ld.so.cache
+      # Foreign-glibc ELF support, replacing the old glibc-copy +
+      # ld.so.cache approach (which never worked: nixpkgs glibc's
+      # compiled-in cache path is its own read-only store etc/, so the
+      # baked /etc/ld.so.cache was never read and the copied libs were
+      # invisible at runtime):
+      #  - nix-ld (github.com/nix-community/nix-ld):
+      #    /lib64/ld-linux-x86-64.so.2 IS the shim; it reads NIX_LD (the
+      #    real loader) and NIX_LD_LIBRARY_PATH (extra search dirs) from
+      #    the env and runs the downloaded binary against the nix glibc.
+      #  - /usr/lib/wheel-deps: libstdc++/libgcc_s/libz reachable via
+      #    LD_LIBRARY_PATH (image Env + /etc/profile) so python3's
+      #    manylinux wheel extensions (numpy, pillow, lxml, ...) resolve
+      #    the handful of system libs they link at dlopen time. Scoped
+      #    to those three libs on purpose: loader search order puts
+      #    LD_LIBRARY_PATH before DT_RUNPATH, so a broader dir would
+      #    shadow nix store libs process-wide. The agent runtimes are
+      #    unaffected (pi's bun links no libstdc++; claude's node is
+      #    smoke-tested against the shadow).
+      ln -s ${pkgs.nix-ld}/libexec/nix-ld $out/lib64/ld-linux-x86-64.so.2
+      ln -s ${pkgs.stdenv.cc.cc.lib}/lib/libstdc++.so.6 $out/usr/lib/wheel-deps/
+      ln -s ${pkgs.stdenv.cc.cc.lib}/lib/libgcc_s.so.1 $out/usr/lib/wheel-deps/
+      ln -s ${pkgs.zlib}/lib/libz.so.1 $out/usr/lib/wheel-deps/
     '';
 
     # Home, workdir, and the pre-baked per-agent wiring. Owned
@@ -574,20 +575,18 @@
     # pi's own mcp.json: same servers plus pi-specific exposure and
     # description fields. Pi defaults MCP servers to codemode exposure
     # (tools hidden from the top-level tool list until a codemode
-    # script or tool_search reaches them); headroom/nixos are small and
-    # always useful -> direct, github is heavy and provider-gated ->
-    # deferred (tool_search loads it on demand, so a missing
-    # github-agent provider never delays the first prompt).
+    # script or tool_search reaches them); all three are `direct` so
+    # their tools are listed in the system prompt at session start —
+    # the agent must SEE the github tools to plan GitHub work. A
+    # provider-less github server fails loudly at startup (pi marks the
+    # server failed and continues); it never blocks the first prompt.
     pi-mcp-json = pkgs.writeText "pi-mcp.json" (builtins.toJSON {
       mcpServers =
         lib.mapAttrs (
           name: server:
             server
             // {
-              exposure =
-                if name == "github"
-                then "deferred"
-                else "direct";
+              exposure = "direct";
               description = sandboxMcpDescriptions.${name};
             }
         )
@@ -624,6 +623,10 @@
       if inputs.self ? shortRev && inputs.self.shortRev != null
       then inputs.self.shortRev
       else "dirty";
+
+    # Search dirs for the nix-ld shim's NIX_LD_LIBRARY_PATH (foreign
+    # glibc binaries): the store lib dirs themselves — no FHS copies.
+    nixLdLibs = lib.makeLibraryPath [pkgs.glibc pkgs.stdenv.cc.cc.lib pkgs.zlib];
 
     # Environment briefing baked into every agent's system prompt /
     # memory: what this sandbox is, what works here and what does not.
@@ -682,7 +685,12 @@
           install --only-binary=:all: …`): no C toolchain ships here,
           so sdists that compile cannot build in-sandbox — get those
           via nix substitution (`nix run --option substitute true
-          nixpkgs#…`).
+          nixpkgs#…`). Binary wheels import as-is: the few system libs
+          they link (libstdc++/libgcc_s/libz) resolve from the baked
+          /usr/lib/wheel-deps dir (on LD_LIBRARY_PATH).
+        - Foreign glibc binaries (downloaded FHS ELFs) run via the
+          nix-ld shim: /lib64/ld-linux-x86-64.so.2 reads NIX_LD and
+          NIX_LD_LIBRARY_PATH from the env.
         - Do NOT run `nix flake check` or the NixOS VM tests (`nix run .#vm-test`): they build heavy derivations and need KVM. Checks, builds and VM tests are CI's job — the fleet CI is not wired up yet, so flag the gap rather than running them.
 
         ## MCP servers
@@ -709,7 +717,7 @@
         ${notes}
       '';
 
-    sandboxContext-pi = sandboxContext "pi" "- MCP exposure: headroom/nixos are `direct` (always declared), github is `deferred` (loads via tool_search on demand, so a missing github-agent provider never blocks the first prompt). Diagnose servers with `pi mcp list`; add project-only servers with `pi mcp add -l <name> -- <cmd>`.";
+    sandboxContext-pi = sandboxContext "pi" "- MCP exposure: all three servers are `direct` — their tools are listed in the system prompt at session start; the github server still needs the github-agent provider attached to answer calls. Diagnose servers with `pi mcp list`; add project-only servers with `pi mcp add -l <name> -- <cmd>`.";
 
     sandboxContext-kimi = sandboxContext "\${product_name}" "- Inspect MCP connections with `/mcp`. Pre-approved by baked permission rules: mcp__nixos__* and mcp__headroom__*; mcp__github__* asks per call — approve for the session only when doing GitHub work.";
 
@@ -803,6 +811,16 @@
           "DISABLE_BUG_COMMAND=1"
           "DISABLE_GROWTHBOOK=1"
           "DISABLE_FEEDBACK_SURVEY=1"
+          # Foreign-glibc + manylinux-wheel runtime (see rootfs): the
+          # nix-ld shim at /lib64/ld-linux-x86-64.so.2 reads NIX_LD /
+          # NIX_LD_LIBRARY_PATH when a downloaded FHS binary execs, and
+          # python wheel extensions resolve libstdc++/libgcc_s/libz from
+          # the scoped wheel-deps dir. Deliberately narrow: a broader
+          # LD_LIBRARY_PATH would shadow nix store RUNPATHs
+          # process-wide (search order puts it before DT_RUNPATH).
+          "LD_LIBRARY_PATH=/usr/lib/wheel-deps"
+          "NIX_LD=${pkgs.glibc}/lib/ld-linux-x86-64.so.2"
+          "NIX_LD_LIBRARY_PATH=${nixLdLibs}"
         ];
         Cmd = ["${pkgs.bashInteractive}/bin/bash" "-l"];
       };

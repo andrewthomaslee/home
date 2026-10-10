@@ -18,8 +18,13 @@ with pkgs; let
   # flakeModules/code-sandbox consumer module. This instance uses
   # flakeRef "." (the flake enclosing the cwd), i.e. this checkout —
   # devenv may not reference flake values, so the generator is imported
-  # by plain relative path.
-  code-sandbox-exec = (import ../lib/mkCodeSandbox.nix) {};
+  # by plain relative path. remoteFlake backs the rev-pinning
+  # fallback: a dirty/not-at-remote-HEAD tree builds the image from the
+  # public flake at remote HEAD instead, so the in-image briefing pins
+  # a real commit (see documentation/docs/openshell/code-sandbox.md).
+  code-sandbox-exec = (import ../lib/mkCodeSandbox.nix) {
+    remoteFlake = "github:external-systems/home";
+  };
 
   packages = [
     # core

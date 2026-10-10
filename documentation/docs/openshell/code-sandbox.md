@@ -70,6 +70,38 @@ never disagree for long. Never `openshell profile import` by hand
 after editing a template — imports are one-shot; that is exactly how
 the original pin got lost.
 
+Two rendering details matter. The paths are `readlink -f`-**resolved**
+exes, not `bin/` symlinks: the supervisor matches `/proc/<pid>/exe`,
+and nixpkgs entries like `nix`'s `bin/nix` are symlinks into other
+outputs — pinning the symlink denied every nix egress (github tarball
+fetches EACCES while git/curl worked). And the policy/profile are
+always rendered from the **same resolved source as the image** (below),
+never from a different ref.
+
+## Image source: rev pinning (never "dirty")
+
+The image bakes `Image: code-agent @ <rev>` — the flake's git
+revision — into every agent's system-prompt briefing, so a running
+sandbox can always be traced to the flake that built it. `create`
+resolves the build source so that line never lies:
+
+1. `--flake REF` given → REF verbatim (your choice; a dirty local ref
+   pins `dirty`).
+2. Otherwise, when the enclosing checkout is a **clean git tree whose
+   HEAD equals the remote HEAD** → build the local tree (identical
+   content, and the rev pins correctly).
+3. Otherwise → build `<remoteFlake>/<remote HEAD>` — the public flake
+   at the exact remote commit. This is the default path for the
+   installable wrapper (`pkgs.code-sandbox`) and the home-manager
+   instance: their baked flake ref is a source store path with no git
+   metadata, which is exactly what used to pin `dirty` on every
+   home-manager-created sandbox.
+
+`--flake .` forces a local build when you explicitly want one (expect
+the `dirty` pin when the tree is dirty). `remoteFlake` is a generator
+parameter (`lib/mkCodeSandbox.nix` / `perSystem.codeSandbox.remoteFlake`);
+generic consumers that don't set it get the warning and a local build.
+
 ## Options
 
 ```

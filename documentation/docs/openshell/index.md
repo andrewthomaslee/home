@@ -141,9 +141,11 @@ What the image bakes in (all nixpkgs/`llm-agents`-pinned, no secrets):
   the image glibc) at `/sandbox/.vscodium-server/bin/<commit>` — connects
   instantly, offline. Bump `vscodiumVersion`/`vscodiumCommit` in the module
   when nixpkgs' vscodium moves.
-- **Foreign-binary support**: `/lib64` loader, glibc/gcc libs in the
-  classic multiarch dirs, and a pregenerated `/etc/ld.so.cache`
-  (built with `ldconfig -r` inside the image layer).
+- **Foreign-binary support**: the nix-ld shim at
+  `/lib64/ld-linux-x86-64.so.2` (reads `NIX_LD` / `NIX_LD_LIBRARY_PATH`
+  from the env) runs downloaded glibc ELFs, and `/usr/lib/wheel-deps` on
+  `LD_LIBRARY_PATH` (scoped to libstdc++/libgcc_s/libz) lets python
+  manylinux wheel extensions resolve their system libs.
 
 After loading, create a sandbox (§3) and attach providers (§4).
 
@@ -173,7 +175,7 @@ openshell logs code --tail --source sandbox       # DENIED lines show what polic
 config, not per-sandbox: the VM driver accepts but ignores `--cpu` and
 `--memory`, and there is no disk flag. Defaults live in
 `hostSpec.services.openshell.gateway.vm.*` of the openshell-gateway
-NixOS module: 4 vCPU / 8 GiB RAM / 16 GiB sparse overlay.)
+NixOS module: 4 vCPU / 8 GiB RAM / 32 GiB sparse overlay.)
 
 (For scripting against the CLI: `openshell ... | grep -q` panics the CLI
 on EPIPE — see §5; `code-sandbox` redirects to a file for this reason.
@@ -289,10 +291,18 @@ Image/driver interplay:
   Remote-SSH toolchain lives in `/usr/local/bin` (+ `/etc/profile` for
   login shells), not behind an image entrypoint (the supervisor sets
   `HOME` to the workdir and doesn't run workload commands through one).
-- **Foreign glibc binaries need a baked `/etc/ld.so.cache`**: nixpkgs
-  glibc's compiled-in search path covers no FHS dirs, and policy makes
-  `/etc` read-only. Build it with `ldconfig -r <layer> -C /etc/ld.so.cache`
-  using **real file copies** (symlinks dangle inside the chroot).
+- **Foreign glibc binaries run through nix-ld, not an ld.so.cache**:
+  nixpkgs glibc's compiled-in cache path is its own read-only store
+  etc/, so a baked `/etc/ld.so.cache` is never read (and copied FHS
+  libs are invisible). The nix-ld shim at `/lib64/ld-linux-x86-64.so.2`
+  reads `NIX_LD` + `NIX_LD_LIBRARY_PATH` from the env instead — the
+  pre-baked vscodium-reh node is patchelf'd to the store and doesn't
+  need it, but any other downloaded glibc ELF does. Python manylinux
+  wheels are the other half: the handful of system libs they link
+  (libstdc++/libgcc_s/libz) resolve from a scoped `/usr/lib/wheel-deps`
+  dir on `LD_LIBRARY_PATH` — broader dirs would shadow nix RUNPATHs
+  process-wide (loader search order puts LD_LIBRARY_PATH before
+  DT_RUNPATH).
 - **nix in sandboxes needs `sandbox = false` + `filter-syscalls = false`**:
   the supervisor stacks ~5 seccomp filters; nix's builder-child filter
   cannot install underneath ("unable to load seccomp BPF program").
@@ -300,6 +310,11 @@ Image/driver interplay:
   not PATH wrappers: pi is `libexec/pi/pi` (a bun-compiled ELF), kimi-code
   is `nodejs`, claude-code is `.claude-wrapped` — profiles/policies pin
   those, and nixpkgs-wrapped CLIs must be pinned by their wrapped path.
+  Worse, nixpkgs `bin/` entries can themselves be symlinks into other
+  outputs (`nix`'s `bin/nix` is): pinning the symlink path denies every
+  egress of that binary (nix's github.com tarball fetches EACCES'd while
+  git/curl worked). The flake renders both templates with `readlink -f`-
+  resolved paths for every pinned binary (`flake-parts/openshellConfig.nix`).
 - **claude-code's startup preflight is not telemetry**: it hits
   `platform.claude.com/v1/oauth/hello` and hard-fails ("Unable to connect
   to Anthropic services") before the first prompt — admit the host in the

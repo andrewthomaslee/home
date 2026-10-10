@@ -18,6 +18,14 @@
   # "the flake enclosing the cwd" (resolved via the git root so
   # subdirectories work).
   flakeRef ? ".",
+  # Canonical PUBLIC flake ref (e.g. "github:owner/repo") used to build
+  # the image when the local tree cannot pin a real commit: a dirty or
+  # non-git source path bakes "Image: code-agent @ dirty" into every
+  # agent briefing, which is useless. With a remoteFlake baked in, the
+  # image then builds from "<remoteFlake>/<remote HEAD>" instead, so the
+  # briefing always pins a real commit. null disables the fallback
+  # (generic consumers get a warning instead).
+  remoteFlake ? null,
   # Attr names inside that flake.
   imageAttr ? "code-agent-image",
   loaderApp ? "load-code-agent-image",
@@ -40,6 +48,10 @@
   memory ? "8Gi",
 }: let
   providersStr = builtins.concatStringsSep " " providers;
+  remoteFlakeStr =
+    if remoteFlake == null
+    then ""
+    else remoteFlake;
 in ''
   set -euo pipefail
 
@@ -79,6 +91,16 @@ in ''
   so an existing sandbox name means an older image and prompts for
   replacement. Recreate to pick up image changes; only network policy
   tweaks hot-reload.
+
+  Image source (rev pinning): the image bakes "Image: ${imageName} @
+  <rev>" (from the flake's git revision) into every agent briefing.
+  The build source is resolved so that line never lies: --flake REF
+  builds REF verbatim; otherwise a clean local checkout whose HEAD
+  equals the remote HEAD builds locally; anything else builds
+  <remoteFlake>@<remote HEAD> ("${remoteFlakeStr}" for this instance).
+  --flake . forces a local build. The policy + provider profile are
+  rendered from the SAME resolved source, so the @bin_*@ pins always
+  describe the image actually built.
 
   Policy + profile lifecycle: the sandbox policy and the '${profileId}'
   provider profile are TEMPLATES in the flake — rendered with the image's
@@ -135,12 +157,56 @@ in ''
     fi
   }
 
+  # Image source resolution (rev pinning): the image bakes "Image:
+  # ${imageName} @ <rev>" — from the flake's git revision — into every
+  # agent briefing, and a dirty or git-less source pins "dirty", which
+  # is useless. Resolve the build source:
+  #   --flake REF (explicit)   -> REF verbatim (caller's choice; a dirty
+  #                                local ref pins "dirty")
+  #   local checkout clean, HEAD == origin HEAD -> local (same content,
+  #                                rev pins correctly)
+  #   remoteFlake baked in     -> <remoteFlake>/<remote HEAD>
+  #   otherwise                -> local, with a warning
+  resolve_image_ref() {
+    repo="$(resolve_flake_ref)"
+    if [ "$flake_explicit" = 1 ]; then
+      printf '%s' "$repo"
+      return
+    fi
+    remote_head=""
+    if git -C "$repo" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+      remote_url="$(git -C "$repo" remote get-url origin 2>/dev/null || true)"
+      if [ -n "$remote_url" ]; then
+        # Redirect, never pipe git (SIGPIPE can kill the writer early).
+        lsremote="$(mktemp)"
+        git ls-remote "$remote_url" HEAD >"$lsremote" 2>/dev/null || true
+        remote_head="$(awk 'NR==1{print $1}' "$lsremote")"
+        rm -f "$lsremote"
+      fi
+    fi
+    if head="$(git -C "$repo" rev-parse HEAD 2>/dev/null)" \
+      && [ -n "$remote_head" ] && [ "$head" = "$remote_head" ] \
+      && [ -z "$(git -C "$repo" status --porcelain 2>/dev/null)" ]; then
+      printf '%s' "$repo"
+      return
+    fi
+    if [ -n "${remoteFlakeStr}" ] && [ -n "$remote_head" ]; then
+      echo "code-sandbox: local tree is not exactly the remote HEAD — building the image from ${remoteFlakeStr}/$remote_head so the briefing pins a real commit (force a local build with --flake .)" >&2
+      printf '%s/%s' "${remoteFlakeStr}" "$remote_head"
+      return
+    fi
+    echo "code-sandbox: WARNING: cannot verify the local tree against a remote HEAD (no git remote / no remoteFlake baked in) — the image briefing may pin 'dirty'" >&2
+    printf '%s' "$repo"
+  }
+
   # Render the sandbox policy + provider profile from the flake: the
   # templates' @bin_*@ placeholders become the exact store paths of the
   # image's package set, so the files handed to openshell always match
-  # the image about to be built. Sets policy_path/profile_path.
+  # the image about to be built. Rendered from the SAME resolved source
+  # as the image (resolve_image_ref), never from a different ref. Sets
+  # policy_path/profile_path.
   render_configs() {
-    ref="$(resolve_flake_ref)"
+    ref="$(resolve_image_ref)"
     echo "code-sandbox: rendering sandbox policy + '${profileId}' profile from $ref ..."
     policy_path="$(nix build "''${ref}#${policyAttr}" --no-link --print-out-paths)"
     profile_path="$(nix build "''${ref}#${profileAttr}" --no-link --print-out-paths)"
@@ -209,7 +275,7 @@ in ''
     esac
   fi
 
-  flake_ref="${flakeRef}" default_providers="${providersStr}" extra_providers=""
+  flake_ref="${flakeRef}" flake_explicit=0 default_providers="${providersStr}" extra_providers=""
   name="" yes=0 cpu="${cpu}" memory="${memory}" sync=1 include_workdir="${
     if includeWorkdir
     then "1"
@@ -221,7 +287,7 @@ in ''
       -y | --yes) yes=1; shift ;;
       --cpu) cpu="''${2:?--cpu needs a value}"; shift 2 ;;
       --memory) memory="''${2:?--memory needs a value}"; shift 2 ;;
-      --flake) flake_ref="''${2:?--flake needs a value}"; shift 2 ;;
+      --flake) flake_explicit=1; flake_ref="''${2:?--flake needs a value}"; shift 2 ;;
       --provider) extra_providers="''${extra_providers:-} ''${2:?--provider needs a value}"; shift 2 ;;
       --sync) sync=1; shift ;;
       --no-sync) sync=0; shift ;;
@@ -320,7 +386,7 @@ in ''
       if [ -z "$sandbox_names" ]; then
         echo "  (none running)"
       else
-        ref="$(resolve_flake_ref)"
+        ref="$(resolve_image_ref)"
         img="$(nix build "''${ref}#${imageAttr}" --no-link --print-out-paths)"
         shorthash="$(basename "$img" | cut -c1-8)"
         for sb in $sandbox_names; do
@@ -357,7 +423,7 @@ in ''
     check_provider "$p" || { echo "code-sandbox: aborting: create would fail closed without provider '$p'" >&2; exit 1; }
   done
 
-  ref="$(resolve_flake_ref)"
+  ref="$(resolve_image_ref)"
   echo "code-sandbox: building ${imageAttr} from $ref ..."
   img="$(nix build "''${ref}#${imageAttr}" --no-link --print-out-paths)"
   shorthash="$(basename "$img" | cut -c1-8)"

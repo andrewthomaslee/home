@@ -258,12 +258,15 @@ _: {
         };
         overlayDiskMiB = lib.mkOption {
           type = lib.types.ints.positive;
-          default = 16384;
+          default = 32768;
           description = ''
             Sparse writable overlay disk per sandbox, in MiB. This is the
             sandbox's entire writable filesystem (everything outside tmpfs
             mounts like /tmp and /dev/shm), so it caps /, /sandbox, /home
-            and /nix growth. Sparse: only consumed blocks use host disk.
+            and /nix growth. 32 GiB gives ample room for image-adjacent
+            fetches (nix store additions, uv/python environments, clone
+            worktrees) before the overlay fills. Sparse: only consumed
+            blocks use host disk.
             Driver-wide default — there is no per-sandbox disk flag, and
             sandboxes created before a size change keep their existing
             overlay (new sizes apply to newly created sandboxes; the driver

@@ -28,9 +28,18 @@ grows.
   in-VM sshd runs extension commands with a store-only PATH, which is
   why the image also carries a `/usr/local/bin` toolchain and an
   `/etc/profile` PATH prefix for login shells.
-- Foreign glibc ELFs resolve via `/lib64/ld-linux-x86-64.so.2` +
-  copied glibc/gcc libs + pregenerated `/etc/ld.so.cache` (nixpkgs
-  glibc's compiled-in search path covers no FHS dirs).
+- Foreign glibc ELFs run via the nix-ld shim: `/lib64/ld-linux-
+  x86-64.so.2` is the shim; it reads `NIX_LD` (the real loader) and
+  `NIX_LD_LIBRARY_PATH` (extra store lib dirs) from the env. (The old
+  copied-libs + `/etc/ld.so.cache` approach never worked — nixpkgs
+  glibc's compiled-in cache path is its own read-only store etc/, so
+  the cache was never read.)
+- Python manylinux wheel extensions (numpy, pillow, ...) resolve the
+  handful of system libs they link (libstdc++/libgcc_s/libz) from
+  `/usr/lib/wheel-deps`, which the image puts on `LD_LIBRARY_PATH`
+  (scoped to those three libs on purpose — a broader dir would shadow
+  nix RUNPATHs process-wide). Binary wheels import as-is; sdists that
+  compile still cannot build (no C toolchain).
 
 ## Network: full admitted list
 
@@ -49,6 +58,7 @@ Egress is deny-by-default. Admitted hosts (from
 | `cache.geninf.io`, `cache.clan.lol` | read | clan niks3 caches |
 | `git.clan.lol` | read-write git transport | clan repos |
 | `pypi.org`, `files.pythonhosted.org` | read (wheels only) | python3/uv package fetches (no uploads admitted) |
+| `search.nixos.org` | read | mcp-nixos `search`-family backend (package/option `info` is local) |
 | `api.kimi.com` | — | kimi-for-coding API |
 | `api.anthropic.com`, `platform.claude.com` | — | claude API + startup preflight |
 
@@ -102,13 +112,17 @@ recreating the sandbox; filesystem/image changes require recreation.
 - `headroom` — `headroom mcp serve`; wrapper maps the injected
   `$ANTHROPIC_AUTH_TOKEN` onto `ANTHROPIC_API_KEY`. Broken when the
   claude-code provider is missing.
-- `nixos` — `mcp-nixos`; fully local, always works.
+- `nixos` — `mcp-nixos`; package/option `info` answers from a local
+  index, `search`-family queries call the `search.nixos.org` backend
+  (admitted for the server's binary). Broken when the sandbox predates
+  the `nixos_search` policy rule — hot-reload the policy from the host.
 - `github` — `github-mcp-server` wrapper mapping the `$GITHUB_TOKEN`
-  handle onto `GITHUB_PERSONAL_ACCESS_TOKEN`. Errors at startup without
-  the github-agent provider attached (its profile admits read-write
-  api.github.com and substitutes the real token at egress for the
-  pinned binary). Harmless otherwise; ignore or recreate with
-  `--provider github-agent`.
+  handle onto `GITHUB_PERSONAL_ACCESS_TOKEN`. In pi it is `direct` (its
+  ~44 tools are listed in the system prompt at session start). Errors at
+  startup without the github-agent provider attached (its profile admits
+  read-write api.github.com and substitutes the real token at egress for
+  the pinned binary) — pi marks the server failed and continues. Recreate
+  with `--provider github-agent` to make it functional.
 - There is deliberately NO kubernetes MCP server. Use `kubectl`/`helm`
   directly; cluster API egress rides an attached provider or
   port-forward.

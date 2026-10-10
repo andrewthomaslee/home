@@ -135,7 +135,7 @@ nix run .#load-code-agent-image
 Sizing is **driver-wide, not per-sandbox**: the VM driver takes vCPUs,
 memory and the writable overlay disk size from the gateway config
 (`hostSpec.services.openshell.gateway.vm.{vcpus,memMiB,overlayDiskMiB}`
-in flake-parts/nixosModules/openshell-gateway.nix — 4 vCPU / 8 GiB / 16
+in flake-parts/nixosModules/openshell-gateway.nix — 4 vCPU / 8 GiB / 32
 GiB sparse overlay by default). `openshell sandbox create --cpu/--memory`
 are accepted but ignored by the VM driver, and there is no disk flag;
 a size change applies to newly created sandboxes (existing overlays are

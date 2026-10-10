@@ -34,6 +34,19 @@ in {
         any directory.
       '';
     };
+    remoteFlake = mkOption {
+      type = types.nullOr types.str;
+      default = null;
+      example = "github:owner/repo";
+      description = ''
+        Canonical public flake ref for the rev-pinning fallback: when the
+        resolved flake source is a dirty/ahead/behind git tree (or a
+        git-less baked source path), the image builds from
+        `<remoteFlake>/<remote HEAD>` so the in-image "Image: ... @
+        <rev>" briefing always pins a real commit. null disables the
+        fallback (the wrapper warns and builds the local source).
+      '';
+    };
     imageAttr = mkOption {
       type = types.str;
       default = "code-agent-image";
@@ -105,7 +118,7 @@ in {
   in
     lib.mkIf cfg.enable {
       packages.code-sandbox = pkgs.writeShellScriptBin "code-sandbox" (mkCodeSandbox {
-        inherit (cfg) flakeRef imageAttr loaderApp policyAttr profileAttr profileId providers imageName defaultName includeWorkdir cpu memory;
+        inherit (cfg) flakeRef remoteFlake imageAttr loaderApp policyAttr profileAttr profileId providers imageName defaultName includeWorkdir cpu memory;
       });
       apps.code-sandbox.program = "${config.packages.code-sandbox}/bin/code-sandbox";
     };

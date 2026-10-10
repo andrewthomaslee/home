@@ -322,6 +322,18 @@ network_policies:
       - { path: @bin_python3_real@ }
       - { path: @bin_uv@ }
 
+  # mcp-nixos (the baked nixos MCP server): package/option `info`
+  # queries answer from its local index, but `search`-family queries
+  # call the search.nixos.org backend — admit it for the server's
+  # binary only.
+  nixos_search:
+    name: nixos_search
+    endpoints:
+      - { host: search.nixos.org, port: 443, protocol: rest,
+          enforcement: enforce, access: read-only }
+    binaries:
+      - { path: @bin_mcp_nixos@ }
+
   # VSCodium Remote-SSH bootstrap fallback (jeanp413 open-remote-ssh):
   # only reached when the pre-baked server commit does not match the
   # client. The release URL 302-redirects to GitHub's asset CDNs
